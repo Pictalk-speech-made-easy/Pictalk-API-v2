@@ -1,0 +1,10 @@
+server:
+  port: 6969
+
+db:
+  type: "postgres"
+  port: 5432
+  database: "pictalk-dev"
+
+jwt:
+  expiresIn: 604800
