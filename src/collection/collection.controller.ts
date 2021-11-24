@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Header, NotFoundException, Param, ParseIntPipe, Patch, Post, Query, Res, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Header, NotFoundException, Param, ParseIntPipe, Patch, Post, Put, Query, Res, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -46,7 +46,7 @@ export class CollectionController {
     }
 
     @UseGuards(AuthGuard())
-    @Patch('/:id')
+    @Put('/:id')
     @UsePipes(ValidationPipe)
     @UseInterceptors(
       FileInterceptor('image', {

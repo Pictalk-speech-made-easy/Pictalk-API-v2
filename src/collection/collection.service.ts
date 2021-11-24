@@ -35,6 +35,7 @@ export class CollectionService {
     }
 
     async createCollection(createCollectionDto: createCollectionDto, user: User, filename: string): Promise<Collection> {
+        createCollectionDto.collectionIds = await this.verifyOwnership(createCollectionDto.collectionIds, user);
         return this.collectionRepository.createCollection(createCollectionDto, user, filename);
     }
 
@@ -50,6 +51,33 @@ export class CollectionService {
 
     async modifyCollection(id: number, user: User, modifyCollectionDto: modifyCollectionDto, filename: string): Promise<Collection>{
         let collection=await this.getCollectionById(id, user);
+        modifyCollectionDto = await this.verifyOwnership(modifyCollectionDto, user);
         return this.collectionRepository.modifyCollection(collection, modifyCollectionDto, user, filename);
+    }
+
+    async verifyOwnership(verificationDto : any, user: User){
+        try{
+            for(var i=0; i<verificationDto.collectionIds.length; i++){
+                try{
+                    const collection = await this.getCollectionById(verificationDto.collectionIds[i], user);
+                } catch(error) {
+                    console.log("error");
+                    i=i-1;
+                    verificationDto.collectionIds.splice(i, 1);
+                }
+            }
+        } catch(error){}
+        try{
+            for(var i=0; i<verificationDto.pictoIds.length; i++){
+                try{
+                    const collection = await this.getCollectionById(verificationDto.pictoIds[i], user);
+                } catch(error) {
+                    console.log("error");
+                    i=i-1;
+                    verificationDto.pictoIds.splice(i, 1);
+                }
+            }
+        } catch(error){}
+        return verificationDto;
     }
 }
