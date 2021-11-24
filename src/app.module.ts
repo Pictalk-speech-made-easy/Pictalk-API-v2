@@ -6,6 +6,7 @@ import { CollectionModule } from './collection/collection.module';
 import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeOrmConfig } from './config/typeorm.config';
+import { ImageController } from './image/image.controller';
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { typeOrmConfig } from './config/typeorm.config';
     CollectionModule, 
     AuthModule
   ],
-  controllers: [AppController],
+  controllers: [AppController, ImageController],
   providers: [AppService],
 })
 export class AppModule {}
