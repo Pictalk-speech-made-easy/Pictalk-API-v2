@@ -1,6 +1,10 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
+import { CollectionRepository } from 'src/collection/collection.repository';
+import { Collection } from 'src/entities/collection.entity';
+import { Picto } from 'src/entities/picto.entity';
+import { User } from 'src/entities/user.entity';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { JwtPayload } from './jwt-payload.interface';
 import { UserRepository } from './user.repository';
@@ -11,11 +15,15 @@ export class AuthService {
         @InjectRepository(UserRepository)
         private userRepository: UserRepository,
         private jwtService : JwtService,
+        @Inject(forwardRef(() => CollectionRepository))
+        private collectionRepository : CollectionRepository,
         ){}
 
 
     async signUp(authCredentialsDto: AuthCredentialsDto): Promise<void> {
-        return this.userRepository.signUp(authCredentialsDto);
+        const user = await this.userRepository.signUp(authCredentialsDto);
+        const root = await this.collectionRepository.createRoot(user)
+        return;
     }
 
     async signIn(authCredentialsDto: AuthCredentialsDto): Promise<{accesToken : string}> {
@@ -27,5 +35,17 @@ export class AuthService {
         const accesToken = await this.jwtService.sign(payload);
         return { accesToken };
 
+    }
+
+    async getRoot(user: User): Promise<Collection>{
+        return this.userRepository.getRoot(user);
+    }
+
+    async getAllPictos(user: User): Promise<Picto[]>{
+        return this.userRepository.getAllPictos(user);
+    }
+
+    async getAllCollections(user: User): Promise<Collection[]>{
+        return this.userRepository.getAllCollections(user);
     }
 }
