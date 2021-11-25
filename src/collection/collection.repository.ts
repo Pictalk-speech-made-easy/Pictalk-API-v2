@@ -65,4 +65,12 @@ export class CollectionRepository extends Repository<Collection>{
         //delete collection.user;
         return collection;
     }
+
+    async createRoot(user : User):Promise<Collection>{
+        let collection = new Collection();
+        collection.meaning = '';
+        collection.userId = user.id;
+        user.root.id = collection.id;
+        return collection;
+    }
 }

@@ -13,7 +13,7 @@ export class Collection extends BaseEntity{
     @Column({nullable: true})
     speech: string;
 
-    @Column()
+    @Column({nullable: true})
     image: string;
 
     @Column({default : false})

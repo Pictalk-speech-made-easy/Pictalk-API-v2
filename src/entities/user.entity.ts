@@ -11,7 +11,7 @@ import { Picto } from './picto.entity';
 
 
 @Entity()
-@Unique(['username'])
+@Unique(['username', 'root'])
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
@@ -30,6 +30,9 @@ export class User extends BaseEntity {
 
   @OneToMany((type) => Picto, (picto) => picto.user, { eager: false })
   pictos: Picto[];
+
+  @Column({nullable : true})
+  root: Collection;
 
   async validatePassword(password: string): Promise<boolean> {
     const hash = await bcrypt.hash(password, this.salt);
