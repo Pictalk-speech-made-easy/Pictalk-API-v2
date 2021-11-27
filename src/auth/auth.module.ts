@@ -6,7 +6,6 @@ import { UserRepository } from './user.repository';
 import { JwtModule} from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './jwt.strategy';
-import { CollectionModule } from 'src/collection/collection.module';
 import { UtilitiesService } from 'src/utilities/create.root';
 
 @Module({
@@ -27,7 +26,6 @@ import { UtilitiesService } from 'src/utilities/create.root';
     AuthService,
     JwtStrategy,
     UtilitiesService,
-
   ],
   
   exports: [
