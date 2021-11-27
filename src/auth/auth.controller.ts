@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Put, Req, UseGuards, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, forwardRef, Get, Inject, Post, Put, Req, UseGuards, ValidationPipe } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { AuthGuard } from '@nestjs/passport';
@@ -7,13 +7,18 @@ import { User } from 'src/entities/user.entity';
 import { Collection } from 'src/entities/collection.entity';
 import { Picto } from 'src/entities/picto.entity';
 import { UserRootDto } from './dto/auth.push-root.dto';
+import { CollectionService } from 'src/collection/collection.service';
 @Controller('')
 export class AuthController {
-    constructor(private authService: AuthService,){}
+    constructor(private authService: AuthService,
+        @Inject(forwardRef(() => CollectionService))
+        private collectionService: CollectionService){}
 
     @Post('auth/signup')
-    signUp(@Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto): Promise<void> {
-        this.authService.signUp(authCredentialsDto);
+    async signUp(@Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto): Promise<void> {
+        const user = await this.authService.signUp(authCredentialsDto);
+        const root = await this.collectionService.createRoot(user);
+        this.authService.pushRoot(user, root);
         return;
     }
 
@@ -24,15 +29,9 @@ export class AuthController {
 
     @UseGuards(AuthGuard())
     @Get('/user/root')
-    getRoot(@GetUser() user: User): Promise<number>{
-        return this.authService.getRoot(user);
-    }
-
-    @UseGuards(AuthGuard())
-    @Put('/user/root')
-    pushRoot(@GetUser() user: User, @Body(ValidationPipe) UserRootDto : UserRootDto): Promise<void>{
-        const {root} = UserRootDto;
-        return this.authService.pushRoot(user, root);
+    async getRoot(@GetUser() user: User): Promise<Collection>{
+        const root = await this.authService.getRoot(user);
+        return this.collectionService.getCollectionById(root, user);
     }
 
     @UseGuards(AuthGuard())

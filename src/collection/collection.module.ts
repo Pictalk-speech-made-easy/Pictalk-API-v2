@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from 'src/auth/auth.module';
 import { CollectionController } from './collection.controller';
@@ -7,10 +7,11 @@ import { CollectionService } from './collection.service';
 
 @Module({
   imports: [
+    forwardRef(() => AuthModule),
     TypeOrmModule.forFeature([CollectionRepository]),
-    AuthModule,
   ],
   controllers: [CollectionController],
-  providers: [CollectionService]
+  providers: [CollectionService],
+  exports: [CollectionService]
 })
 export class CollectionModule {}

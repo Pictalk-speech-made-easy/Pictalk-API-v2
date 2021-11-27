@@ -18,7 +18,7 @@ export class PictoController {
     getPictoById(@Param('id', ParseIntPipe) id : number, @GetUser() user: User): Promise<Picto>{
         return this.pictoService.getPictoById(id, user);
     }
-
+    
     @UseGuards(AuthGuard())
     @Post()
     @UsePipes(ValidationPipe)
