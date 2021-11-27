@@ -9,7 +9,6 @@ import * as bcrypt from 'bcrypt';
 import { Collection } from './collection.entity';
 import { Picto } from './picto.entity';
 
-
 @Entity()
 @Unique(['username', 'root'])
 export class User extends BaseEntity {
@@ -32,7 +31,7 @@ export class User extends BaseEntity {
   pictos: Picto[];
 
   @Column({nullable : true})
-  root: Collection;
+  root: number;
 
   async validatePassword(password: string): Promise<boolean> {
     const hash = await bcrypt.hash(password, this.salt);

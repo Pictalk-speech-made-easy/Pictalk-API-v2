@@ -23,7 +23,7 @@ export class AuthController {
 
     @UseGuards(AuthGuard())
     @Get('/user/')
-    getRoot(@GetUser() user: User): Promise<Collection>{
+    getRoot(@GetUser() user: User): Promise<number>{
         return this.authService.getRoot(user);
     }
 

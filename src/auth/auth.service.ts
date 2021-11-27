@@ -37,7 +37,7 @@ export class AuthService {
 
     }
 
-    async getRoot(user: User): Promise<Collection>{
+    async getRoot(user: User): Promise<number>{
         return this.userRepository.getRoot(user);
     }
 

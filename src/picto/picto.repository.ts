@@ -1,5 +1,6 @@
 import { InternalServerErrorException } from "@nestjs/common";
 import { Picto } from "src/entities/picto.entity";
+import { MLText } from "src/entities/text.entity";
 import { User } from "src/entities/user.entity";
 import { getArrayIfNeeded } from "src/utilities/tools";
 import { EntityRepository, Repository } from "typeorm";
@@ -11,6 +12,8 @@ export class PictoRepository extends Repository<Picto> {
     async createPicto(createPictoDto: createPictoDto, user: User, filename: string): Promise<Picto> {
         let { meaning, speech, collectionIds} = createPictoDto;
         const picto = new Picto();
+        const MLmeaning = new MLText();
+        MLmeaning.languages= 
         picto.meaning = meaning;
         picto.speech = speech;
         picto.image = filename;

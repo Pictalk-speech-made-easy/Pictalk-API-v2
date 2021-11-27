@@ -44,7 +44,7 @@ export class UserRepository extends Repository<User> {
         return bcrypt.hash(password, salt);
     }
 
-    async getRoot(user: User): Promise<Collection>{
+    async getRoot(user: User): Promise<number>{
         return user.root;
     }
 

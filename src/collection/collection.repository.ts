@@ -70,7 +70,7 @@ export class CollectionRepository extends Repository<Collection>{
         let collection = new Collection();
         collection.meaning = '';
         collection.userId = user.id;
-        user.root.id = collection.id;
+        user.root = collection.id;
         return collection;
     }
 }
