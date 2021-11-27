@@ -6,10 +6,10 @@ import { UserRepository } from './user.repository';
 import { JwtModule} from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './jwt.strategy';
-import { UtilitiesService } from 'src/utilities/create.root';
 
 @Module({
   imports: [
+    TypeOrmModule.forFeature([UserRepository]),
     PassportModule.register({ defaultStrategy: 'jwt'}),
     JwtModule.register({
       secret: 'WayTooMuchSunScreen',
@@ -17,7 +17,6 @@ import { UtilitiesService } from 'src/utilities/create.root';
         expiresIn: 86400,
       },
     }),
-    TypeOrmModule.forFeature([UserRepository])
   ],
   
   controllers: [AuthController],
@@ -25,7 +24,6 @@ import { UtilitiesService } from 'src/utilities/create.root';
   providers: [
     AuthService,
     JwtStrategy,
-    UtilitiesService,
   ],
   
   exports: [

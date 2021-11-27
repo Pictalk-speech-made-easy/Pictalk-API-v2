@@ -8,7 +8,7 @@ import { CollectionService } from './collection.service';
 @Module({
   imports: [
     TypeOrmModule.forFeature([CollectionRepository]),
-    AuthModule
+    AuthModule,
   ],
   controllers: [CollectionController],
   providers: [CollectionService]

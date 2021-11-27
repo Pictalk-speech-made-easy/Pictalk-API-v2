@@ -6,16 +6,14 @@ import { GetUser } from './get-user.decorator';
 import { User } from 'src/entities/user.entity';
 import { Collection } from 'src/entities/collection.entity';
 import { Picto } from 'src/entities/picto.entity';
-import { UtilitiesService } from 'src/utilities/create.root';
-
 @Controller('')
 export class AuthController {
-    constructor(private authService: AuthService,
-                private utilitiesService : UtilitiesService){}
+    constructor(private authService: AuthService,){}
 
     @Post('auth/signup')
-    signUp(@Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto){
-        return this.utilitiesService.createUser(authCredentialsDto);
+    signUp(@Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto): Promise<void> {
+        this.authService.signUp(authCredentialsDto);
+        return;
     }
 
     @Post('auth/signin')

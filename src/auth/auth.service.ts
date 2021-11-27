@@ -1,7 +1,6 @@
-import { forwardRef, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CollectionRepository } from 'src/collection/collection.repository';
 import { Collection } from 'src/entities/collection.entity';
 import { Picto } from 'src/entities/picto.entity';
 import { User } from 'src/entities/user.entity';
@@ -16,6 +15,10 @@ export class AuthService {
         private userRepository: UserRepository,
         private jwtService : JwtService,
         ){}
+
+    async signUp(authCredentialsDto : AuthCredentialsDto): Promise<User>{
+        return await this.userRepository.signUp(authCredentialsDto);  
+    }
 
     async signIn(authCredentialsDto: AuthCredentialsDto): Promise<{accesToken : string}> {
         const username = await this.userRepository.validateUserPassword(authCredentialsDto);

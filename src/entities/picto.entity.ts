@@ -10,7 +10,7 @@ export class Picto extends BaseEntity{
     @Column()
     meaning : string;
 
-    @Column()
+    @Column({nullable: true})
     speech : string;
 
     @Column()

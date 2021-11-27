@@ -13,7 +13,7 @@ import { ImageController } from './image/image.controller';
     TypeOrmModule.forRoot(typeOrmConfig),
     PictoModule,
     CollectionModule, 
-    AuthModule
+    AuthModule,
   ],
   controllers: [AppController, ImageController],
   providers: [AppService],

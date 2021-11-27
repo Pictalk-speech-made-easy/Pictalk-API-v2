@@ -10,13 +10,13 @@ export class Collection extends BaseEntity{
     @Column()
     meaning : string;
 
-    @Column()
+    @Column({nullable: true})
     speech : string;
 
-    @Column({nullable: true})
+    @Column()
     image: string;
 
-    @Column({default : false})
+    @Column({default: false})
     starred: boolean;
 
     @ManyToMany( () => Picto, picto => picto.collections)

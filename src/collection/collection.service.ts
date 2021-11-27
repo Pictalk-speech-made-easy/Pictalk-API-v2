@@ -13,19 +13,6 @@ export class CollectionService {
         private collectionRepository : CollectionRepository,
     ) { }
 
-    async getUserCollections(user: User): Promise<Collection[]> {
-        const collections: Collection[] = await this.collectionRepository.find({
-          where: { userId: user.id },
-        });
-        if (collections.length !== 0) {
-          collections.map(collection => {
-            delete collection.pictos;
-            delete collection.userId;
-          });
-        }
-        return collections;
-    }
-
     async getCollectionById(id: number, user : User): Promise<Collection>{
         const found = await this.collectionRepository.findOne({relations: ["pictos", "collections"],where : {userId : user.id, id}});
         if(!found) {
@@ -38,6 +25,7 @@ export class CollectionService {
         createCollectionDto.collectionIds = await this.verifyOwnership(createCollectionDto.collectionIds, user);
         return this.collectionRepository.createCollection(createCollectionDto, user, filename);
     }
+
     async deleteCollection(id: number, user: User): Promise<void>{
         const result = await this.collectionRepository.delete({
             id: id,

@@ -13,19 +13,6 @@ export class PictoService {
         private pictoRepository : PictoRepository,
     ) { }
 
-    async getUserPictos(user: User): Promise<Picto[]> {
-        const pictos: Picto[] = await this.pictoRepository.find({
-          where: { userId: user.id },
-        });
-        if (pictos.length !== 0) {
-          pictos.map(picto => {
-            delete picto.collections;
-            delete picto.userId;
-          });
-        }
-        return pictos;
-    }
-
     async getPictoById(id: number, user : User): Promise<Picto>{
         const found = await this.pictoRepository.findOne({where : {userId : user.id, id}});
         if(!found) {
