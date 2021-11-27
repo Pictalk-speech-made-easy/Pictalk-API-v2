@@ -38,10 +38,6 @@ export class CollectionService {
         createCollectionDto.collectionIds = await this.verifyOwnership(createCollectionDto.collectionIds, user);
         return this.collectionRepository.createCollection(createCollectionDto, user, filename);
     }
-
-    async createRoot(user: User): Promise<Collection>{
-        return this.collectionRepository.createRoot(user);
-    }
     async deleteCollection(id: number, user: User): Promise<void>{
         const result = await this.collectionRepository.delete({
             id: id,

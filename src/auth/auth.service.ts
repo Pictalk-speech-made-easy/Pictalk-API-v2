@@ -15,16 +15,7 @@ export class AuthService {
         @InjectRepository(UserRepository)
         private userRepository: UserRepository,
         private jwtService : JwtService,
-        @Inject(forwardRef(() => CollectionRepository))
-        private collectionRepository : CollectionRepository,
         ){}
-
-
-    async signUp(authCredentialsDto: AuthCredentialsDto): Promise<void> {
-        const user = await this.userRepository.signUp(authCredentialsDto);
-        const root = await this.collectionRepository.createRoot(user)
-        return;
-    }
 
     async signIn(authCredentialsDto: AuthCredentialsDto): Promise<{accesToken : string}> {
         const username = await this.userRepository.validateUserPassword(authCredentialsDto);

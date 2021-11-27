@@ -26,7 +26,7 @@ export class CollectionRepository extends Repository<Collection>{
             collection.image=filename;
         } else {
             throw new NotFoundException(`filename not found`);
-        }0
+        }
         try {
             await collection.save();
         } catch (error) {
@@ -63,14 +63,6 @@ export class CollectionRepository extends Repository<Collection>{
             throw new InternalServerErrorException(error);
         }
         //delete collection.user;
-        return collection;
-    }
-
-    async createRoot(user : User):Promise<Collection>{
-        let collection = new Collection();
-        collection.meaning = '';
-        collection.userId = user.id;
-        user.root = collection.id;
         return collection;
     }
 }

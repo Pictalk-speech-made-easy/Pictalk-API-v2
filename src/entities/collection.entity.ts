@@ -1,6 +1,5 @@
 import { BaseEntity, Column, Entity, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Picto } from "./picto.entity";
-import { MLText } from "./text.entity";
 import { User } from "./user.entity";
 
 @Entity()
@@ -8,13 +7,11 @@ export class Collection extends BaseEntity{
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToMany( () => MLText)
-    @JoinTable()
-    meaning : MLText[];
+    @Column()
+    meaning : string;
 
-    @ManyToMany( () => MLText)
-    @JoinTable()
-    speech : MLText[];
+    @Column()
+    speech : string;
 
     @Column({nullable: true})
     image: string;

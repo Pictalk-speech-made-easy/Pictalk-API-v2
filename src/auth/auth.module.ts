@@ -7,6 +7,7 @@ import { JwtModule} from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './jwt.strategy';
 import { CollectionModule } from 'src/collection/collection.module';
+import { UtilitiesService } from 'src/utilities/create.root';
 
 @Module({
   imports: [
@@ -16,8 +17,7 @@ import { CollectionModule } from 'src/collection/collection.module';
       signOptions: {
         expiresIn: 86400,
       },
-    }), 
-    CollectionModule,
+    }),
     TypeOrmModule.forFeature([UserRepository])
   ],
   
@@ -26,6 +26,7 @@ import { CollectionModule } from 'src/collection/collection.module';
   providers: [
     AuthService,
     JwtStrategy,
+    UtilitiesService,
 
   ],
   
