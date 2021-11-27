@@ -26,6 +26,10 @@ export class CollectionService {
         return this.collectionRepository.createCollection(createCollectionDto, user, filename);
     }
 
+    async createRoot(user: User): Promise<number>{
+        return this.collectionRepository.createRoot(user);
+    }
+
     async deleteCollection(id: number, user: User): Promise<void>{
         const result = await this.collectionRepository.delete({
             id: id,

@@ -40,6 +40,12 @@ export class CollectionController {
     }
 
     @UseGuards(AuthGuard())
+    @Post('/root')
+    createRoot(@GetUser() user: User): Promise<number>{
+      return this.collectionService.createRoot(user);
+    }
+
+    @UseGuards(AuthGuard())
     @Delete('/:id')
     deleteCollection(@Param('id', ParseIntPipe) id: number, @GetUser() user: User): Promise<void> {
         return this.collectionService.deleteCollection(id, user);

@@ -24,10 +24,10 @@ export class User extends BaseEntity {
   @Column()
   salt: string;
 
-  @OneToMany((type) => Collection, (collection) => collection.user, {eager: false,})
+  @OneToMany(() => Collection, (collection) => collection.user, {eager: false,})
   collections: Collection[];
 
-  @OneToMany((type) => Picto, (picto) => picto.user, { eager: false })
+  @OneToMany(() => Picto, (picto) => picto.user, { eager: false })
   pictos: Picto[];
 
   @Column({nullable : true})

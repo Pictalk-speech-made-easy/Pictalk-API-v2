@@ -65,4 +65,16 @@ export class CollectionRepository extends Repository<Collection>{
         //delete collection.user;
         return collection;
     }
+
+    async createRoot(user: User): Promise<number>{
+        const collection = new Collection();
+        collection.meaning = "";
+        collection.userId = user.id;
+        try {
+            await collection.save();
+        } catch (error) {
+            throw new InternalServerErrorException(error);
+        }
+        return collection.id;
+    }
 }

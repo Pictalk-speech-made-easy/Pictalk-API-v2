@@ -3,9 +3,6 @@ import { ConflictException, InternalServerErrorException } from "@nestjs/common"
 import * as bcrypt from 'bcrypt';
 import { AuthCredentialsDto } from "./dto/auth-credentials.dto";
 import { User } from "src/entities/user.entity";
-import { Collection } from "src/entities/collection.entity";
-import { Picto } from "src/entities/picto.entity";
-
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
     async signUp(authCredentialsDto : AuthCredentialsDto): Promise<User> {
@@ -44,15 +41,17 @@ export class UserRepository extends Repository<User> {
         return bcrypt.hash(password, salt);
     }
 
-    async getRoot(user: User): Promise<number>{
-        return user.root;
+    async pushRoot(user: User, root: number): Promise<void>{
+        if(user.root){
+        } else {
+            user.root= root;
+        }
+        try {
+            await user.save();
+        } catch(error){
+            throw new InternalServerErrorException(error);
+        }
+        return;
     }
-
-    async getAllPictos(user: User): Promise<Picto[]>{
-        return user.pictos;
-    }
-
-    async getAllCollections(user: User): Promise<Collection[]>{
-        return user.collections;
-    }
+    
 }

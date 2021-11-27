@@ -31,15 +31,19 @@ export class AuthService {
 
     }
 
+    async pushRoot(user: User, root: number): Promise<void>{
+        return this.userRepository.pushRoot(user, root);
+    }
+
     async getRoot(user: User): Promise<number>{
-        return this.userRepository.getRoot(user);
+        return user.root;
     }
 
     async getAllPictos(user: User): Promise<Picto[]>{
-        return this.userRepository.getAllPictos(user);
+        return user.pictos;
     }
 
     async getAllCollections(user: User): Promise<Collection[]>{
-        return this.userRepository.getAllCollections(user);
+        return user.collections;
     }
 }
