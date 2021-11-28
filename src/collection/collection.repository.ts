@@ -83,15 +83,16 @@ export class CollectionRepository extends Repository<Collection>{
         return collection.id;
     }
 
-    async MLtextFromTexts(language, text): Promise<MLtext[]>{
+    async MLtextFromTexts(language: string[], text: string[]): Promise<MLtext[]>{
         const length = language.length;
-        let mltexts: MLtext[];
-        for(var i; i<length; i++){
+        let mltexts: MLtext[]=[];
+        for(var i=0; i<length; i++){
             const mltext= new MLtext();
             mltext.language=language[i];
             mltext.text= text[i];
             mltexts.push(mltext);
         }
+        
         return mltexts
     }
 }

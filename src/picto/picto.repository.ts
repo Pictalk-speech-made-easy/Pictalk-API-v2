@@ -54,8 +54,8 @@ export class PictoRepository extends Repository<Picto> {
 
     async MLtextFromTexts(language, text): Promise<MLtext[]>{
         const length = language.length;
-        let mltexts: MLtext[];
-        for(var i; i<length; i++){
+        let mltexts: MLtext[]=[];
+        for(var i=0; i<length; i++){
             const mltext= new MLtext();
             mltext.language=language[i];
             mltext.text= text[i];
