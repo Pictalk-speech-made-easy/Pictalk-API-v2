@@ -12,9 +12,8 @@ export class PictoRepository extends Repository<Picto> {
     async createPicto(createPictoDto: createPictoDto, user: User, filename: string): Promise<Picto> {
         let { meaning, speech, language, collectionIds} = createPictoDto;
         const picto = new Picto();
-        const text = new MLtext();
-        picto.meaning = getArrayIfNeeded(text);
-        picto.speech = speech;
+        picto.meaning = await this.MLtextFromTexts(language, meaning);
+        picto.speech = await this.MLtextFromTexts(language, speech);
         picto.image = filename;
         picto.userId = user.id;
         if(collectionIds){
@@ -31,12 +30,12 @@ export class PictoRepository extends Repository<Picto> {
     }
 
     async modifyPicto(picto: Picto, modifyPictoDto: modifyPictoDto, user: User, filename: string): Promise<Picto> {
-        let { meaning, speech, collectionIds, starred} = modifyPictoDto;
+        let { language, meaning, speech, collectionIds, starred} = modifyPictoDto;
         if(meaning){
-            picto.meaning = meaning;
+            picto.meaning = await this.MLtextFromTexts(language, meaning);
         }
         if(speech){
-            picto.speech = speech;
+            picto.speech = await this.MLtextFromTexts(language, speech);
         }
         if(filename){
             picto.image = filename;
@@ -53,5 +52,16 @@ export class PictoRepository extends Repository<Picto> {
         return picto;
     }
 
-        async MLtextFromDto()
+    async MLtextFromTexts(language, text): Promise<MLtext[]>{
+        const length = language.length;
+        let mltexts: MLtext[];
+        for(var i; i<length; i++){
+            const mltext= new MLtext();
+            mltext.language=language[i];
+            mltext.text= text[i];
+            mltexts.push(mltext);
+        }
+        console.log(mltexts);
+        return mltexts
+    }
 }

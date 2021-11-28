@@ -9,6 +9,7 @@ import { editFileName, imageFileFilter } from 'src/utilities/tools';
 import { PictoService } from './picto.service';
 import { createPictoDto } from './dto/picto.create.dto';
 import { modifyPictoDto } from './dto/picto.modify.dto';
+import { verifySameLength } from 'src/utilities/creation';
 
 @Controller('picto')
 export class PictoController {
@@ -35,7 +36,10 @@ export class PictoController {
         if(!file){
             throw new NotFoundException(`There is no file or no filename`);
         } else {
+          const {language, meaning, speech} = createPictoDto;
+          if(verifySameLength(language, meaning, speech)){
             return this.pictoService.createPicto(createPictoDto, user, file.filename);
+          }
         }
     }
 
@@ -58,10 +62,13 @@ export class PictoController {
       }),
     )
     modifyPicto(@Param('id', ParseIntPipe) id: number, @GetUser() user: User, @Body() modifyPictoDto: modifyPictoDto, file: Express.Multer.File): Promise<Picto>{
+      const {language, meaning, speech} = modifyPictoDto;
+      if(verifySameLength(language, meaning, speech)){
         if(file){
             return this.pictoService.modifyPicto(id, user, modifyPictoDto, file.filename);
         } else {
             return this.pictoService.modifyPicto(id, user, modifyPictoDto, null);
         }
+      }
     }
 }

@@ -1,5 +1,6 @@
 import { InternalServerErrorException, NotFoundException } from "@nestjs/common";
 import { Collection } from "src/entities/collection.entity";
+import { MLtext } from "src/entities/MLtext.entity";
 import { User } from "src/entities/user.entity";
 import { getArrayIfNeeded } from "src/utilities/tools";
 import { EntityRepository, Repository } from "typeorm";
@@ -9,10 +10,10 @@ import { modifyCollectionDto } from "./dto/collection.modify.dto";
 @EntityRepository(Collection)
 export class CollectionRepository extends Repository<Collection>{
     async createCollection(createCollectionDto: createCollectionDto, user: User, filename: string): Promise<Collection> {
-        let { meaning, speech, pictoIds, collectionIds } = createCollectionDto;
+        let { language, meaning, speech, pictoIds, collectionIds } = createCollectionDto;
         const collection = new Collection();
-        collection.meaning = meaning;
-        collection.speech = speech;
+        collection.meaning = await this.MLtextFromTexts(language, meaning);
+        collection.speech = await this.MLtextFromTexts(language, speech);
         collection.userId = user.id;
         if(pictoIds){
             pictoIds=getArrayIfNeeded(pictoIds);
@@ -36,12 +37,12 @@ export class CollectionRepository extends Repository<Collection>{
     }
 
     async modifyCollection(collection: Collection, modifyCollectionDto: modifyCollectionDto, user: User, filename: string): Promise<Collection>{
-        let {meaning, speech, starred, pictoIds, collectionIds}= modifyCollectionDto;
+        let {language, meaning, speech, starred, pictoIds, collectionIds}= modifyCollectionDto;
         if(meaning){
-            collection.meaning = meaning;
+            collection.meaning = await this.MLtextFromTexts(language, meaning);
         }
         if(speech){
-            collection.speech = speech;
+            collection.speech = await this.MLtextFromTexts(language, speech);
         }
         if(filename){
             collection.image = filename;
@@ -68,7 +69,11 @@ export class CollectionRepository extends Repository<Collection>{
 
     async createRoot(user: User): Promise<number>{
         const collection = new Collection();
-        collection.meaning = "";
+        const mltext = new MLtext();
+        mltext.language="";
+        mltext.text=""
+        collection.meaning = getArrayIfNeeded(mltext);
+        collection.speech = getArrayIfNeeded(mltext);
         collection.userId = user.id;
         try {
             await collection.save();
@@ -76,5 +81,17 @@ export class CollectionRepository extends Repository<Collection>{
             throw new InternalServerErrorException(error);
         }
         return collection.id;
+    }
+
+    async MLtextFromTexts(language, text): Promise<MLtext[]>{
+        const length = language.length;
+        let mltexts: MLtext[];
+        for(var i; i<length; i++){
+            const mltext= new MLtext();
+            mltext.language=language[i];
+            mltext.text= text[i];
+            mltexts.push(mltext);
+        }
+        return mltexts
     }
 }

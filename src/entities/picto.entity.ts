@@ -11,7 +11,7 @@ export class Picto extends BaseEntity{
     @Column({type: "jsonb"})
     meaning : MLtext[];
 
-    @Column({type: "jsonb", nullable: true})
+    @Column({type: "jsonb"})
     speech : MLtext[];
 
     @Column()

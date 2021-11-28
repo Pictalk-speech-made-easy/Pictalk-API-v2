@@ -7,7 +7,7 @@ export class createPictoDto {
     @IsNotEmpty()
     language: string[];
 
-    @IsOptional()
+    @IsNotEmpty()
     speech: string[];
 
     @IsOptional()
