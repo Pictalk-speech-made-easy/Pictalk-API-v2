@@ -1,5 +1,6 @@
-import { BaseEntity, Column, Entity, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Collection } from "./collection.entity";
+import { MLtext } from "./MLtext.entity";
 import { User } from "./user.entity";
 
 @Entity()
@@ -7,11 +8,11 @@ export class Picto extends BaseEntity{
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
-    meaning : string;
+    @Column({type: "jsonb"})
+    meaning : MLtext[];
 
-    @Column({nullable: true})
-    speech : string;
+    @Column({type: "jsonb", nullable: true})
+    speech : MLtext[];
 
     @Column()
     image: string;

@@ -2,10 +2,13 @@ import {IsOptional} from 'class-validator';
 
 export class modifyPictoDto {
     @IsOptional()
-    meaning: string;
+    meaning: string[];
 
     @IsOptional()
-    speech: string;
+    language: string[];
+
+    @IsOptional()
+    speech: string[];
 
     @IsOptional()
     collectionIds: number[];

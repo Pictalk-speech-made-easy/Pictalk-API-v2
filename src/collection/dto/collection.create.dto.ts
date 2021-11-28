@@ -3,10 +3,13 @@ import { IsNotEmpty, IsOptional } from 'class-validator';
 export class createCollectionDto {
 
     @IsNotEmpty()
-    meaning: string;
+    meaning: string[];
+
+    @IsNotEmpty()
+    language: string[];
 
     @IsOptional()
-    speech: string;
+    speech: string[];
 
     @IsOptional()
     pictoIds: number[];

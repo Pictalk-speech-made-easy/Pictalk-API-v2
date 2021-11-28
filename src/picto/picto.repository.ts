@@ -1,4 +1,5 @@
 import { InternalServerErrorException } from "@nestjs/common";
+import { MLtext } from "src/entities/MLtext.entity";
 import { Picto } from "src/entities/picto.entity";
 import { User } from "src/entities/user.entity";
 import { getArrayIfNeeded } from "src/utilities/tools";
@@ -9,9 +10,10 @@ import { modifyPictoDto } from "./dto/picto.modify.dto";
 @EntityRepository(Picto)
 export class PictoRepository extends Repository<Picto> {
     async createPicto(createPictoDto: createPictoDto, user: User, filename: string): Promise<Picto> {
-        let { meaning, speech, collectionIds} = createPictoDto;
+        let { meaning, speech, language, collectionIds} = createPictoDto;
         const picto = new Picto();
-        picto.meaning = meaning;
+        const text = new MLtext();
+        picto.meaning = getArrayIfNeeded(text);
         picto.speech = speech;
         picto.image = filename;
         picto.userId = user.id;
@@ -50,4 +52,6 @@ export class PictoRepository extends Repository<Picto> {
         //delete picto.user;
         return picto;
     }
+
+        async MLtextFromDto()
 }

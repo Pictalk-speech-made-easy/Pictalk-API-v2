@@ -2,10 +2,13 @@ import { IsNotEmpty, IsOptional } from 'class-validator';
 export class createPictoDto {
 
     @IsNotEmpty()
-    meaning: string;
+    meaning: string[];
 
     @IsNotEmpty()
-    speech: string;
+    language: string[];
+
+    @IsOptional()
+    speech: string[];
 
     @IsOptional()
     collectionIds: number[];

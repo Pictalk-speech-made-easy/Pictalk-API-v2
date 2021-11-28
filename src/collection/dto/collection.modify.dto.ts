@@ -2,10 +2,13 @@ import { IsBooleanString, IsOptional } from "class-validator";
 
 export class modifyCollectionDto {
     @IsOptional()
-    meaning: string;
+    meaning: string[];
 
     @IsOptional()
-    speech: string;
+    language: string[];
+
+    @IsOptional()
+    speech: string[];
 
     @IsOptional()
     pictoIds: number[];
