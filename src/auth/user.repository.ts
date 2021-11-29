@@ -1,5 +1,5 @@
 import { EntityRepository, Repository } from "typeorm";
-import { ConflictException, InternalServerErrorException } from "@nestjs/common";
+import { ConflictException, ForbiddenException, InternalServerErrorException } from "@nestjs/common";
 import * as bcrypt from 'bcrypt';
 import { AuthCredentialsDto } from "./dto/auth-credentials.dto";
 import { User } from "src/entities/user.entity";
@@ -7,7 +7,6 @@ import { User } from "src/entities/user.entity";
 export class UserRepository extends Repository<User> {
     async signUp(authCredentialsDto : AuthCredentialsDto): Promise<User> {
         const {username, password} = authCredentialsDto;
-
         const user = new User();
         user.username = username;
         user.salt= await bcrypt.genSalt();
@@ -43,6 +42,7 @@ export class UserRepository extends Repository<User> {
 
     async pushRoot(user: User, root: number): Promise<void>{
         if(user.root){
+            throw new ForbiddenException(`User ${user.username} already has a root with id ${user.root}`);
         } else {
             user.root= root;
         }

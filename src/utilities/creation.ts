@@ -1,8 +1,15 @@
 export const verifySameLength = (language, meaning, speech) => {
-    if(language.length === meaning.length && language.length === speech.length){
-        return 1;
+    try{
+        if(language.length === meaning.length && language.length === speech.length){
+            return 1;
+        }
     }
-    else {
-        return 0;
+    catch(error){
+        if(language || meaning || speech){
+            return 0;
+        } else {
+            return 1;
+        }
+        
     }
 };

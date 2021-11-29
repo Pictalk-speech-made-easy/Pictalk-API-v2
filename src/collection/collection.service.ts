@@ -52,7 +52,6 @@ export class CollectionService {
                 try{
                     const collection = await this.getCollectionById(verificationDto.collectionIds[i], user);
                 } catch(error) {
-                    console.log("error");
                     i=i-1;
                     verificationDto.collectionIds.splice(i, 1);
                 }
@@ -63,7 +62,6 @@ export class CollectionService {
                 try{
                     const collection = await this.getCollectionById(verificationDto.pictoIds[i], user);
                 } catch(error) {
-                    console.log("error");
                     i=i-1;
                     verificationDto.pictoIds.splice(i, 1);
                 }

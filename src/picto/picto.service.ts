@@ -36,7 +36,7 @@ export class PictoService {
     }
 
     async modifyPicto(id: number, user: User, modifyPictoDto: modifyPictoDto, filename: string): Promise<Picto>{
-        let picto=await this.getPictoById(id, user);
+        const picto=await this.getPictoById(id, user);
         return this.pictoRepository.modifyPicto(picto, modifyPictoDto, user, filename);
     }
 }
