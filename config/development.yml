@@ -1,8 +1,8 @@
 db:
   host: 'localhost'
   username: 'postgres'
-  password: 'SlapMyNuts69.post'
+  password: 'postgres'
   synchronize: true
 
 jwt: 
-  secret: 'topSecret51'
+  secret: 'WayTooMuchSunScreen'

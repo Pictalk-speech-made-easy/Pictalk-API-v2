@@ -38,14 +38,14 @@ export class AuthService {
 
         if (!username) {
             throw new UnauthorizedException('Invalid Credentials');
-        }
-
-        const payload: JwtPayload = { username };
-        const accessToken = await this.jwtService.sign(payload);
-        this.logger.debug(
-            `Generated JWT Token with payload ${JSON.stringify(payload)}`,
-        );
+        } else {
+            const payload: JwtPayload = { username };
+            const accessToken = await this.jwtService.sign(payload);
+            this.logger.debug(
+                `Generated JWT Token with payload ${JSON.stringify(payload)}`,
+            );
         return { accessToken, expiresIn };
+        }
         }
 
     async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<void> {
