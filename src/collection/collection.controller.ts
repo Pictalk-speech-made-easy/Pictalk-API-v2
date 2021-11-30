@@ -10,6 +10,12 @@ import { editFileName, imageFileFilter } from 'src/utilities/tools';
 import { CollectionService } from './collection.service';
 import { createCollectionDto } from './dto/collection.create.dto';
 import { modifyCollectionDto } from './dto/collection.modify.dto';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @Controller('collection')
 export class CollectionController {
@@ -17,6 +23,7 @@ export class CollectionController {
   constructor(private collectionService: CollectionService){}
   @UseGuards(AuthGuard())
   @Get('/:id')
+  @ApiOperation({summary : 'get a collection that has the provided id'})
   getCollectionById(@Param('id', ParseIntPipe) id : number, @GetUser() user: User): Promise<Collection>{
     this.logger.verbose(`User "${user.username}" getting Collection with id ${id}`);
       return this.collectionService.getCollectionById(id, user);

@@ -18,6 +18,9 @@ export class User extends BaseEntity {
   @Column()
   username: string;
 
+  @Column({default: "en-US"})
+  language: string;
+
   @Column()
   password: string;
 
@@ -32,6 +35,12 @@ export class User extends BaseEntity {
 
   @Column({nullable : true})
   root: number;
+
+  @Column()
+  resetPasswordToken: string;
+
+  @Column()
+  resetPasswordExpires: string;
 
   async validatePassword(password: string): Promise<boolean> {
     const hash = await bcrypt.hash(password, this.salt);
