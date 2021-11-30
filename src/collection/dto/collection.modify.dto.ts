@@ -1,4 +1,4 @@
-import { IsBooleanString, IsOptional } from "class-validator";
+import { IsBooleanString, IsHexColor, IsOptional } from "class-validator";
 
 export class modifyCollectionDto {
     @IsOptional()
@@ -19,4 +19,8 @@ export class modifyCollectionDto {
     @IsOptional()
     @IsBooleanString()
     starred : boolean;
+
+    @IsOptional()
+    @IsHexColor()
+    color: string;
 }

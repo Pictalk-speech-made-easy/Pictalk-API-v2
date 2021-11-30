@@ -8,6 +8,7 @@ export class Collection extends BaseEntity{
     @PrimaryGeneratedColumn()
     id: number;
 
+
     @Column({type: "jsonb"})
     meaning : MLtext[];
 
@@ -19,6 +20,9 @@ export class Collection extends BaseEntity{
 
     @Column({default: false})
     starred: boolean;
+
+    @Column({nullable: true})
+    color: string;
 
     @ManyToMany( () => Picto, picto => picto.collections)
     @JoinTable()

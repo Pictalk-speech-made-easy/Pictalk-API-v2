@@ -10,7 +10,7 @@ import { modifyCollectionDto } from "./dto/collection.modify.dto";
 @EntityRepository(Collection)
 export class CollectionRepository extends Repository<Collection>{
     async createCollection(createCollectionDto: createCollectionDto, user: User, filename: string): Promise<Collection> {
-        let { language, meaning, speech, pictoIds, collectionIds } = createCollectionDto;
+        let { language, meaning, speech, pictoIds, collectionIds, color } = createCollectionDto;
         const collection = new Collection();
         collection.meaning = await this.MLtextFromTexts(language, meaning);
         collection.speech = await this.MLtextFromTexts(language, speech);
@@ -22,6 +22,9 @@ export class CollectionRepository extends Repository<Collection>{
         if(collectionIds){
             collectionIds=getArrayIfNeeded(collectionIds);
             collection.collections = collectionIds.map(collectionIds => ({id: collectionIds} as any));
+        }
+        if(color){
+            collection.color = color;
         }
         if(filename){
             collection.image=filename;
@@ -37,7 +40,7 @@ export class CollectionRepository extends Repository<Collection>{
     }
 
     async modifyCollection(collection: Collection, modifyCollectionDto: modifyCollectionDto, user: User, filename: string): Promise<Collection>{
-        let {language, meaning, speech, starred, pictoIds, collectionIds}= modifyCollectionDto;
+        let {language, meaning, speech, starred, pictoIds, collectionIds, color}= modifyCollectionDto;
         if(meaning){
             collection.meaning = await this.MLtextFromTexts(language, meaning);
         }
@@ -57,6 +60,9 @@ export class CollectionRepository extends Repository<Collection>{
         if(collectionIds){
             collectionIds=getArrayIfNeeded(collectionIds);
             collection.collections = collectionIds.map(collectionIds => ({ id: collectionIds } as any));
+        }
+        if(color){
+            collection.color = color;
         }
         try {
             await collection.save();
