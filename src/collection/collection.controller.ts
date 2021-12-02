@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, Header, Logger, NotFoundException, Param, ParseIntPipe, Post, Put, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Logger, NotFoundException, Param, ParseIntPipe, Post, Put, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -6,16 +6,11 @@ import { GetUser } from 'src/auth/get-user.decorator';
 import { Collection } from 'src/entities/collection.entity';
 import { User } from 'src/entities/user.entity';
 import { verifySameLength } from 'src/utilities/creation';
-import { editFileName, imageFileFilter } from 'src/utilities/tools';
+import { editFileName, getArrayIfNeeded, imageFileFilter } from 'src/utilities/tools';
 import { CollectionService } from './collection.service';
 import { createCollectionDto } from './dto/collection.create.dto';
+import {ApiOperation} from '@nestjs/swagger';
 import { modifyCollectionDto } from './dto/collection.modify.dto';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
 
 @Controller('collection')
 export class CollectionController {
@@ -41,15 +36,25 @@ export class CollectionController {
       fileFilter: imageFileFilter,
     }),
   )
-  createCollection(@Body() createCollectionDto: createCollectionDto, @GetUser() user: User, @UploadedFile() file: Express.Multer.File,): Promise<Collection>{
+  async createCollection(@Body() createCollectionDto: createCollectionDto, @GetUser() user: User, @UploadedFile() file: Express.Multer.File,): Promise<Collection>{
       if(!file){
         this.logger.verbose(`User "${user.username}" Made a bad request that doesn't contain a file`);
         throw new NotFoundException(`There is no file or no filename`);
       } else {
-        const {language, meaning, speech} = createCollectionDto;
+        const {language, meaning, speech, fatherCollectionId} = createCollectionDto;
         if(verifySameLength(language, meaning, speech)){
           this.logger.verbose(`User "${user.username}" creating Collection`);
-          return this.collectionService.createCollection(createCollectionDto, user, file.filename);
+          const collection = await this.collectionService.createCollection(createCollectionDto, user, file.filename);
+          const modifyCollectionDto : modifyCollectionDto = {
+            meaning : null,
+            speech : null,
+            language : null,
+            pictoIds : null,
+            starred : null,
+            color : null,
+            collectionIds : getArrayIfNeeded(collection.id)}
+          this.collectionService.modifyCollection(fatherCollectionId, user, modifyCollectionDto, null);
+          return collection;
         } else {
           this.logger.verbose(`User "${user.username}"Made a bad request were Languages, Meanings, and Speeches don't have the same number of arguments`);
           throw new BadRequestException(`bad request were Languages :${language}, Meanings :${meaning}, and Speeches :${speech} don't have the same number of arguments`);
