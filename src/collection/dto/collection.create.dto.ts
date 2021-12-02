@@ -1,4 +1,4 @@
-import { IsHexColor, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+import { IsHexColor, IsNotEmpty, IsNumberString, IsOptional } from 'class-validator';
 export class createCollectionDto {
 
     @IsNotEmpty()
@@ -21,6 +21,6 @@ export class createCollectionDto {
     color: string;
 
     @IsNotEmpty()
-    @IsNumber()
+    @IsNumberString()
     fatherCollectionId: number; 
 }

@@ -54,7 +54,7 @@ export class PictoController {
             collectionIds : null,
             starred : null,
             color : null,
-            pictoIds : getArrayIfNeeded(picto.id)}
+            pictoIds : [picto.id]}
           this.collectionService.modifyCollection(fatherCollectionId, user, modifyCollectionDto, null);
           return picto;
         } else {

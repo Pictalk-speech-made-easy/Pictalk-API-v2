@@ -52,7 +52,7 @@ export class CollectionController {
             pictoIds : null,
             starred : null,
             color : null,
-            collectionIds : getArrayIfNeeded(collection.id)}
+            collectionIds : [collection.id]}
           this.collectionService.modifyCollection(fatherCollectionId, user, modifyCollectionDto, null);
           return collection;
         } else {
