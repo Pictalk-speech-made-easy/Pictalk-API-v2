@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
 export class createPictoDto {
 
     @IsNotEmpty()
@@ -12,4 +12,8 @@ export class createPictoDto {
 
     @IsOptional()
     collectionIds: number[];
+
+    @IsNotEmpty()
+    @IsNumber()
+    fatherCollectionId: number; 
 }
