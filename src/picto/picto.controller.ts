@@ -1,20 +1,24 @@
-import { BadRequestException, Body, Controller, Delete, Get, Header, Logger, NotFoundException, Param, ParseIntPipe, Patch, Post, Put, Query, Res, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, forwardRef, Get, Inject, Logger, NotFoundException, Param, ParseIntPipe, Post, Put, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { GetUser } from 'src/auth/get-user.decorator';
 import { Picto } from 'src/entities/picto.entity';
 import { User } from 'src/entities/user.entity';
-import { editFileName, imageFileFilter } from 'src/utilities/tools';
+import { editFileName, getArrayIfNeeded, imageFileFilter } from 'src/utilities/tools';
 import { PictoService } from './picto.service';
 import { createPictoDto } from './dto/picto.create.dto';
 import { modifyPictoDto } from './dto/picto.modify.dto';
 import { verifySameLength } from 'src/utilities/creation';
+import { CollectionService } from 'src/collection/collection.service';
+import { modifyCollectionDto } from 'src/collection/dto/collection.modify.dto';
 
 @Controller('picto')
 export class PictoController {
   private logger = new Logger('PictosController');
-  constructor(private pictoService: PictoService){}
+  constructor(private pictoService: PictoService,
+  @Inject(forwardRef(() => CollectionService))
+  private collectionService: CollectionService){}
   @UseGuards(AuthGuard())
   @Get('/:id')
   getPictoById(@Param('id', ParseIntPipe) id : number, @GetUser() user: User): Promise<Picto>{
@@ -34,15 +38,25 @@ export class PictoController {
       fileFilter: imageFileFilter,
     }),
   )
-  createPicto(@Body() createPictoDto: createPictoDto, @GetUser() user: User, @UploadedFile() file: Express.Multer.File,): Promise<Picto>{
+  async createPicto(@Body() createPictoDto: createPictoDto, @GetUser() user: User, @UploadedFile() file: Express.Multer.File,): Promise<Picto>{
       if(!file){
           this.logger.verbose(`User "${user.username}" tryed to create Picto without file or filename`);
           throw new NotFoundException(`There is no file or no filename`);
       } else {
-        const {language, meaning, speech} = createPictoDto;
+        const {language, meaning, speech, fatherCollectionId} = createPictoDto;
         if(verifySameLength(language, meaning, speech)){
           this.logger.verbose(`User "${user.username}" creating Picto`);
-          return this.pictoService.createPicto(createPictoDto, user, file.filename);
+          const picto = await this.pictoService.createPicto(createPictoDto, user, file.filename);
+          const modifyCollectionDto : modifyCollectionDto = {
+            meaning : null,
+            speech : null,
+            language : null,
+            collectionIds : null,
+            starred : null,
+            color : null,
+            pictoIds : [picto.id]}
+          this.collectionService.modifyCollection(fatherCollectionId, user, modifyCollectionDto, null);
+          return picto;
         } else {
           this.logger.verbose(`User "${user.username}"Made a bad request were Languages, Meanings, and Speeches don't have the same number of arguments`);
           throw new BadRequestException(`bad request were Languages :${language}, Meanings :${meaning}, and Speeches :${speech} don't have the same number of arguments`);

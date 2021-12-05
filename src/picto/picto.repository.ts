@@ -61,7 +61,6 @@ export class PictoRepository extends Repository<Picto> {
             mltext.text= text[i];
             mltexts.push(mltext);
         }
-        console.log(mltexts);
         return mltexts
     }
 }

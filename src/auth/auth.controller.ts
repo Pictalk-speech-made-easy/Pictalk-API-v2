@@ -76,7 +76,6 @@ export class AuthController {
     @UseGuards(AuthGuard())
     @Get('/user/root')
     async getRoot(@GetUser() user: User): Promise<Collection>{
-        console.log("getting root");
         this.logger.verbose(`User "${user.username}" getting his root`);
         const root = await this.authService.getRoot(user);
         return this.collectionService.getCollectionById(root, user);

@@ -1,5 +1,9 @@
+<<<<<<< HEAD
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+=======
+import { IsNotEmpty, IsNumber, IsNumberString, IsOptional } from 'class-validator';
+>>>>>>> 93dde3c292aa567a78824332205d27d0bb40ece2
 export class createPictoDto {
 
     @ApiProperty()
@@ -20,6 +24,6 @@ export class createPictoDto {
 
     @ApiProperty()
     @IsNotEmpty()
-    @IsNumber()
+    @IsNumberString()
     fatherCollectionId: number; 
 }
