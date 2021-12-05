@@ -1,9 +1,6 @@
-<<<<<<< HEAD
-import { ApiProperty } from '@nestjs/swagger';
-import { IsHexColor, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
-=======
-import { IsHexColor, IsNotEmpty, IsNumberString, IsOptional } from 'class-validator';
->>>>>>> 93dde3c292aa567a78824332205d27d0bb40ece2
+import { ApiProperty } from "@nestjs/swagger";
+import { IsHexColor, IsNotEmpty, IsNumberString, IsOptional } from "class-validator";
+
 export class createCollectionDto {
 
     @ApiProperty()

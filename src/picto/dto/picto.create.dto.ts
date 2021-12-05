@@ -1,9 +1,6 @@
-<<<<<<< HEAD
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
-=======
-import { IsNotEmpty, IsNumber, IsNumberString, IsOptional } from 'class-validator';
->>>>>>> 93dde3c292aa567a78824332205d27d0bb40ece2
+import { ApiProperty } from "@nestjs/swagger";
+import { IsNotEmpty, IsNumberString, IsOptional } from "class-validator";
+
 export class createPictoDto {
 
     @ApiProperty()
