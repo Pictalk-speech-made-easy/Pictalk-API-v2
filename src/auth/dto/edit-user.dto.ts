@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsString,
   MinLength,
@@ -7,6 +8,7 @@ import {
 } from 'class-validator';
 
 export class EditUserDto {
+  @ApiProperty()
   @IsOptional()
   @IsString()
   @MinLength(3)
@@ -17,10 +19,12 @@ export class EditUserDto {
   )
   username: string;
 
+  @ApiProperty()
   @IsOptional()
   @IsString()
   language: string;
 
+  @ApiProperty()
   @IsOptional()
   @IsString()
   @MinLength(8)
