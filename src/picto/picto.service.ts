@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Picto } from 'src/entities/picto.entity';
 import { User } from 'src/entities/user.entity';
@@ -14,11 +14,23 @@ export class PictoService {
     ) { }
 
     async getPictoById(id: number, user : User): Promise<Picto>{
-        const found = await this.pictoRepository.findOne({where : {userId : user.id, id}});
+        const found = await this.pictoRepository.findOne({where : {id}});
         if(!found) {
             throw new NotFoundException(`Picto with ID "${id}" not found`);
+        } else if(!(user.id == found.userId)){
+            if(found.editorsIds!=null){
+                if(user.id in found.editorsIds){
+                    return found;
+                }
+            } else if(found.viewersIds != null){
+                if(user.id in found.viewersIds){
+                    return found;
+                }
+            }
+        } else {
+            return found;
         }
-        return found;
+        throw new UnauthorizedException(`${user.username} does not have acces to this picto`);
     }
 
     async createPicto(createPictoDto: createPictoDto, user: User, filename: string): Promise<Picto> {

@@ -11,6 +11,7 @@ import { CollectionService } from './collection.service';
 import { createCollectionDto } from './dto/collection.create.dto';
 import {ApiOperation} from '@nestjs/swagger';
 import { modifyCollectionDto } from './dto/collection.modify.dto';
+import { shareCollectionDto } from './dto/collection.share.dto';
 
 @Controller('collection')
 export class CollectionController {
@@ -22,6 +23,15 @@ export class CollectionController {
   getCollectionById(@Param('id', ParseIntPipe) id : number, @GetUser() user: User): Promise<Collection>{
     this.logger.verbose(`User "${user.username}" getting Collection with id ${id}`);
       return this.collectionService.getCollectionById(id, user);
+  }
+
+  @UseGuards(AuthGuard())
+  @Post('/:id')
+  @UsePipes(ValidationPipe)
+  @ApiOperation({summary : 'share a collection with another user, with readonly or editor role'})
+  shareCollectionById(@Param('id', ParseIntPipe) id : number, @Body() shareCollectionDto: shareCollectionDto, @GetUser() user: User): Promise<Collection>{
+    this.logger.verbose(`User "${user.username}" sharing Collection with id ${id}`);
+      return this.collectionService.shareCollectionById(id, user, shareCollectionDto);
   }
 
   @UseGuards(AuthGuard())

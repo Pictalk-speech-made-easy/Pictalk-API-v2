@@ -73,6 +73,10 @@ export class CollectionRepository extends Repository<Collection>{
         return collection;
     }
 
+    async shareCollection(collection: Collection, modifyCollectionDto: modifyCollectionDto, user: User): Promise<Collection>{
+        return collection
+    }
+
     async createRoot(user: User): Promise<number>{
         const collection = new Collection();
         const mltext = new MLtext();

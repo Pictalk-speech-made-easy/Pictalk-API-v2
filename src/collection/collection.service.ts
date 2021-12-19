@@ -1,10 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Collection } from 'src/entities/collection.entity';
 import { User } from 'src/entities/user.entity';
+import { In } from 'typeorm';
 import { CollectionRepository } from './collection.repository';
 import { createCollectionDto } from './dto/collection.create.dto';
 import { modifyCollectionDto } from './dto/collection.modify.dto';
+import { shareCollectionDto } from './dto/collection.share.dto';
 
 @Injectable()
 export class CollectionService {
@@ -14,11 +16,23 @@ export class CollectionService {
     ) { }
 
     async getCollectionById(id: number, user : User): Promise<Collection>{
-        const found = await this.collectionRepository.findOne({relations: ["pictos", "collections"],where : {userId : user.id, id}});
+        const found = await this.collectionRepository.findOne({relations: ["pictos", "collections"],where : {id}});
         if(!found) {
             throw new NotFoundException(`Collection with ID "${id}" not found`);
+        } else if(!(user.id == found.userId)){
+            if(found.editorsIds!=null){
+                if(user.id in found.editorsIds){
+                    return found;
+                }
+            } else if(found.viewersIds != null){
+                if(user.id in found.viewersIds){
+                    return found;
+                }
+            }
+        } else {
+            return found;
         }
-        return found;
+        throw new UnauthorizedException(`${user.username} does not have acces to this collection`);
     }
 
     async createCollection(createCollectionDto: createCollectionDto, user: User, filename: string): Promise<Collection> {
@@ -44,6 +58,11 @@ export class CollectionService {
         let collection=await this.getCollectionById(id, user);
         modifyCollectionDto = await this.verifyOwnership(modifyCollectionDto, user);
         return this.collectionRepository.modifyCollection(collection, modifyCollectionDto, user, filename);
+    }
+
+    async shareCollectionById(id: number, user: User, shareCollectionDto: shareCollectionDto): Promise<Collection>{
+        let collection=await this.getCollectionById(id, user);
+        return collection
     }
 
     async verifyOwnership(verificationDto : any, user: User){
