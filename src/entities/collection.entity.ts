@@ -42,9 +42,9 @@ export class Collection extends BaseEntity{
       )
     user: User;
 
-    @Column("int",{nullable: true, array: true})
-    editorsIds: number[];
+    @Column("text",{default: [], array: true})
+    editors: string[];
 
-    @Column("int",{nullable: true, array: true})
-    viewersIds: number[];
+    @Column("text",{default: [], array: true})
+    viewers: string[];
 }

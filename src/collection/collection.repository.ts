@@ -1,11 +1,13 @@
 import { InternalServerErrorException, NotFoundException } from "@nestjs/common";
 import { Collection } from "src/entities/collection.entity";
 import { MLtext } from "src/entities/MLtext.entity";
+import { Picto } from "src/entities/picto.entity";
 import { User } from "src/entities/user.entity";
 import { getArrayIfNeeded } from "src/utilities/tools";
 import { EntityRepository, Repository } from "typeorm";
 import { createCollectionDto } from "./dto/collection.create.dto";
 import { modifyCollectionDto } from "./dto/collection.modify.dto";
+import { shareCollectionDto } from "./dto/collection.share.dto";
 
 @EntityRepository(Collection)
 export class CollectionRepository extends Repository<Collection>{
@@ -73,8 +75,22 @@ export class CollectionRepository extends Repository<Collection>{
         return collection;
     }
 
-    async shareCollection(collection: Collection, modifyCollectionDto: modifyCollectionDto, user: User): Promise<Collection>{
-        return collection
+    async shareCollection(collection: Collection, shareCollectionDto: shareCollectionDto, user: User): Promise<Collection>{
+        try{
+            collection.collections.map(collection => this.shareCollection(collection, shareCollectionDto, user));
+        } catch(error){}
+        try{
+            collection.pictos.map(picto => this.sharePictoFromDto(picto, shareCollectionDto));
+        } catch(error){}
+        try{
+            collection=await this.shareCollectionFromDto(collection, shareCollectionDto);
+        } catch(error){}
+        try {
+            await collection.save();
+        } catch (error) {
+            throw new InternalServerErrorException(error);
+        }
+        return collection;
     }
 
     async createRoot(user: User): Promise<number>{
@@ -105,4 +121,81 @@ export class CollectionRepository extends Repository<Collection>{
         
         return mltexts
     }
+
+    async shareCollectionFromDto(collection: Collection, shareCollectionDto: shareCollectionDto): Promise<Collection>{
+        const {access, username, role} = shareCollectionDto;
+        let index;
+        if(access==='true'){
+            if(role==='editor'){
+                index = collection.viewers.indexOf(username);
+                if(index+1){
+                    collection.viewers.splice(index);
+                }
+                index = collection.editors.indexOf(username);
+                if(!(index+1)){
+                    collection.editors.push(username);
+                }
+            } else if(role==='viewer'){
+                index = collection.editors.indexOf(username);
+                if(index+1){
+                    collection.editors.splice(index);
+                }
+                index = collection.editors.indexOf(username);
+                if(!(index+1)){
+                    collection.editors.push(username);
+                } 
+            } else {
+               throw new InternalServerErrorException(`role must be 'viewer or 'editor'`); 
+            }
+        } else {
+            index = collection.viewers.indexOf(username);
+            if(index+1){
+                collection.viewers.splice(index);
+            }
+            index = collection.editors.indexOf(username);
+            if(index+1){
+                collection.editors.splice(index);
+            }
+        }
+        return collection;
+    }
+
+    async sharePictoFromDto(picto: Picto, shareCollectionDto: shareCollectionDto): Promise<Picto>{
+        const {access, username, role} = shareCollectionDto;
+        let index;
+        if(access==='true'){
+            if(role==='editor'){
+                index = picto.viewers.indexOf(username);
+                if(index+1){
+                    picto.viewers.splice(index);
+                }
+                index = picto.editors.indexOf(username);
+                if(!(index+1)){
+                    picto.editors.push(username);
+                }
+            } else if(role==='viewer'){
+                index = picto.editors.indexOf(username);
+                if(index+1){
+                    picto.editors.splice(index);
+                }
+                index = picto.editors.indexOf(username);
+                if(!(index+1)){
+                    picto.editors.push(username);
+                } 
+            } else {
+               throw new InternalServerErrorException(`role must be 'viewer or 'editor'`); 
+            }
+        } else {
+            index = picto.viewers.indexOf(username);
+            if(index+1){
+                picto.viewers.splice(index);
+            }
+            index = picto.editors.indexOf(username);
+            if(index+1){
+                picto.editors.splice(index);
+            }
+        }
+        return picto;
+    }
+
 }

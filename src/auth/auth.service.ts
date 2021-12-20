@@ -64,7 +64,15 @@ export class AuthService {
     async getUserDetails(user: User): Promise<User> {
     return this.userRepository.getUserDetails(user);
     }
-
+    async verifyExistence(username: string): Promise<boolean> {
+        const user = await this.userRepository.findOne({where : {username: username}});
+        if(typeof(user) === 'undefined'){
+            return false;
+        } else {
+            return true;
+        }
+    }
+    
     async changePassword(changePasswordDto: ChangePasswordDto, token: string): Promise<void> {
     return this.userRepository.changePassword(changePasswordDto, token);
     }
@@ -75,13 +83,5 @@ export class AuthService {
 
     async getRoot(user: User): Promise<number>{
         return user.root;
-    }
-
-    async getAllPictos(user: User): Promise<Picto[]>{
-        return user.pictos;
-    }
-
-    async getAllCollections(user: User): Promise<Collection[]>{
-        return user.collections;
     }
 }

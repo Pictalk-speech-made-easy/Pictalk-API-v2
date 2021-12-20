@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { AuthService } from 'src/auth/auth.service';
 import { Collection } from 'src/entities/collection.entity';
 import { User } from 'src/entities/user.entity';
-import { In } from 'typeorm';
 import { CollectionRepository } from './collection.repository';
 import { createCollectionDto } from './dto/collection.create.dto';
 import { modifyCollectionDto } from './dto/collection.modify.dto';
@@ -13,27 +13,34 @@ export class CollectionService {
     constructor(
         @InjectRepository(CollectionRepository)
         private collectionRepository : CollectionRepository,
+        @Inject(forwardRef(() => AuthService))
+        private authService : AuthService,
     ) { }
 
     async getCollectionById(id: number, user : User): Promise<Collection>{
-        const found = await this.collectionRepository.findOne({relations: ["pictos", "collections"],where : {id}});
-        if(!found) {
-            throw new NotFoundException(`Collection with ID "${id}" not found`);
-        } else if(!(user.id == found.userId)){
-            if(found.editorsIds!=null){
-                if(user.id in found.editorsIds){
-                    return found;
-                }
-            } else if(found.viewersIds != null){
-                if(user.id in found.viewersIds){
-                    return found;
-                }
+        const collection = await this.collectionRepository.findOne({relations: ["pictos", "collections"],where : {id}});
+        let index;
+        if(!collection) {
+            throw new NotFoundException(`Collection with ID '${id}' not found`);
+        } else if(!(user.id === collection.userId)){
+            index = collection.viewers.indexOf(user.username);
+            if(index+1){
+                return collection
             }
+            index = collection.editors.indexOf(user.username);
+            if(index+1){
+                return collection
+            }
+            throw new UnauthorizedException(`${user.username} does not have acces to this collection`);
         } else {
-            return found;
+            return collection;
         }
-        throw new UnauthorizedException(`${user.username} does not have acces to this collection`);
     }
+
+    async getAllUserCollections(user:User): Promise<Collection[]>{
+        const collection = await this.collectionRepository.find({relations: ["pictos", "collections"],where : {userId: user.id}});
+        return collection;
+    } 
 
     async createCollection(createCollectionDto: createCollectionDto, user: User, filename: string): Promise<Collection> {
         createCollectionDto.collectionIds = await this.verifyOwnership(createCollectionDto.collectionIds, user);
@@ -50,7 +57,7 @@ export class CollectionService {
             userId: user.id,
           });
         if(result.affected===0) {
-            throw new NotFoundException(`Collection with ID "${id}" not found`);
+            throw new NotFoundException(`Collection with ID '${id}' not found`);
         }
     }
 
@@ -61,8 +68,17 @@ export class CollectionService {
     }
 
     async shareCollectionById(id: number, user: User, shareCollectionDto: shareCollectionDto): Promise<Collection>{
-        let collection=await this.getCollectionById(id, user);
-        return collection
+        const exists = await this.authService.verifyExistence(shareCollectionDto.username);
+        if(exists){
+            const collection=await this.getCollectionById(id, user);
+            if(collection){
+                return this.collectionRepository.shareCollection(collection, shareCollectionDto, user);
+            } else {
+                throw new NotFoundException(`Collection with ID '${id}' not found`);
+            }
+        } else {
+            throw new NotFoundException(`user with name '${shareCollectionDto.username}' not found`);
+        }
     }
 
     async verifyOwnership(verificationDto : any, user: User){

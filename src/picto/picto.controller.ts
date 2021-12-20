@@ -12,6 +12,7 @@ import { modifyPictoDto } from './dto/picto.modify.dto';
 import { verifySameLength } from 'src/utilities/creation';
 import { CollectionService } from 'src/collection/collection.service';
 import { modifyCollectionDto } from 'src/collection/dto/collection.modify.dto';
+import { ApiOperation } from '@nestjs/swagger';
 
 @Controller('picto')
 export class PictoController {
@@ -24,6 +25,14 @@ export class PictoController {
   getPictoById(@Param('id', ParseIntPipe) id : number, @GetUser() user: User): Promise<Picto>{
     this.logger.verbose(`User "${user.username}" getting Picto with id ${id}`);
       return this.pictoService.getPictoById(id, user);
+  }
+
+  @UseGuards(AuthGuard())
+  @Get()
+  @ApiOperation({summary : 'get all your pictos'})
+  getAllUserPictos(@GetUser() user: User): Promise<Picto[]>{
+    this.logger.verbose(`User "${user.username}" getting all Picto`);
+    return this.pictoService.getAllUserPictos(user);
   }
   
   @UseGuards(AuthGuard())

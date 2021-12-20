@@ -18,12 +18,12 @@ export class PictoService {
         if(!found) {
             throw new NotFoundException(`Picto with ID "${id}" not found`);
         } else if(!(user.id == found.userId)){
-            if(found.editorsIds!=null){
-                if(user.id in found.editorsIds){
+            if(found.editors!=null){
+                if(user.username in found.editors){
                     return found;
                 }
-            } else if(found.viewersIds != null){
-                if(user.id in found.viewersIds){
+            } else if(found.viewers != null){
+                if(user.username in found.viewers){
                     return found;
                 }
             }
@@ -32,6 +32,11 @@ export class PictoService {
         }
         throw new UnauthorizedException(`${user.username} does not have acces to this picto`);
     }
+
+    async getAllUserPictos(user:User): Promise<Picto[]>{
+        const found = await this.pictoRepository.find({where : {userId: user.id}});
+        return found;
+    } 
 
     async createPicto(createPictoDto: createPictoDto, user: User, filename: string): Promise<Picto> {
         return this.pictoRepository.createPicto(createPictoDto, user, filename);

@@ -20,3 +20,13 @@ export const editFileName = (req, file, callback) => {
     .join('');
   callback(null, `${name}-${randomName}${fileExtName}`);
 };
+
+export const boolString = (string) => {
+  if(string === "true"){
+    return true;
+  } else if(string === "false"){
+    return false;
+  } else {
+
+  }
+}

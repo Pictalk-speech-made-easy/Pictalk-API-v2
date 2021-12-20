@@ -80,18 +80,4 @@ export class AuthController {
         const root = await this.authService.getRoot(user);
         return this.collectionService.getCollectionById(root, user);
     }
-
-    @UseGuards(AuthGuard())
-    @Get('/user/pictos')
-    getAllPictos(@GetUser() user: User): Promise<Picto[]>{
-        this.logger.verbose(`User "${user.username}" getting all pictos`);
-        return this.authService.getAllPictos(user);
-    }
-
-    @UseGuards(AuthGuard())
-    @Get('/user/collections')
-    getAllCollections(@GetUser() user: User): Promise<Collection[]>{
-        this.logger.verbose(`User "${user.username}" getting all collections`);
-        return this.authService.getAllCollections(user);
-    }
 }

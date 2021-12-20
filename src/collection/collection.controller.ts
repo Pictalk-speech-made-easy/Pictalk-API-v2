@@ -12,11 +12,13 @@ import { createCollectionDto } from './dto/collection.create.dto';
 import {ApiOperation} from '@nestjs/swagger';
 import { modifyCollectionDto } from './dto/collection.modify.dto';
 import { shareCollectionDto } from './dto/collection.share.dto';
+import { access } from 'fs';
 
 @Controller('collection')
 export class CollectionController {
   private logger = new Logger('CollectionController');
   constructor(private collectionService: CollectionService){}
+
   @UseGuards(AuthGuard())
   @Get('/:id')
   @ApiOperation({summary : 'get a collection that has the provided id'})
@@ -26,12 +28,24 @@ export class CollectionController {
   }
 
   @UseGuards(AuthGuard())
-  @Post('/:id')
+  @Get()
+  @ApiOperation({summary : 'get all your collection'})
+  getAllUserCollections(@GetUser() user: User): Promise<Collection[]>{
+    this.logger.verbose(`User "${user.username}" getting all Collection`);
+    return this.collectionService.getAllUserCollections(user);
+  }
+
+  @UseGuards(AuthGuard())
+  @Put('share/:id')
   @UsePipes(ValidationPipe)
   @ApiOperation({summary : 'share a collection with another user, with readonly or editor role'})
   shareCollectionById(@Param('id', ParseIntPipe) id : number, @Body() shareCollectionDto: shareCollectionDto, @GetUser() user: User): Promise<Collection>{
-    this.logger.verbose(`User "${user.username}" sharing Collection with id ${id}`);
-      return this.collectionService.shareCollectionById(id, user, shareCollectionDto);
+    if(shareCollectionDto.access==='true'){
+      this.logger.verbose(`User "${user.username}" sharing Collection with id ${id} to User ${shareCollectionDto.username} as ${shareCollectionDto.role}`);
+    } else {
+      this.logger.verbose(`User "${user.username}" revoking access to Collection with id ${id} for User ${shareCollectionDto.username}`);
+    }
+    return this.collectionService.shareCollectionById(id, user, shareCollectionDto);
   }
 
   @UseGuards(AuthGuard())

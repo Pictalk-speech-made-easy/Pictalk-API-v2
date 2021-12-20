@@ -1,13 +1,13 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Transform } from "class-transformer";
 import { IsBooleanString, IsNotEmpty, Matches } from "class-validator";
 
-export class shareCollectionDto {
+export class sharePictoDto {
 
     @ApiProperty()
     @IsNotEmpty()
     @IsBooleanString()
     access: string;
+    
 
     @ApiProperty()
     @IsNotEmpty()
@@ -21,6 +21,4 @@ export class shareCollectionDto {
     @IsNotEmpty()
     @Matches(/viewer|editor/, { message: "Role must be either 'viewer' or 'editor'"})
     role: string;
-
-    
 }
