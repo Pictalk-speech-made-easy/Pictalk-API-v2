@@ -106,6 +106,12 @@ export class CollectionRepository extends Repository<Collection>{
         } catch (error) {
             throw new InternalServerErrorException(error);
         }
+        user.root=collection.id;
+        try {
+            await user.save();
+        } catch (error) {
+            throw new InternalServerErrorException(error);
+        }
         return collection.id;
     }
 
@@ -140,9 +146,9 @@ export class CollectionRepository extends Repository<Collection>{
                 if(index+1){
                     collection.editors.splice(index);
                 }
-                index = collection.editors.indexOf(username);
+                index = collection.viewers.indexOf(username);
                 if(!(index+1)){
-                    collection.editors.push(username);
+                    collection.viewers.push(username);
                 } 
             } else {
                throw new InternalServerErrorException(`role must be 'viewer or 'editor'`); 
@@ -197,5 +203,14 @@ export class CollectionRepository extends Repository<Collection>{
         }
         return picto;
     }
-
+    async autoShare(collection : Collection, fatherCollection: Collection): Promise<Collection>{
+        collection.editors= fatherCollection.editors;
+        collection.viewers= fatherCollection.viewers;
+        try {
+            await collection.save();
+        } catch (error) {
+            throw new InternalServerErrorException(error);
+        }
+        return collection;
+    }
 }

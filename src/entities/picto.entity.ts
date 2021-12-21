@@ -33,9 +33,9 @@ export class Picto extends BaseEntity{
       )
     user: User;
 
-    @Column("text",{nullable: true, array: true})
+    @Column("text",{default: [], array: true})
     editors: string[];
 
-    @Column("text",{nullable: true, array: true})
+    @Column("text",{default: [], array: true})
     viewers: string[];
 }

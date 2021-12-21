@@ -5,7 +5,7 @@ import { diskStorage } from 'multer';
 import { GetUser } from 'src/auth/get-user.decorator';
 import { Picto } from 'src/entities/picto.entity';
 import { User } from 'src/entities/user.entity';
-import { editFileName, getArrayIfNeeded, imageFileFilter } from 'src/utilities/tools';
+import { editFileName, imageFileFilter } from 'src/utilities/tools';
 import { PictoService } from './picto.service';
 import { createPictoDto } from './dto/picto.create.dto';
 import { modifyPictoDto } from './dto/picto.modify.dto';

@@ -12,7 +12,6 @@ import { createCollectionDto } from './dto/collection.create.dto';
 import {ApiOperation} from '@nestjs/swagger';
 import { modifyCollectionDto } from './dto/collection.modify.dto';
 import { shareCollectionDto } from './dto/collection.share.dto';
-import { access } from 'fs';
 
 @Controller('collection')
 export class CollectionController {
@@ -69,6 +68,12 @@ export class CollectionController {
         if(verifySameLength(language, meaning, speech)){
           this.logger.verbose(`User "${user.username}" creating Collection`);
           const collection = await this.collectionService.createCollection(createCollectionDto, user, file.filename);
+          const fatherCollection = await this.collectionService.getCollectionById(fatherCollectionId, user);
+          let fatherCollectionsIds = fatherCollection.collections.map(collection => {
+            return collection.id;
+          })
+          fatherCollectionsIds.push(collection.id);
+          console.log(fatherCollectionsIds);
           const modifyCollectionDto : modifyCollectionDto = {
             meaning : null,
             speech : null,
@@ -76,8 +81,12 @@ export class CollectionController {
             pictoIds : null,
             starred : null,
             color : null,
-            collectionIds : [collection.id]}
+            collectionIds : fatherCollectionsIds}
           this.collectionService.modifyCollection(fatherCollectionId, user, modifyCollectionDto, null);
+          if(createCollectionDto.share){
+            this.collectionService.autoShare(collection, fatherCollection);
+            this.logger.verbose(`Auto sharing collection "${collection.id}" with viewers and editors`);
+          }
           return collection;
         } else {
           this.logger.verbose(`User "${user.username}"Made a bad request were Languages, Meanings, and Speeches don't have the same number of arguments`);

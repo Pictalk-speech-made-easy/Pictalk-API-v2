@@ -52,19 +52,30 @@ export class CollectionService {
     }
 
     async deleteCollection(id: number, user: User): Promise<void>{
-        const result = await this.collectionRepository.delete({
-            id: id,
-            userId: user.id,
-          });
-        if(result.affected===0) {
-            throw new NotFoundException(`Collection with ID '${id}' not found`);
+        if(id!=user.root){
+            const result = await this.collectionRepository.delete({
+                id: id,
+                userId: user.id,
+              });
+            if(result.affected===0) {
+                throw new NotFoundException(`Collection with ID '${id}' not found`);
+            }
         }
+    }
+    async autoShare(collection : Collection, fatherCollection: Collection): Promise<Collection>{
+        return this.collectionRepository.autoShare(collection, fatherCollection);
     }
 
     async modifyCollection(id: number, user: User, modifyCollectionDto: modifyCollectionDto, filename: string): Promise<Collection>{
-        let collection=await this.getCollectionById(id, user);
-        modifyCollectionDto = await this.verifyOwnership(modifyCollectionDto, user);
-        return this.collectionRepository.modifyCollection(collection, modifyCollectionDto, user, filename);
+        const collection=await this.getCollectionById(id, user);
+        const index = collection.editors.indexOf(user.username);
+        if(index+1){
+            modifyCollectionDto = await this.verifyOwnership(modifyCollectionDto, user);
+            return this.collectionRepository.modifyCollection(collection, modifyCollectionDto, user, filename);
+        } else {
+            throw new UnauthorizedException(`User '${user.username}' is not authorized to modify this collection`);
+        }
+       
     }
 
     async shareCollectionById(id: number, user: User, shareCollectionDto: shareCollectionDto): Promise<Collection>{

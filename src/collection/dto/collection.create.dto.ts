@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsHexColor, IsNotEmpty, IsNumberString, IsOptional } from "class-validator";
+import { IsHexColor, IsNotEmpty, IsNumberString, IsOptional, Matches } from "class-validator";
 
 export class createCollectionDto {
 
@@ -32,4 +32,10 @@ export class createCollectionDto {
     @IsNotEmpty()
     @IsNumberString()
     fatherCollectionId: number; 
+
+    @ApiProperty()
+    @IsOptional()
+    @IsNumberString()
+    @Matches(/0|1/, { message: "Role must be either 'viewer' or 'editor'"})
+    share: number;
 }
