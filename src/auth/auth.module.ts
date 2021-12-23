@@ -31,6 +31,7 @@ import { CollectionModule } from 'src/collection/collection.module';
   exports: [
     JwtStrategy,
     PassportModule,
+    AuthService,
   ],
 })
 export class AuthModule {}

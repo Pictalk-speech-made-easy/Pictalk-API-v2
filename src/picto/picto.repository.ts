@@ -1,4 +1,5 @@
 import { InternalServerErrorException } from "@nestjs/common";
+import { Collection } from "src/entities/collection.entity";
 import { MLtext } from "src/entities/MLtext.entity";
 import { Picto } from "src/entities/picto.entity";
 import { User } from "src/entities/user.entity";
@@ -6,6 +7,7 @@ import { getArrayIfNeeded } from "src/utilities/tools";
 import { EntityRepository, Repository } from "typeorm";
 import { createPictoDto } from "./dto/picto.create.dto";
 import { modifyPictoDto } from "./dto/picto.modify.dto";
+import { sharePictoDto } from "./dto/picto.share.dto";
 
 @EntityRepository(Picto)
 export class PictoRepository extends Repository<Picto> {
@@ -62,5 +64,65 @@ export class PictoRepository extends Repository<Picto> {
             mltexts.push(mltext);
         }
         return mltexts
+    }
+
+    async sharePicto(picto: Picto, sharePictoDto: sharePictoDto, user: User): Promise<Picto>{
+        try{
+            picto=await this.sharePictoFromDto(picto, sharePictoDto);
+        } catch(error){}
+        try {
+            await picto.save();
+        } catch (error) {
+            throw new InternalServerErrorException(error);
+        }
+        return picto;
+    }
+
+    async sharePictoFromDto(picto: Picto, sharePictoDto: sharePictoDto): Promise<Picto>{
+        const {access, username, role} = sharePictoDto;
+        let index;
+        if(access){
+            if(role==='editor'){
+                index = picto.viewers.indexOf(username);
+                if(index!=-1){
+                    picto.viewers.splice(index);
+                }
+                index = picto.editors.indexOf(username);
+                if(!(index!=-1)){
+                    picto.editors.push(username);
+                }
+            } else if(role==='viewer'){
+                index = picto.editors.indexOf(username);
+                if(index!=-1){
+                    picto.editors.splice(index);
+                }
+                index = picto.editors.indexOf(username);
+                if(!(index!=-1)){
+                    picto.editors.push(username);
+                } 
+            } else {
+               throw new InternalServerErrorException(`role must be 'viewer or 'editor'`); 
+            }
+        } else {
+            index = picto.viewers.indexOf(username);
+            if(index!=-1){
+                picto.viewers.splice(index);
+            }
+            index = picto.editors.indexOf(username);
+            if(index!=-1){
+                picto.editors.splice(index);
+            }
+        }
+        return picto;
+    }
+    async autoShare(picto : Picto, fatherCollection: Collection): Promise<Picto>{
+        picto.editors= fatherCollection.editors;
+        picto.viewers= fatherCollection.viewers;
+        try {
+            await picto.save();
+        } catch (error) {
+            throw new InternalServerErrorException(error);
+        }
+        return picto;
     }
 }

@@ -5,7 +5,6 @@ import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from './get-user.decorator';
 import { User } from 'src/entities/user.entity';
 import { Collection } from 'src/entities/collection.entity';
-import { Picto } from 'src/entities/picto.entity';
 import { CollectionService } from 'src/collection/collection.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
@@ -22,8 +21,7 @@ export class AuthController {
     async signUp(@Body(ValidationPipe) createUserDto: CreateUserDto): Promise<void> {
         this.logger.verbose(`User signin up`);
         const user = await this.authService.signUp(createUserDto);
-        const root = await this.collectionService.createRoot(user);
-        this.authService.pushRoot(user, root);
+        await this.collectionService.createRoot(user);
         return;
     }
 
@@ -79,19 +77,5 @@ export class AuthController {
         this.logger.verbose(`User "${user.username}" getting his root`);
         const root = await this.authService.getRoot(user);
         return this.collectionService.getCollectionById(root, user);
-    }
-
-    @UseGuards(AuthGuard())
-    @Get('/user/pictos')
-    getAllPictos(@GetUser() user: User): Promise<Picto[]>{
-        this.logger.verbose(`User "${user.username}" getting all pictos`);
-        return this.authService.getAllPictos(user);
-    }
-
-    @UseGuards(AuthGuard())
-    @Get('/user/collections')
-    getAllCollections(@GetUser() user: User): Promise<Collection[]>{
-        this.logger.verbose(`User "${user.username}" getting all collections`);
-        return this.authService.getAllCollections(user);
     }
 }

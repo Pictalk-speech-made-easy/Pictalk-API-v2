@@ -6,22 +6,45 @@ import { GetUser } from 'src/auth/get-user.decorator';
 import { Collection } from 'src/entities/collection.entity';
 import { User } from 'src/entities/user.entity';
 import { verifySameLength } from 'src/utilities/creation';
-import { editFileName, getArrayIfNeeded, imageFileFilter } from 'src/utilities/tools';
+import { editFileName, imageFileFilter } from 'src/utilities/tools';
 import { CollectionService } from './collection.service';
 import { createCollectionDto } from './dto/collection.create.dto';
 import {ApiOperation} from '@nestjs/swagger';
 import { modifyCollectionDto } from './dto/collection.modify.dto';
+import { shareCollectionDto } from './dto/collection.share.dto';
 
 @Controller('collection')
 export class CollectionController {
   private logger = new Logger('CollectionController');
   constructor(private collectionService: CollectionService){}
+
   @UseGuards(AuthGuard())
   @Get('/:id')
   @ApiOperation({summary : 'get a collection that has the provided id'})
   getCollectionById(@Param('id', ParseIntPipe) id : number, @GetUser() user: User): Promise<Collection>{
     this.logger.verbose(`User "${user.username}" getting Collection with id ${id}`);
       return this.collectionService.getCollectionById(id, user);
+  }
+
+  @UseGuards(AuthGuard())
+  @Get()
+  @ApiOperation({summary : 'get all your collection'})
+  getAllUserCollections(@GetUser() user: User): Promise<Collection[]>{
+    this.logger.verbose(`User "${user.username}" getting all Collection`);
+    return this.collectionService.getAllUserCollections(user);
+  }
+
+  @UseGuards(AuthGuard())
+  @Put('share/:id')
+  @UsePipes(ValidationPipe)
+  @ApiOperation({summary : 'share a collection with another user, with readonly or editor role'})
+  shareCollectionById(@Param('id', ParseIntPipe) id : number, @Body() shareCollectionDto: shareCollectionDto, @GetUser() user: User): Promise<Collection>{
+    if(shareCollectionDto.access){
+      this.logger.verbose(`User "${user.username}" sharing Collection with id ${id} to User ${shareCollectionDto.username} as ${shareCollectionDto.role}`);
+    } else {
+      this.logger.verbose(`User "${user.username}" revoking access to Collection with id ${id} for User ${shareCollectionDto.username}`);
+    }
+    return this.collectionService.shareCollectionById(id, user, shareCollectionDto);
   }
 
   @UseGuards(AuthGuard())
@@ -45,6 +68,11 @@ export class CollectionController {
         if(verifySameLength(language, meaning, speech)){
           this.logger.verbose(`User "${user.username}" creating Collection`);
           const collection = await this.collectionService.createCollection(createCollectionDto, user, file.filename);
+          const fatherCollection = await this.collectionService.getCollectionById(fatherCollectionId, user);
+          let fatherCollectionsIds = fatherCollection.collections.map(collection => {
+            return collection.id;
+          })
+          fatherCollectionsIds.push(collection.id);
           const modifyCollectionDto : modifyCollectionDto = {
             meaning : null,
             speech : null,
@@ -52,8 +80,12 @@ export class CollectionController {
             pictoIds : null,
             starred : null,
             color : null,
-            collectionIds : [collection.id]}
+            collectionIds : fatherCollectionsIds}
           this.collectionService.modifyCollection(fatherCollectionId, user, modifyCollectionDto, null);
+          if(createCollectionDto.share){
+            this.collectionService.autoShare(collection, fatherCollection);
+            this.logger.verbose(`Auto sharing collection "${collection.id}" with viewers and editors`);
+          }
           return collection;
         } else {
           this.logger.verbose(`User "${user.username}"Made a bad request were Languages, Meanings, and Speeches don't have the same number of arguments`);
