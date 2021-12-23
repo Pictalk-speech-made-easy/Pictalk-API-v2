@@ -5,7 +5,6 @@ import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from './get-user.decorator';
 import { User } from 'src/entities/user.entity';
 import { Collection } from 'src/entities/collection.entity';
-import { Picto } from 'src/entities/picto.entity';
 import { CollectionService } from 'src/collection/collection.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';

@@ -6,7 +6,7 @@ import { GetUser } from 'src/auth/get-user.decorator';
 import { Collection } from 'src/entities/collection.entity';
 import { User } from 'src/entities/user.entity';
 import { verifySameLength } from 'src/utilities/creation';
-import { editFileName, getArrayIfNeeded, imageFileFilter } from 'src/utilities/tools';
+import { editFileName, imageFileFilter } from 'src/utilities/tools';
 import { CollectionService } from './collection.service';
 import { createCollectionDto } from './dto/collection.create.dto';
 import {ApiOperation} from '@nestjs/swagger';
