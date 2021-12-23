@@ -22,8 +22,7 @@ export class AuthController {
     async signUp(@Body(ValidationPipe) createUserDto: CreateUserDto): Promise<void> {
         this.logger.verbose(`User signin up`);
         const user = await this.authService.signUp(createUserDto);
-        const root = await this.collectionService.createRoot(user);
-        this.authService.pushRoot(user, root);
+        await this.collectionService.createRoot(user);
         return;
     }
 

@@ -1,4 +1,4 @@
-import { InternalServerErrorException, NotFoundException } from "@nestjs/common";
+import { ForbiddenException, InternalServerErrorException, NotFoundException } from "@nestjs/common";
 import { Collection } from "src/entities/collection.entity";
 import { MLtext } from "src/entities/MLtext.entity";
 import { Picto } from "src/entities/picto.entity";
@@ -94,25 +94,30 @@ export class CollectionRepository extends Repository<Collection>{
     }
 
     async createRoot(user: User): Promise<number>{
-        const collection = new Collection();
-        const mltext = new MLtext();
-        mltext.language="";
-        mltext.text=""
-        collection.meaning = getArrayIfNeeded(mltext);
-        collection.speech = getArrayIfNeeded(mltext);
-        collection.userId = user.id;
-        try {
-            await collection.save();
-        } catch (error) {
-            throw new InternalServerErrorException(error);
+        if(user.root===null){
+            const collection = new Collection();
+            const mltext = new MLtext();
+            mltext.language="";
+            mltext.text=""
+            collection.meaning = getArrayIfNeeded(mltext);
+            collection.speech = getArrayIfNeeded(mltext);
+            collection.userId = user.id;
+            try {
+                await collection.save();
+            } catch (error) {
+                throw new InternalServerErrorException(error);
+            }
+            user.root=collection.id;
+            try {
+                await user.save();
+            } catch (error) {
+                throw new InternalServerErrorException(error);
+            }
+            return collection.id;
+        } else {
+            throw new ForbiddenException(`cannot create a new root for User ${user.username}. User already has root ${user.root}`);
         }
-        user.root=collection.id;
-        try {
-            await user.save();
-        } catch (error) {
-            throw new InternalServerErrorException(error);
-        }
-        return collection.id;
+        
     }
 
     async MLtextFromTexts(language: string[], text: string[]): Promise<MLtext[]>{
@@ -131,23 +136,23 @@ export class CollectionRepository extends Repository<Collection>{
     async shareCollectionFromDto(collection: Collection, shareCollectionDto: shareCollectionDto): Promise<Collection>{
         const {access, username, role} = shareCollectionDto;
         let index;
-        if(access==='true'){
+        if(access){
             if(role==='editor'){
                 index = collection.viewers.indexOf(username);
-                if(index+1){
+                if(index!=-1){
                     collection.viewers.splice(index);
                 }
                 index = collection.editors.indexOf(username);
-                if(!(index+1)){
+                if(!(index!=-1)){
                     collection.editors.push(username);
                 }
             } else if(role==='viewer'){
                 index = collection.editors.indexOf(username);
-                if(index+1){
+                if(index!=-1){
                     collection.editors.splice(index);
                 }
                 index = collection.viewers.indexOf(username);
-                if(!(index+1)){
+                if(!(index!=-1)){
                     collection.viewers.push(username);
                 } 
             } else {
@@ -155,11 +160,11 @@ export class CollectionRepository extends Repository<Collection>{
             }
         } else {
             index = collection.viewers.indexOf(username);
-            if(index+1){
+            if(index!=-1){
                 collection.viewers.splice(index);
             }
             index = collection.editors.indexOf(username);
-            if(index+1){
+            if(index!=-1){
                 collection.editors.splice(index);
             }
         }
@@ -169,23 +174,23 @@ export class CollectionRepository extends Repository<Collection>{
     async sharePictoFromDto(picto: Picto, shareCollectionDto: shareCollectionDto): Promise<Picto>{
         const {access, username, role} = shareCollectionDto;
         let index;
-        if(access==='true'){
+        if(access){
             if(role==='editor'){
                 index = picto.viewers.indexOf(username);
-                if(index+1){
+                if(index!=-1){
                     picto.viewers.splice(index);
                 }
                 index = picto.editors.indexOf(username);
-                if(!(index+1)){
+                if(!(index!=-1)){
                     picto.editors.push(username);
                 }
             } else if(role==='viewer'){
                 index = picto.editors.indexOf(username);
-                if(index+1){
+                if(index!=-1){
                     picto.editors.splice(index);
                 }
                 index = picto.editors.indexOf(username);
-                if(!(index+1)){
+                if(!(index!=-1)){
                     picto.editors.push(username);
                 } 
             } else {
@@ -193,11 +198,11 @@ export class CollectionRepository extends Repository<Collection>{
             }
         } else {
             index = picto.viewers.indexOf(username);
-            if(index+1){
+            if(index!=-1){
                 picto.viewers.splice(index);
             }
             index = picto.editors.indexOf(username);
-            if(index+1){
+            if(index!=-1){
                 picto.editors.splice(index);
             }
         }

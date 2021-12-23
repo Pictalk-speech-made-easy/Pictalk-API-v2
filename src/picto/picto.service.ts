@@ -1,36 +1,59 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Picto } from 'src/entities/picto.entity';
 import { User } from 'src/entities/user.entity';
 import { PictoRepository } from './picto.repository';
 import { createPictoDto } from './dto/picto.create.dto';
 import { modifyPictoDto } from './dto/picto.modify.dto';
+import { sharePictoDto } from './dto/picto.share.dto';
+import { AuthService } from 'src/auth/auth.service';
+import { Collection } from 'src/entities/collection.entity';
 
 @Injectable()
 export class PictoService {
     constructor(
         @InjectRepository(PictoRepository)
         private pictoRepository : PictoRepository,
+        @Inject(forwardRef(() => AuthService))
+        private authService : AuthService,
     ) { }
 
     async getPictoById(id: number, user : User): Promise<Picto>{
-        const found = await this.pictoRepository.findOne({where : {id}});
-        if(!found) {
-            throw new NotFoundException(`Picto with ID "${id}" not found`);
-        } else if(!(user.id == found.userId)){
-            if(found.editors!=null){
-                if(user.username in found.editors){
-                    return found;
-                }
-            } else if(found.viewers != null){
-                if(user.username in found.viewers){
-                    return found;
-                }
+        const picto = await this.pictoRepository.findOne({where : {id}});
+        let index;
+        if(!picto) {
+            throw new NotFoundException(`Picto with ID '${id}' not found`);
+        } else if(user.id === picto.userId){
+            return picto;    
+        } else {
+            index = picto.viewers.indexOf(user.username);
+            if(index!=-1){
+                return picto;
+            }
+            index = picto.editors.indexOf(user.username);
+            if(index!=-1){
+                return picto;
+            }
+            throw new UnauthorizedException(`User ${user.username} does not have access to this picto`);
+        }
+    }
+
+    async autoShare(picto : Picto, fatherCollection: Collection): Promise<Picto>{
+        return this.pictoRepository.autoShare(picto, fatherCollection);
+    }
+
+    async sharePictoById(id: number, user: User, sharePictoDto: sharePictoDto): Promise<Picto>{
+        const exists = await this.authService.verifyExistence(sharePictoDto.username);
+        if(exists){
+            const picto=await this.getPictoById(id, user);
+            if(picto){
+                return this.pictoRepository.sharePicto(picto, sharePictoDto, user);
+            } else {
+                throw new NotFoundException(`Picto with ID '${id}' not found`);
             }
         } else {
-            return found;
+            throw new NotFoundException(`user with name '${sharePictoDto.username}' not found`);
         }
-        throw new UnauthorizedException(`${user.username} does not have acces to this picto`);
     }
 
     async getAllUserPictos(user:User): Promise<Picto[]>{

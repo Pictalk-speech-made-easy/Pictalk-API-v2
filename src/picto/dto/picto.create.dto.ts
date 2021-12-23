@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsNumberString, IsOptional } from "class-validator";
+import { IsNotEmpty, IsNumberString, IsOptional, Matches } from "class-validator";
 
 export class createPictoDto {
 
@@ -23,4 +23,10 @@ export class createPictoDto {
     @IsNotEmpty()
     @IsNumberString()
     fatherCollectionId: number; 
+
+    @ApiProperty()
+    @IsOptional()
+    @IsNumberString()
+    @Matches(/0|1/, { message: "Sharing should be either 1 or 0'"})
+    share: number;
 }

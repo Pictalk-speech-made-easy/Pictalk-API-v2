@@ -1,13 +1,12 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Transform } from "class-transformer";
-import { IsBooleanString, IsNotEmpty, Matches } from "class-validator";
+import { IsNotEmpty, IsNumberString, Matches } from "class-validator";
 
 export class shareCollectionDto {
-
-    @ApiProperty()
-    @IsNotEmpty()
-    @IsBooleanString()
-    access: string;
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsNumberString()
+  @Matches(/0|1/, { message: "Sharing should be either 1 or 0'"})
+  access: number;
 
     @ApiProperty()
     @IsNotEmpty()

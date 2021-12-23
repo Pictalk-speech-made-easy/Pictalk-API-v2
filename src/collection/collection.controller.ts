@@ -39,7 +39,7 @@ export class CollectionController {
   @UsePipes(ValidationPipe)
   @ApiOperation({summary : 'share a collection with another user, with readonly or editor role'})
   shareCollectionById(@Param('id', ParseIntPipe) id : number, @Body() shareCollectionDto: shareCollectionDto, @GetUser() user: User): Promise<Collection>{
-    if(shareCollectionDto.access==='true'){
+    if(shareCollectionDto.access){
       this.logger.verbose(`User "${user.username}" sharing Collection with id ${id} to User ${shareCollectionDto.username} as ${shareCollectionDto.role}`);
     } else {
       this.logger.verbose(`User "${user.username}" revoking access to Collection with id ${id} for User ${shareCollectionDto.username}`);
@@ -73,7 +73,6 @@ export class CollectionController {
             return collection.id;
           })
           fatherCollectionsIds.push(collection.id);
-          console.log(fatherCollectionsIds);
           const modifyCollectionDto : modifyCollectionDto = {
             meaning : null,
             speech : null,

@@ -13,6 +13,7 @@ import { verifySameLength } from 'src/utilities/creation';
 import { CollectionService } from 'src/collection/collection.service';
 import { modifyCollectionDto } from 'src/collection/dto/collection.modify.dto';
 import { ApiOperation } from '@nestjs/swagger';
+import { sharePictoDto } from './dto/picto.share.dto';
 
 @Controller('picto')
 export class PictoController {
@@ -21,6 +22,7 @@ export class PictoController {
   @Inject(forwardRef(() => CollectionService))
   private collectionService: CollectionService){}
   @UseGuards(AuthGuard())
+
   @Get('/:id')
   getPictoById(@Param('id', ParseIntPipe) id : number, @GetUser() user: User): Promise<Picto>{
     this.logger.verbose(`User "${user.username}" getting Picto with id ${id}`);
@@ -33,6 +35,19 @@ export class PictoController {
   getAllUserPictos(@GetUser() user: User): Promise<Picto[]>{
     this.logger.verbose(`User "${user.username}" getting all Picto`);
     return this.pictoService.getAllUserPictos(user);
+  }
+
+  @UseGuards(AuthGuard())
+  @Put('share/:id')
+  @UsePipes(ValidationPipe)
+  @ApiOperation({summary : 'share a picto with another user, with readonly or editor role'})
+  sharePictoById(@Param('id', ParseIntPipe) id : number, @Body() sharePictoDto: sharePictoDto, @GetUser() user: User): Promise<Picto>{
+    if(sharePictoDto.access){
+      this.logger.verbose(`User "${user.username}" sharing Picto with id ${id} to User ${sharePictoDto.username} as ${sharePictoDto.role}`);
+    } else {
+      this.logger.verbose(`User "${user.username}" revoking access to Picto with id ${id} for User ${sharePictoDto.username}`);
+    }
+    return this.pictoService.sharePictoById(id, user, sharePictoDto);
   }
   
   @UseGuards(AuthGuard())
@@ -56,6 +71,9 @@ export class PictoController {
         if(verifySameLength(language, meaning, speech)){
           this.logger.verbose(`User "${user.username}" creating Picto`);
           const picto = await this.pictoService.createPicto(createPictoDto, user, file.filename);
+          const fatherCollection = await this.collectionService.getCollectionById(fatherCollectionId, user);
+          let fatherPictosIds = fatherCollection.pictos.map(picto => {return picto.id;})
+          fatherPictosIds.push(picto.id);
           const modifyCollectionDto : modifyCollectionDto = {
             meaning : null,
             speech : null,
@@ -63,8 +81,12 @@ export class PictoController {
             collectionIds : null,
             starred : null,
             color : null,
-            pictoIds : [picto.id]}
+            pictoIds : fatherPictosIds}
           this.collectionService.modifyCollection(fatherCollectionId, user, modifyCollectionDto, null);
+          if(createPictoDto.share!=0){
+            this.pictoService.autoShare(picto, fatherCollection);
+            this.logger.verbose(`Auto sharing picto "${picto.id}" with viewers and editors`);
+          }
           return picto;
         } else {
           this.logger.verbose(`User "${user.username}"Made a bad request were Languages, Meanings, and Speeches don't have the same number of arguments`);

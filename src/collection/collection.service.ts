@@ -22,18 +22,18 @@ export class CollectionService {
         let index;
         if(!collection) {
             throw new NotFoundException(`Collection with ID '${id}' not found`);
-        } else if(!(user.id === collection.userId)){
+        } else if(user.id === collection.userId){
+            return collection;    
+        } else {
             index = collection.viewers.indexOf(user.username);
-            if(index+1){
-                return collection
+            if(index!=-1){
+                return collection;
             }
             index = collection.editors.indexOf(user.username);
-            if(index+1){
-                return collection
+            if(index!=-1){
+                return collection;
             }
-            throw new UnauthorizedException(`${user.username} does not have acces to this collection`);
-        } else {
-            return collection;
+            throw new UnauthorizedException(`User ${user.username} does not have access to this collection`);
         }
     }
 
@@ -60,6 +60,8 @@ export class CollectionService {
             if(result.affected===0) {
                 throw new NotFoundException(`Collection with ID '${id}' not found`);
             }
+        } else {
+            throw new UnauthorizedException(`Cannot delete root of User ${user.username}`);
         }
     }
     async autoShare(collection : Collection, fatherCollection: Collection): Promise<Collection>{
@@ -69,7 +71,7 @@ export class CollectionService {
     async modifyCollection(id: number, user: User, modifyCollectionDto: modifyCollectionDto, filename: string): Promise<Collection>{
         const collection=await this.getCollectionById(id, user);
         const index = collection.editors.indexOf(user.username);
-        if(index+1){
+        if(collection.userId===user.id || index!=-1){
             modifyCollectionDto = await this.verifyOwnership(modifyCollectionDto, user);
             return this.collectionRepository.modifyCollection(collection, modifyCollectionDto, user, filename);
         } else {
