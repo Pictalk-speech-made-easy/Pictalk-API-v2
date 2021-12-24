@@ -41,7 +41,9 @@ export class UserRepository extends Repository<User> {
             throw new InternalServerErrorException(error);
           }
         }
-        sgMail.send({from: 'alex@pictalk.xyz', to: user.username, templateId: 'd-33dea01340e5496691a5741588e2d9f7'}).catch(Error);
+        try{
+          await sgMail.send({from: 'alex@pictalk.xyz', to: user.username, templateId: 'd-33dea01340e5496691a5741588e2d9f7'});
+        } catch(error){}
         this.logger.verbose(`User ${user.username} is being saved !`);
         return user;
       }
