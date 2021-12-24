@@ -1,8 +1,12 @@
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { existsSync, mkdir} from 'fs';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
+  if(!existsSync('files')){
+    mkdir("files", null);
+  }
   const app = await NestFactory.create(AppModule, { cors: true });
   const config = new DocumentBuilder()
     .setTitle('Pictalk')

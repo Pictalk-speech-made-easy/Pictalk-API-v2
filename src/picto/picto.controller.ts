@@ -56,7 +56,7 @@ export class PictoController {
   @UseInterceptors(
     FileInterceptor('image', {
       storage: diskStorage({
-        destination: './files/image',
+        destination: './files/',
         filename: editFileName,
       }),
       fileFilter: imageFileFilter,
@@ -108,7 +108,7 @@ export class PictoController {
   @UseInterceptors(
     FileInterceptor('image', {
       storage: diskStorage({
-        destination: './files/image',
+        destination: './files/',
         filename: editFileName,
       }),
       fileFilter: imageFileFilter,
