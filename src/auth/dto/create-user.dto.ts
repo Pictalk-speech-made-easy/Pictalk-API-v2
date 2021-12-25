@@ -5,6 +5,8 @@ import {
   MaxLength,
   Matches,
   IsNotEmpty,
+  IsOptional,
+  IsArray,
 } from 'class-validator';
 
 export class CreateUserDto {
@@ -31,4 +33,11 @@ export class CreateUserDto {
   @IsNotEmpty()
   @IsString()
   language: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString({each: true})
+  directSharers: string[];
+
+
 }

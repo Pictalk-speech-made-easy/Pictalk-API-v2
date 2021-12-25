@@ -8,11 +8,13 @@ import sgMail = require('@sendgrid/mail');
 import { ResetPasswordDto } from "./dto/reset-password.dto";
 import { EditUserDto } from "./dto/edit-user.dto";
 import { ChangePasswordDto } from "./dto/change-password.dto";
+import { getArrayIfNeeded } from "src/utilities/tools";
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
     private logger = new Logger('AuthService');
+
     async signUp(createUserDto: CreateUserDto): Promise<User> {
-        const { username, password, language } = createUserDto;
+        const { username, password, language, directSharers } = createUserDto;
     
         const user = this.create();
         user.username = username;
@@ -21,12 +23,8 @@ export class UserRepository extends Repository<User> {
     
         user.resetPasswordToken = '';
         user.resetPasswordExpires = '';
-    
-        if (language) {
-          user.language = language;
-        } else {
-          user.language = '';
-        }
+        user.language = language;
+        user.directSharers = getArrayIfNeeded(directSharers);
     
         try {
           await user.save();
@@ -118,11 +116,12 @@ export class UserRepository extends Repository<User> {
         delete user.resetPasswordToken;
         delete user.resetPasswordExpires;
         delete user.pictos;
+        delete user.notifications;
         return user;
       }
 
       async editUser(user: User, editUserDto: EditUserDto): Promise<void> {
-        const { username, language, password } = editUserDto;
+        const { username, language, password, directSharers } = editUserDto;
         if (username) {
           user.username = username;
         }
@@ -132,6 +131,9 @@ export class UserRepository extends Repository<User> {
         if (password) {
           user.salt = await bcrypt.genSalt();
           user.password = await this.hashPassword(password, user.salt);
+        }
+        if (directSharers) {
+          user.directSharers=directSharers;
         }
         try {
           await user.save();
@@ -168,5 +170,14 @@ export class UserRepository extends Repository<User> {
         }
         return;
       }
-    
+
+      async clearNotifications(user: User): Promise<Notification[]>{
+        user.notifications=[];
+        try {
+          await user.save();
+        } catch (error) {
+          throw new InternalServerErrorException(error);
+        }
+        return user.notifications;
+      }
 }

@@ -90,35 +90,63 @@ export class CollectionRepository extends Repository<Collection>{
         } catch (error) {
             throw new InternalServerErrorException(error);
         }
+
         return collection;
     }
 
     async createRoot(user: User): Promise<number>{
         if(user.root===null){
-            const collection = new Collection();
+            const root = new Collection();
             const mltext = new MLtext();
             mltext.language="";
             mltext.text=""
-            collection.meaning = getArrayIfNeeded(mltext);
-            collection.speech = getArrayIfNeeded(mltext);
-            collection.userId = user.id;
+            root.meaning = getArrayIfNeeded(mltext);
+            root.speech = getArrayIfNeeded(mltext);
+            root.userId = user.id;
             try {
-                await collection.save();
+                await root.save();
             } catch (error) {
                 throw new InternalServerErrorException(error);
             }
-            user.root=collection.id;
+            user.root=root.id;
             try {
                 await user.save();
             } catch (error) {
                 throw new InternalServerErrorException(error);
             }
-            return collection.id;
         } else {
             throw new ForbiddenException(`cannot create a new root for User ${user.username}. User already has root ${user.root}`);
-        }
-        
+        } 
+        return user.root;
     }
+
+    async createShared(user: User): Promise<number>{
+        if(user.shared===null){
+            const shared = new Collection();
+            const mltext = new MLtext();
+            mltext.language="";
+            mltext.text=""
+            shared.meaning = getArrayIfNeeded(mltext);
+            shared.speech = getArrayIfNeeded(mltext);
+            shared.userId = user.id;
+            try {
+                await shared.save();
+            } catch (error) {
+                throw new InternalServerErrorException(error);
+            }
+            user.shared=shared.id;
+            try {
+                await user.save();
+            } catch (error) {
+                throw new InternalServerErrorException(error);
+            }
+        } else {
+            throw new ForbiddenException(`cannot create a new "shared with me" for User ${user.username}. User already has a shared collection ${user.shared}`);
+        }
+        return user.shared;
+    }
+
+    
 
     async MLtextFromTexts(language: string[], text: string[]): Promise<MLtext[]>{
         const length = language.length;
@@ -217,5 +245,25 @@ export class CollectionRepository extends Repository<Collection>{
             throw new InternalServerErrorException(error);
         }
         return collection;
+    }
+
+    async pushCollection(toPushInto: Collection, collection: Collection): Promise<void>{
+        toPushInto.collections.push(collection);
+        try {
+            await toPushInto.save();
+        } catch (error) {
+            throw new InternalServerErrorException(error);
+        }
+        return;
+    }
+
+    async pushPicto(toPushInto: Collection, picto:Picto): Promise<void>{
+        toPushInto.pictos.push(picto);
+        try {
+            await toPushInto.save();
+        } catch (error) {
+            throw new InternalServerErrorException(error);
+        }
+        return;
     }
 }

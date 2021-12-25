@@ -1,21 +1,25 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {IsOptional} from 'class-validator';
+import {IsNumberString, IsOptional, IsString} from 'class-validator';
 
 export class modifyPictoDto {
     @ApiProperty()
     @IsOptional()
+    @IsString({each: true})
     meaning: string[];
 
     @ApiProperty()
     @IsOptional()
+    @IsString({each: true})
     language: string[];
 
     @ApiProperty()
     @IsOptional()
+    @IsString({each: true})
     speech: string[];
 
     @ApiProperty()
     @IsOptional()
+    @IsNumberString({each: true})
     collectionIds: number[];
 
     @ApiProperty()

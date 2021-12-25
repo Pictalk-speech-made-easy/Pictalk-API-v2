@@ -8,6 +8,7 @@ import { modifyPictoDto } from './dto/picto.modify.dto';
 import { sharePictoDto } from './dto/picto.share.dto';
 import { AuthService } from 'src/auth/auth.service';
 import { Collection } from 'src/entities/collection.entity';
+import { CollectionService } from 'src/collection/collection.service';
 
 @Injectable()
 export class PictoService {
@@ -16,6 +17,8 @@ export class PictoService {
         private pictoRepository : PictoRepository,
         @Inject(forwardRef(() => AuthService))
         private authService : AuthService,
+        @Inject(forwardRef(() => CollectionService))
+        private collectionService : CollectionService,
     ) { }
 
     async getPictoById(id: number, user : User): Promise<Picto>{
@@ -43,10 +46,13 @@ export class PictoService {
     }
 
     async sharePictoById(id: number, user: User, sharePictoDto: sharePictoDto): Promise<Picto>{
-        const exists = await this.authService.verifyExistence(sharePictoDto.username);
+        const sharer = await this.authService.findWithUsername(sharePictoDto.username);
+        const exists = await this.authService.verifyExistence(sharer);
         if(exists){
             const picto=await this.getPictoById(id, user);
             if(picto){
+                const sharedWithMe = await this.collectionService.getCollectionById(sharer.shared, sharer);
+                this.collectionService.pushPicto(sharedWithMe, picto);
                 return this.pictoRepository.sharePicto(picto, sharePictoDto, user);
             } else {
                 throw new NotFoundException(`Picto with ID '${id}' not found`);

@@ -1,7 +1,8 @@
-import { forwardRef, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthService } from 'src/auth/auth.service';
 import { Collection } from 'src/entities/collection.entity';
+import { Picto } from 'src/entities/picto.entity';
 import { User } from 'src/entities/user.entity';
 import { CollectionRepository } from './collection.repository';
 import { createCollectionDto } from './dto/collection.create.dto';
@@ -51,8 +52,12 @@ export class CollectionService {
         return this.collectionRepository.createRoot(user);
     }
 
+    async createShared (user: User): Promise<number>{
+        return this.collectionRepository.createShared(user);
+    }
+
     async deleteCollection(id: number, user: User): Promise<void>{
-        if(id!=user.root){
+        if(id!=user.root && id!=user.shared){
             const result = await this.collectionRepository.delete({
                 id: id,
                 userId: user.id,
@@ -61,7 +66,7 @@ export class CollectionService {
                 throw new NotFoundException(`Collection with ID '${id}' not found`);
             }
         } else {
-            throw new UnauthorizedException(`Cannot delete root of User ${user.username}`);
+            throw new UnauthorizedException(`Cannot delete "root" or "shared with me" Collections of User ${user.username}`);
         }
     }
     async autoShare(collection : Collection, fatherCollection: Collection): Promise<Collection>{
@@ -81,10 +86,18 @@ export class CollectionService {
     }
 
     async shareCollectionById(id: number, user: User, shareCollectionDto: shareCollectionDto): Promise<Collection>{
-        const exists = await this.authService.verifyExistence(shareCollectionDto.username);
+        const sharer = await this.authService.findWithUsername(shareCollectionDto.username);
+        const exists = await this.authService.verifyExistence(sharer);
         if(exists){
             const collection=await this.getCollectionById(id, user);
             if(collection){
+                const sharedWithMe = await this.getCollectionById(sharer.shared, sharer);
+                this.collectionRepository.pushCollection(sharedWithMe, collection);
+                const index = sharer.directSharers.indexOf(user.username);
+                if(index!=-1){
+                    const sharerRoot = await this.getCollectionById(sharer.root, sharer);
+                    this.collectionRepository.pushCollection(sharerRoot, collection);
+                }
                 return this.collectionRepository.shareCollection(collection, shareCollectionDto, user);
             } else {
                 throw new NotFoundException(`Collection with ID '${id}' not found`);
@@ -116,5 +129,9 @@ export class CollectionService {
             }
         } catch(error){}
         return verificationDto;
+    }
+
+    async pushPicto(collection: Collection, picto: Picto):Promise<void>{
+        return this.collectionRepository.pushPicto(collection, picto);
     }
 }

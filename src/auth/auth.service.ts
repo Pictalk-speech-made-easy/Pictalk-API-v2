@@ -22,6 +22,13 @@ export class AuthService {
         ){}
 
     async signUp(createUserDto: CreateUserDto): Promise<User> {
+        for(let i=0; i<createUserDto.directSharers.length; i++){
+            const user = await this.findWithUsername(createUserDto.directSharers[i]);
+            const exists = await this.verifyExistence(user);
+            if(!exists){
+                createUserDto.directSharers.splice(i);
+            }
+        }
         return this.userRepository.signUp(createUserDto);
     }
 
@@ -62,8 +69,7 @@ export class AuthService {
     async getUserDetails(user: User): Promise<User> {
     return this.userRepository.getUserDetails(user);
     }
-    async verifyExistence(username: string): Promise<boolean> {
-        const user = await this.userRepository.findOne({where : {username: username}});
+    async verifyExistence(user: User): Promise<boolean> {
         if(typeof(user) === 'undefined'){
             return false;
         } else {
@@ -81,5 +87,22 @@ export class AuthService {
 
     async getRoot(user: User): Promise<number>{
         return user.root;
+    }
+
+    async getShared(user: User): Promise<number>{
+        return user.shared;
+    }
+
+    async getNotifications(user: User): Promise<Notification[]>{
+        return user.notifications;
+    }
+
+    async clearNotifications(user: User): Promise<Notification[]>{
+        return this.userRepository.clearNotifications(user);
+    }
+
+    async findWithUsername(username: string): Promise<User>{
+        const user = await this.userRepository.findOne({where : {username: username}});
+        return user;
     }
 }

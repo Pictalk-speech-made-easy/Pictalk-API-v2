@@ -33,4 +33,9 @@ export class EditUserDto {
     message: 'password too weak',
   })
   password: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString({each: true})
+  directSharers: string[];
 }

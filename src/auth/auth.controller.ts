@@ -1,4 +1,4 @@
-import { Body, Controller, forwardRef, Get, Inject, Logger, Param, Post, Put, Req, UseGuards, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, forwardRef, Get, Inject, Logger, Param, Post, Put, Req, UseGuards, ValidationPipe } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { AuthGuard } from '@nestjs/passport';
@@ -22,6 +22,7 @@ export class AuthController {
         this.logger.verbose(`User signin up`);
         const user = await this.authService.signUp(createUserDto);
         await this.collectionService.createRoot(user);
+        await this.collectionService.createShared(user);
         return;
     }
 
@@ -77,5 +78,27 @@ export class AuthController {
         this.logger.verbose(`User "${user.username}" getting his root`);
         const root = await this.authService.getRoot(user);
         return this.collectionService.getCollectionById(root, user);
+    }
+
+    @UseGuards(AuthGuard())
+    @Get('/user/shared')
+    async getShared(@GetUser() user: User): Promise<Collection>{
+        this.logger.verbose(`User "${user.username}" getting his shared with me Collection`);
+        const shared = await this.authService.getShared(user);
+        return this.collectionService.getCollectionById(shared, user);
+    }
+
+    @UseGuards(AuthGuard())
+    @Get('/user/notification')
+    async getNotifications(@GetUser() user: User): Promise<Notification[]>{
+        this.logger.verbose(`User "${user.username}" getting his notifications`);
+        return this.authService.getNotifications(user);
+    }
+
+    @UseGuards(AuthGuard())
+    @Delete('/user/notification')
+    async clearNotifications(@GetUser() user: User): Promise<Notification[]>{
+        this.logger.verbose(`User "${user.username}" clearing his notifications`);
+        return this.authService.clearNotifications(user);
     }
 }

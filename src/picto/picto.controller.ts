@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, forwardRef, Get, Inject, Logger, NotFoundException, Param, ParseIntPipe, Post, Put, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, ForbiddenException, forwardRef, Get, Inject, Logger, NotFoundException, Param, ParseIntPipe, Post, Put, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -69,25 +69,30 @@ export class PictoController {
       } else {
         const {language, meaning, speech, fatherCollectionId} = createPictoDto;
         if(verifySameLength(language, meaning, speech)){
-          this.logger.verbose(`User "${user.username}" creating Picto`);
-          const picto = await this.pictoService.createPicto(createPictoDto, user, file.filename);
-          const fatherCollection = await this.collectionService.getCollectionById(fatherCollectionId, user);
-          let fatherPictosIds = fatherCollection.pictos.map(picto => {return picto.id;})
-          fatherPictosIds.push(picto.id);
-          const modifyCollectionDto : modifyCollectionDto = {
-            meaning : null,
-            speech : null,
-            language : null,
-            collectionIds : null,
-            starred : null,
-            color : null,
-            pictoIds : fatherPictosIds}
-          this.collectionService.modifyCollection(fatherCollectionId, user, modifyCollectionDto, null);
-          if(createPictoDto.share!=0){
-            this.pictoService.autoShare(picto, fatherCollection);
-            this.logger.verbose(`Auto sharing picto "${picto.id}" with viewers and editors`);
+          if(fatherCollectionId!=user.shared){
+            this.logger.verbose(`User "${user.username}" creating Picto`);
+            const picto = await this.pictoService.createPicto(createPictoDto, user, file.filename);
+            const fatherCollection = await this.collectionService.getCollectionById(fatherCollectionId, user);
+            let fatherPictosIds = fatherCollection.pictos.map(picto => {return picto.id;})
+            fatherPictosIds.push(picto.id);
+            const modifyCollectionDto : modifyCollectionDto = {
+              meaning : null,
+              speech : null,
+              language : null,
+              collectionIds : null,
+              starred : null,
+              color : null,
+              pictoIds : fatherPictosIds}
+            this.collectionService.modifyCollection(fatherCollectionId, user, modifyCollectionDto, null);
+            if(createPictoDto.share!=0){
+              this.pictoService.autoShare(picto, fatherCollection);
+              this.logger.verbose(`Auto sharing picto "${picto.id}" with viewers and editors`);
+            }
+            return picto;
+          } else {
+            this.logger.verbose(`User "${user.username}" tried to create collection into shared collections`);
+            throw new ForbiddenException(`You cannot create a collection into your shared collection`);
           }
-          return picto;
         } else {
           this.logger.verbose(`User "${user.username}"Made a bad request were Languages, Meanings, and Speeches don't have the same number of arguments`);
           throw new BadRequestException(`bad request were Languages :${language}, Meanings :${meaning}, and Speeches :${speech} don't have the same number of arguments`);

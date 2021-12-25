@@ -34,11 +34,20 @@ export class User extends BaseEntity {
   @Column({nullable : true, unique: true})
   root: number;
 
+  @Column({nullable : true, unique: true})
+  shared: number;
+
   @Column()
   resetPasswordToken: string;
 
   @Column()
   resetPasswordExpires: string;
+
+  @Column("text",{default: [], array: true})
+  directSharers: string[];
+
+  @Column({type: "jsonb", array: true, default: []})
+  notifications : Notification[];
 
   async validatePassword(password: string): Promise<boolean> {
     const hash = await bcrypt.hash(password, this.salt);

@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, Logger, NotFoundException, Param, ParseIntPipe, Post, Put, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, ForbiddenException, Get, Logger, NotFoundException, Param, ParseIntPipe, Post, Put, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -66,27 +66,32 @@ export class CollectionController {
       } else {
         const {language, meaning, speech, fatherCollectionId} = createCollectionDto;
         if(verifySameLength(language, meaning, speech)){
-          this.logger.verbose(`User "${user.username}" creating Collection`);
-          const collection = await this.collectionService.createCollection(createCollectionDto, user, file.filename);
-          const fatherCollection = await this.collectionService.getCollectionById(fatherCollectionId, user);
-          let fatherCollectionsIds = fatherCollection.collections.map(collection => {
-            return collection.id;
-          })
-          fatherCollectionsIds.push(collection.id);
-          const modifyCollectionDto : modifyCollectionDto = {
-            meaning : null,
-            speech : null,
-            language : null,
-            pictoIds : null,
-            starred : null,
-            color : null,
-            collectionIds : fatherCollectionsIds}
-          this.collectionService.modifyCollection(fatherCollectionId, user, modifyCollectionDto, null);
-          if(createCollectionDto.share){
-            this.collectionService.autoShare(collection, fatherCollection);
-            this.logger.verbose(`Auto sharing collection "${collection.id}" with viewers and editors`);
+          if(fatherCollectionId!=user.shared){
+            this.logger.verbose(`User "${user.username}" creating Collection`);
+            const collection = await this.collectionService.createCollection(createCollectionDto, user, file.filename);
+            const fatherCollection = await this.collectionService.getCollectionById(fatherCollectionId, user);
+            let fatherCollectionsIds = fatherCollection.collections.map(collection => {
+              return collection.id;
+            })
+            fatherCollectionsIds.push(collection.id);
+            const modifyCollectionDto : modifyCollectionDto = {
+              meaning : null,
+              speech : null,
+              language : null,
+              pictoIds : null,
+              starred : null,
+              color : null,
+              collectionIds : fatherCollectionsIds}
+            this.collectionService.modifyCollection(fatherCollectionId, user, modifyCollectionDto, null);
+            if(createCollectionDto.share){
+              this.collectionService.autoShare(collection, fatherCollection);
+              this.logger.verbose(`Auto sharing collection "${collection.id}" with viewers and editors`);
+            }
+            return collection;
+          } else {
+            this.logger.verbose(`User "${user.username}" tried to create collection into shared collections`);
+            throw new ForbiddenException(`You cannot create a collection into your shared collection`);
           }
-          return collection;
         } else {
           this.logger.verbose(`User "${user.username}"Made a bad request were Languages, Meanings, and Speeches don't have the same number of arguments`);
           throw new BadRequestException(`bad request were Languages :${language}, Meanings :${meaning}, and Speeches :${speech} don't have the same number of arguments`);
@@ -97,7 +102,7 @@ export class CollectionController {
   @UseGuards(AuthGuard())
   @Post('/root')
   createRoot(@GetUser() user: User): Promise<number>{
-    this.logger.verbose(`User "${user.username}" Creating Root`);
+    this.logger.verbose(`User "${user.username}" Creating 'Root' Collection if needed`);
     return this.collectionService.createRoot(user);
   }
 
