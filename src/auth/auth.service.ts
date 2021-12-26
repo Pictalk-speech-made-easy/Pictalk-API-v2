@@ -11,6 +11,7 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { randomBytes } from 'crypto';
 import { EditUserDto } from './dto/edit-user.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { Notif } from 'src/entities/notification.entity';
 
 @Injectable()
 export class AuthService {
@@ -22,13 +23,16 @@ export class AuthService {
         ){}
 
     async signUp(createUserDto: CreateUserDto): Promise<User> {
-        for(let i=0; i<createUserDto.directSharers.length; i++){
-            const user = await this.findWithUsername(createUserDto.directSharers[i]);
-            const exists = await this.verifyExistence(user);
-            if(!exists){
-                createUserDto.directSharers.splice(i);
+        if(createUserDto.directSharers){
+            for(let i=0; i<createUserDto.directSharers.length; i++){
+                const user = await this.findWithUsername(createUserDto.directSharers[i]);
+                const exists = await this.verifyExistence(user);
+                if(!exists){
+                    createUserDto.directSharers.splice(i);
+                }
             }
         }
+        
         return this.userRepository.signUp(createUserDto);
     }
 
@@ -93,11 +97,15 @@ export class AuthService {
         return user.shared;
     }
 
-    async getNotifications(user: User): Promise<Notification[]>{
+    async getNotifications(user: User): Promise<Notif[]>{
         return user.notifications;
     }
 
-    async clearNotifications(user: User): Promise<Notification[]>{
+    async pushNotification(user: User, notification : Notif): Promise<void>{
+        return this.userRepository.pushNotification(user, notification);
+    }
+
+    async clearNotifications(user: User): Promise<Notif[]>{
         return this.userRepository.clearNotifications(user);
     }
 

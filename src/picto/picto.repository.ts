@@ -12,12 +12,15 @@ import { sharePictoDto } from "./dto/picto.share.dto";
 @EntityRepository(Picto)
 export class PictoRepository extends Repository<Picto> {
     async createPicto(createPictoDto: createPictoDto, user: User, filename: string): Promise<Picto> {
-        let { meaning, speech, language, collectionIds} = createPictoDto;
+        let { meaning, speech, language, collectionIds, color} = createPictoDto;
         const picto = new Picto();
         picto.meaning = await this.MLtextFromTexts(language, meaning);
         picto.speech = await this.MLtextFromTexts(language, speech);
         picto.image = filename;
         picto.userId = user.id;
+        if(color){
+            picto.color=color;
+        }
         if(collectionIds){
             collectionIds=getArrayIfNeeded(collectionIds);
             picto.collections = collectionIds.map(collectionIds => ({ id: collectionIds } as any));
@@ -32,12 +35,15 @@ export class PictoRepository extends Repository<Picto> {
     }
 
     async modifyPicto(picto: Picto, modifyPictoDto: modifyPictoDto, user: User, filename: string): Promise<Picto> {
-        let { language, meaning, speech, collectionIds, starred} = modifyPictoDto;
+        let { language, meaning, speech, collectionIds, starred, color} = modifyPictoDto;
         if(meaning){
             picto.meaning = await this.MLtextFromTexts(language, meaning);
         }
         if(speech){
             picto.speech = await this.MLtextFromTexts(language, speech);
+        }
+        if(color){
+            picto.color=color;
         }
         if(filename){
             picto.image = filename;

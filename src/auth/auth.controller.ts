@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, forwardRef, Get, Inject, Logger, Param, Post, Put, Req, UseGuards, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, forwardRef, Get, Inject, Logger, Param, Post, Put, Req, UseGuards, ValidationPipe } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { AuthGuard } from '@nestjs/passport';
@@ -10,6 +10,10 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { EditUserDto } from './dto/edit-user.dto';
+import { Notif } from 'src/entities/notification.entity';
+import { verify } from 'crypto';
+import { verifyAPIs } from 'src/utilities/creation';
+import { getArrayIfNeeded } from 'src/utilities/tools';
 @Controller('')
 export class AuthController {
     private logger = new Logger('AuthController');
@@ -20,6 +24,17 @@ export class AuthController {
     @Post('auth/signup')
     async signUp(@Body(ValidationPipe) createUserDto: CreateUserDto): Promise<void> {
         this.logger.verbose(`User signin up`);
+        const index = createUserDto.languages.indexOf(createUserDto.language);
+        if(index===-1){
+          createUserDto.languages.push(createUserDto.language);
+        }
+        if(createUserDto.apinames && createUserDto.apikeys){
+          createUserDto.apinames=getArrayIfNeeded(createUserDto.apinames);
+          createUserDto.apikeys=getArrayIfNeeded(createUserDto.apikeys);
+          if(!verifyAPIs(createUserDto.apinames, createUserDto.apikeys)){
+            throw new BadRequestException(`You must have as many API names as API keys`);
+          }
+        }
         const user = await this.authService.signUp(createUserDto);
         await this.collectionService.createRoot(user);
         await this.collectionService.createShared(user);
@@ -68,6 +83,13 @@ export class AuthController {
         @GetUser() user: User,
         @Body(ValidationPipe) editUserDto: EditUserDto,
       ): Promise<void> {
+        if(editUserDto.apinames && editUserDto.apikeys){
+          editUserDto.apinames=getArrayIfNeeded(editUserDto.apinames);
+          editUserDto.apikeys=getArrayIfNeeded(editUserDto.apikeys);
+          if(!verifyAPIs(editUserDto.apinames, editUserDto.apikeys)){
+            throw new BadRequestException(`You must have as many API names as API keys`);
+          }
+        }
         this.logger.verbose(`User "${user.username}" is trying to modify Details`);
         return this.authService.editUser(user, editUserDto);
       }
@@ -90,14 +112,14 @@ export class AuthController {
 
     @UseGuards(AuthGuard())
     @Get('/user/notification')
-    async getNotifications(@GetUser() user: User): Promise<Notification[]>{
+    async getNotifications(@GetUser() user: User): Promise<Notif[]>{
         this.logger.verbose(`User "${user.username}" getting his notifications`);
         return this.authService.getNotifications(user);
     }
 
     @UseGuards(AuthGuard())
     @Delete('/user/notification')
-    async clearNotifications(@GetUser() user: User): Promise<Notification[]>{
+    async clearNotifications(@GetUser() user: User): Promise<Notif[]>{
         this.logger.verbose(`User "${user.username}" clearing his notifications`);
         return this.authService.clearNotifications(user);
     }

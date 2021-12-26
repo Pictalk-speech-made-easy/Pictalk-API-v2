@@ -9,12 +9,14 @@ import { ResetPasswordDto } from "./dto/reset-password.dto";
 import { EditUserDto } from "./dto/edit-user.dto";
 import { ChangePasswordDto } from "./dto/change-password.dto";
 import { getArrayIfNeeded } from "src/utilities/tools";
+import { Notif } from "src/entities/notification.entity";
+import { APIkey } from "src/entities/keys.entity";
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
     private logger = new Logger('AuthService');
 
     async signUp(createUserDto: CreateUserDto): Promise<User> {
-        const { username, password, language, directSharers } = createUserDto;
+        const { username, password, language, directSharers, languages, apikeys } = createUserDto;
     
         const user = this.create();
         user.username = username;
@@ -24,7 +26,13 @@ export class UserRepository extends Repository<User> {
         user.resetPasswordToken = '';
         user.resetPasswordExpires = '';
         user.language = language;
-        user.directSharers = getArrayIfNeeded(directSharers);
+        if(directSharers){
+          user.directSharers = getArrayIfNeeded(directSharers);
+        }
+        if(apikeys){
+          user.apikeys = getArrayIfNeeded(apikeys);
+        }
+        user.languages = languages
     
         try {
           await user.save();
@@ -117,11 +125,12 @@ export class UserRepository extends Repository<User> {
         delete user.resetPasswordExpires;
         delete user.pictos;
         delete user.notifications;
+        delete user.admin;
         return user;
       }
 
       async editUser(user: User, editUserDto: EditUserDto): Promise<void> {
-        const { username, language, password, directSharers } = editUserDto;
+        const { username, language, password, directSharers, languages, apikeys, apinames } = editUserDto;
         if (username) {
           user.username = username;
         }
@@ -135,12 +144,32 @@ export class UserRepository extends Repository<User> {
         if (directSharers) {
           user.directSharers=directSharers;
         }
+        if (languages){
+          user.languages = languages;
+        }
+        if(apikeys){
+          const apis = await this.APIkeyFromDto(editUserDto.apinames, editUserDto.apikeys);
+          console.log(apis);
+          user.apikeys = await this.APIkeyFromDto(editUserDto.apinames, editUserDto.apikeys);
+        }
         try {
           await user.save();
         } catch (error) {
           throw new InternalServerErrorException(error);
         }
       }
+
+      async APIkeyFromDto(apinames: string[], apikeys: string[]): Promise<APIkey[]>{
+        const length = apinames.length;
+        let apis: APIkey[]=[];
+        for(var i=0; i<length; i++){
+            const api= new APIkey();
+            api.name=apinames[i];
+            api.key=apikeys[i];
+            apis.push(api);
+        }
+        return apis
+    }
 
       async changePassword(changePasswordDto: ChangePasswordDto, token: string): Promise<void> {
         const { password } = changePasswordDto;
@@ -171,7 +200,7 @@ export class UserRepository extends Repository<User> {
         return;
       }
 
-      async clearNotifications(user: User): Promise<Notification[]>{
+      async clearNotifications(user: User): Promise<Notif[]>{
         user.notifications=[];
         try {
           await user.save();
@@ -180,4 +209,14 @@ export class UserRepository extends Repository<User> {
         }
         return user.notifications;
       }
+
+      async pushNotification(user: User, notification : Notif): Promise<void>{
+        user.notifications.push(notification);
+        try {
+          await user.save();
+        } catch (error) {
+          throw new InternalServerErrorException(error);
+        }
+        return;
+    }
 }

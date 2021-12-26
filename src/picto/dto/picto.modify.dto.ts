@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {IsNumberString, IsOptional, IsString} from 'class-validator';
+import {IsBooleanString, IsHexColor, IsNumberString, IsOptional, IsString} from 'class-validator';
 
 export class modifyPictoDto {
     @ApiProperty()
@@ -19,10 +19,16 @@ export class modifyPictoDto {
 
     @ApiProperty()
     @IsOptional()
+    @IsHexColor()
+    color: string;
+
+    @ApiProperty()
+    @IsOptional()
     @IsNumberString({each: true})
     collectionIds: number[];
 
     @ApiProperty()
     @IsOptional()
+    @IsBooleanString()
     starred : boolean;
 }

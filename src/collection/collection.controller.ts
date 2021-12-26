@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, ForbiddenException, Get, Logger, NotFoundException, Param, ParseIntPipe, Post, Put, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, ForbiddenException, Get, Logger, NotFoundException, Param, ParseIntPipe, Post, Put, UnauthorizedException, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -12,6 +12,7 @@ import { createCollectionDto } from './dto/collection.create.dto';
 import {ApiOperation} from '@nestjs/swagger';
 import { modifyCollectionDto } from './dto/collection.modify.dto';
 import { shareCollectionDto } from './dto/collection.share.dto';
+import { publicCollectionDto } from './dto/collection.public.dto';
 
 @Controller('collection')
 export class CollectionController {
@@ -26,6 +27,11 @@ export class CollectionController {
       return this.collectionService.getCollectionById(id, user);
   }
 
+  @Get('/pulic')
+  getPublicCollections(): Promise<Collection[]>{
+      return this.collectionService.getPublicCollection();
+  }
+  
   @UseGuards(AuthGuard())
   @Get()
   @ApiOperation({summary : 'get all your collection'})
@@ -44,7 +50,18 @@ export class CollectionController {
     } else {
       this.logger.verbose(`User "${user.username}" revoking access to Collection with id ${id} for User ${shareCollectionDto.username}`);
     }
-    return this.collectionService.shareCollectionById(id, user, shareCollectionDto);
+    return this.collectionService.shareCollectionVerification(id, user, shareCollectionDto);
+  }
+
+  @UseGuards(AuthGuard())
+  @Put('publish/:id')
+  @UsePipes(ValidationPipe)
+  publishCollectionById(@Param('id', ParseIntPipe) id : number, @Body() publicCollectionDto: publicCollectionDto, @GetUser() user: User): Promise<Collection>{
+    if(user.admin===true){
+      return this.collectionService.publishCollectionById(id, publicCollectionDto, user);
+    } else {
+      throw new UnauthorizedException(`User ${user.username} is not admin, only admins can make a collection public`);
+    }
   }
 
   @UseGuards(AuthGuard())
@@ -140,4 +157,6 @@ export class CollectionController {
       throw new BadRequestException(`bad request were Languages :${language}, Meanings :${meaning}, and Speeches :${speech} don't have the same number of arguments`);
     }
   }
+
+
 }

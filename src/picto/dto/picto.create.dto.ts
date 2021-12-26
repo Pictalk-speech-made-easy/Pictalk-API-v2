@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, isNumberString, IsNumberString, IsOptional, IsString, Matches } from "class-validator";
+import { IsHexColor, IsNotEmpty, IsNumberString, IsOptional, IsString, Matches } from "class-validator";
 
 export class createPictoDto {
 
@@ -17,6 +17,11 @@ export class createPictoDto {
     @IsNotEmpty()
     @IsString({each: true})
     speech: string[];
+
+    @ApiProperty()
+    @IsOptional()
+    @IsHexColor()
+    color: string;
 
     @ApiProperty()
     @IsOptional()

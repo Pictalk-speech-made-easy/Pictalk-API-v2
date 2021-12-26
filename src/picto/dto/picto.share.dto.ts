@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsBooleanString, IsNotEmpty, IsNumberString, Matches } from "class-validator";
+import { IsNotEmpty, IsNumberString, Matches } from "class-validator";
 
 export class sharePictoDto {
     @ApiProperty()

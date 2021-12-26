@@ -37,6 +37,9 @@ export class PictoService {
             if(index!=-1){
                 return picto;
             }
+            if(picto.public===true){
+                return picto;
+            }
             throw new UnauthorizedException(`User ${user.username} does not have access to this picto`);
         }
     }

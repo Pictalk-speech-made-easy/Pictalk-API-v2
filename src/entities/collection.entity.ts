@@ -21,7 +21,7 @@ export class Collection extends BaseEntity{
     @Column({default: false})
     starred: boolean;
 
-    @Column({default: "#f1f1f1"})
+    @Column({nullable: true})
     color: string;
 
     @ManyToMany( () => Picto, picto => picto.collections)
@@ -47,4 +47,7 @@ export class Collection extends BaseEntity{
 
     @Column("text",{default: [], array: true})
     viewers: string[];
+
+    @Column({default: false})
+    public: boolean;
 }

@@ -7,6 +7,8 @@ import {BaseEntity,
 import * as bcrypt from 'bcrypt';
 import { Collection } from './collection.entity';
 import { Picto } from './picto.entity';
+import { Notif } from './notification.entity';
+import { APIkey } from './keys.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -16,7 +18,7 @@ export class User extends BaseEntity {
   @Column({unique: true})
   username: string;
 
-  @Column({default: "en-US"})
+  @Column({default: "en"})
   language: string;
 
   @Column()
@@ -47,7 +49,16 @@ export class User extends BaseEntity {
   directSharers: string[];
 
   @Column({type: "jsonb", array: true, default: []})
-  notifications : Notification[];
+  notifications : Notif[];
+
+  @Column({type: "jsonb", default: []})
+  apikeys : APIkey[];
+
+  @Column({default: false})
+  admin: boolean;
+
+  @Column("text",{default:["en"], array: true})
+  languages : string[]
 
   async validatePassword(password: string): Promise<boolean> {
     const hash = await bcrypt.hash(password, this.salt);

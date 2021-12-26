@@ -7,6 +7,7 @@ import { getArrayIfNeeded } from "src/utilities/tools";
 import { EntityRepository, Repository } from "typeorm";
 import { createCollectionDto } from "./dto/collection.create.dto";
 import { modifyCollectionDto } from "./dto/collection.modify.dto";
+import { publicCollectionDto } from "./dto/collection.public.dto";
 import { shareCollectionDto } from "./dto/collection.share.dto";
 
 @EntityRepository(Collection)
@@ -75,23 +76,34 @@ export class CollectionRepository extends Repository<Collection>{
         return collection;
     }
 
-    async shareCollection(collection: Collection, shareCollectionDto: shareCollectionDto, user: User): Promise<Collection>{
-        try{
-            collection.collections.map(collection => this.shareCollection(collection, shareCollectionDto, user));
-        } catch(error){}
-        try{
-            collection.pictos.map(picto => this.sharePictoFromDto(picto, shareCollectionDto));
-        } catch(error){}
-        try{
-            collection=await this.shareCollectionFromDto(collection, shareCollectionDto);
-        } catch(error){}
+    async publishCollection(collection: Collection, publish: number, user: User): Promise<Collection>{
+        if(publish && collection.userId === user.id){
+            collection.public=true;
+        } else {
+            collection.public=false;
+        }
         try {
             await collection.save();
         } catch (error) {
             throw new InternalServerErrorException(error);
         }
-
         return collection;
+    }
+
+    async publishPicto(picto: Picto, publish: number, user: User): Promise<Picto>{
+        console.log("I published Picto");
+        if(publish && picto.userId === user.id){
+            picto.public=true;
+        } else {
+            picto.public=false;
+        }
+        try {
+            await picto.save();
+        } catch (error) {
+            throw new InternalServerErrorException(error);
+        }
+        
+        return picto;
     }
 
     async createRoot(user: User): Promise<number>{
@@ -196,6 +208,11 @@ export class CollectionRepository extends Repository<Collection>{
                 collection.editors.splice(index);
             }
         }
+        try {
+            await collection.save();
+        } catch (error) {
+            throw new InternalServerErrorException(error);
+        }
         return collection;
     }
 
@@ -233,6 +250,11 @@ export class CollectionRepository extends Repository<Collection>{
             if(index!=-1){
                 picto.editors.splice(index);
             }
+        }
+        try {
+            await picto.save();
+        } catch (error) {
+            throw new InternalServerErrorException(error);
         }
         return picto;
     }
