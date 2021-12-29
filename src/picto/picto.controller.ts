@@ -14,7 +14,6 @@ import { CollectionService } from 'src/collection/collection.service';
 import { modifyCollectionDto } from 'src/collection/dto/collection.modify.dto';
 import { ApiOperation } from '@nestjs/swagger';
 import { sharePictoDto } from './dto/picto.share.dto';
-import { json } from 'stream/consumers';
 
 @Controller('picto')
 export class PictoController {
