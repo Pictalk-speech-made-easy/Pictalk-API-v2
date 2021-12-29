@@ -9,6 +9,7 @@ import { Collection } from './collection.entity';
 import { Picto } from './picto.entity';
 import { Notif } from './notification.entity';
 import { APIkey } from './keys.entity';
+import { UserSettings } from './settings.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -53,6 +54,9 @@ export class User extends BaseEntity {
 
   @Column({type: "jsonb", default: []})
   apikeys : APIkey[];
+
+  @Column({type: "jsonb"})
+  settings : UserSettings;
 
   @Column({default: false})
   admin: boolean;
