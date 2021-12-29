@@ -1,21 +1,15 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsBooleanString, IsHexColor, IsNumberString, IsOptional, IsString } from "class-validator";
+import { MLtext } from "src/entities/MLtext.entity";
 
 export class modifyCollectionDto {
     @ApiProperty()
     @IsOptional()
-    @IsString({each: true})
-    meaning: string[];
-    
-    @ApiProperty()
-    @IsOptional()
-    @IsString({each: true})
-    language: string[];
+    meaning: MLtext[];
 
     @ApiProperty()
     @IsOptional()
-    @IsString({each: true})
-    speech: string[];
+    speech: MLtext[];
 
     @ApiProperty()
     @IsOptional()

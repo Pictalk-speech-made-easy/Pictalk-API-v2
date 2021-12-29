@@ -1,22 +1,16 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsHexColor, IsNotEmpty, IsNumberString, IsOptional, IsString, Matches } from "class-validator";
+import { IsHexColor, IsNotEmpty, IsNumberString, IsOptional, Matches } from "class-validator";
+import { MLtext } from "src/entities/MLtext.entity";
 
 export class createCollectionDto {
 
     @ApiProperty()
     @IsNotEmpty()
-    @IsString({each: true})
-    meaning: string[];
+    meaning: MLtext[];
 
     @ApiProperty()
     @IsNotEmpty()
-    @IsString({each: true})
-    language: string[];
-
-    @ApiProperty()
-    @IsNotEmpty()
-    @IsString({each: true})
-    speech: string[];
+    speech: MLtext[];
 
     @ApiProperty()
     @IsOptional()

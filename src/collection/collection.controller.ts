@@ -5,7 +5,7 @@ import { diskStorage } from 'multer';
 import { GetUser } from 'src/auth/get-user.decorator';
 import { Collection } from 'src/entities/collection.entity';
 import { User } from 'src/entities/user.entity';
-import { verifySameLength } from 'src/utilities/creation';
+import { verifySameLength, verifyText } from 'src/utilities/creation';
 import { editFileName, imageFileFilter } from 'src/utilities/tools';
 import { CollectionService } from './collection.service';
 import { createCollectionDto } from './dto/collection.create.dto';
@@ -81,8 +81,8 @@ export class CollectionController {
         this.logger.verbose(`User "${user.username}" Made a bad request that doesn't contain a file`);
         throw new NotFoundException(`There is no file or no filename`);
       } else {
-        const {language, meaning, speech, fatherCollectionId} = createCollectionDto;
-        if(verifySameLength(language, meaning, speech)){
+        const {meaning, speech, fatherCollectionId} = createCollectionDto;
+        if(verifyText(meaning, speech) && verifySameLength(meaning, speech)){
           if(fatherCollectionId!=user.shared){
             this.logger.verbose(`User "${user.username}" creating Collection`);
             const collection = await this.collectionService.createCollection(createCollectionDto, user, file.filename);
@@ -94,7 +94,6 @@ export class CollectionController {
             const modifyCollectionDto : modifyCollectionDto = {
               meaning : null,
               speech : null,
-              language : null,
               pictoIds : null,
               starred : null,
               color : null,
@@ -110,8 +109,8 @@ export class CollectionController {
             throw new ForbiddenException(`You cannot create a collection into your shared collection`);
           }
         } else {
-          this.logger.verbose(`User "${user.username}"Made a bad request were Languages, Meanings, and Speeches don't have the same number of arguments`);
-          throw new BadRequestException(`bad request were Languages :${language}, Meanings :${meaning}, and Speeches :${speech} don't have the same number of arguments`);
+          this.logger.verbose(`User "${user.username}"Made a bad request where Object has either invalid attributes or "meaning" and "speech" don't have the same length`);
+          throw new BadRequestException(`Object has either invalid attributes or "meaning" and "speech" don't have the same length`);
         }
       }
   }
@@ -144,8 +143,8 @@ export class CollectionController {
   )
   modifyCollection(@Param('id', ParseIntPipe) id: number, @GetUser() user: User, @Body() modifyCollectionDto: modifyCollectionDto, file: Express.Multer.File): Promise<Collection>{
     
-    const {language, meaning, speech} = modifyCollectionDto;
-    if(verifySameLength(language, meaning, speech)){
+    const {meaning, speech} = modifyCollectionDto;
+    if((verifyText(meaning, speech) && verifySameLength(meaning, speech)) || (speech===null && meaning === null)){
       this.logger.verbose(`User "${user.username}" Modifying Collection with id ${id}`);
       if(file){
         return this.collectionService.modifyCollection(id, user, modifyCollectionDto, file.filename);
@@ -153,8 +152,8 @@ export class CollectionController {
         return this.collectionService.modifyCollection(id, user, modifyCollectionDto, null);
       }
     } else {
-      this.logger.verbose(`User "${user.username}"Made a bad request were Languages, Meanings, and Speeches don't have the same number of arguments`);
-      throw new BadRequestException(`bad request were Languages :${language}, Meanings :${meaning}, and Speeches :${speech} don't have the same number of arguments`);
+      this.logger.verbose(`User "${user.username}"Made a bad request where Object has either invalid attributes or "meaning" and "speech" don't have the same length`);
+      throw new BadRequestException(`Object has either invalid attributes or "meaning" and "speech" don't have the same length`);
     }
   }
 

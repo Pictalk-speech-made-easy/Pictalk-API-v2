@@ -7,16 +7,15 @@ import { getArrayIfNeeded } from "src/utilities/tools";
 import { EntityRepository, Repository } from "typeorm";
 import { createCollectionDto } from "./dto/collection.create.dto";
 import { modifyCollectionDto } from "./dto/collection.modify.dto";
-import { publicCollectionDto } from "./dto/collection.public.dto";
 import { shareCollectionDto } from "./dto/collection.share.dto";
 
 @EntityRepository(Collection)
 export class CollectionRepository extends Repository<Collection>{
     async createCollection(createCollectionDto: createCollectionDto, user: User, filename: string): Promise<Collection> {
-        let { language, meaning, speech, pictoIds, collectionIds, color } = createCollectionDto;
+        let { meaning, speech, pictoIds, collectionIds, color } = createCollectionDto;
         const collection = new Collection();
-        collection.meaning = await this.MLtextFromTexts(language, meaning);
-        collection.speech = await this.MLtextFromTexts(language, speech);
+        collection.meaning = await this.MLtextsFromObjects(meaning);
+        collection.speech = await this.MLtextsFromObjects(speech);
         collection.userId = user.id;
         if(pictoIds){
             pictoIds=getArrayIfNeeded(pictoIds);
@@ -43,12 +42,12 @@ export class CollectionRepository extends Repository<Collection>{
     }
 
     async modifyCollection(collection: Collection, modifyCollectionDto: modifyCollectionDto, user: User, filename: string): Promise<Collection>{
-        let {language, meaning, speech, starred, pictoIds, collectionIds, color}= modifyCollectionDto;
+        let {meaning, speech, starred, pictoIds, collectionIds, color}= modifyCollectionDto;
         if(meaning){
-            collection.meaning = await this.MLtextFromTexts(language, meaning);
+            collection.meaning = await this.MLtextsFromObjects(meaning);
         }
         if(speech){
-            collection.speech = await this.MLtextFromTexts(language, speech);
+            collection.speech = await this.MLtextsFromObjects(speech);
         }
         if(filename){
             collection.image = filename;
@@ -160,17 +159,23 @@ export class CollectionRepository extends Repository<Collection>{
 
     
 
-    async MLtextFromTexts(language: string[], text: string[]): Promise<MLtext[]>{
-        const length = language.length;
-        let mltexts: MLtext[]=[];
-        for(var i=0; i<length; i++){
-            const mltext= new MLtext();
-            mltext.language=language[i];
-            mltext.text= text[i];
-            mltexts.push(mltext);
+    async MLtextFromObject(object :any): Promise<MLtext>{
+        const mltext = new MLtext();
+        mltext.language=object.language;
+        mltext.text=object.text;
+        return mltext
+    }
+
+    async MLtextsFromObjects(objects : any): Promise<MLtext[]>{
+        const mltexts: MLtext[]=[];
+        if(objects.length!=undefined){
+            for(let index = 0; index<objects.length; index++){
+                mltexts.push(await this.MLtextFromObject(objects[index]));
+            }
+        } else {
+            mltexts.push(await this.MLtextFromObject(objects));
         }
-        
-        return mltexts
+        return mltexts;
     }
 
     async shareCollectionFromDto(collection: Collection, shareCollectionDto: shareCollectionDto): Promise<Collection>{

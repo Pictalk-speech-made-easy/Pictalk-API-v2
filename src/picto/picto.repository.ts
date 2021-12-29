@@ -12,10 +12,10 @@ import { sharePictoDto } from "./dto/picto.share.dto";
 @EntityRepository(Picto)
 export class PictoRepository extends Repository<Picto> {
     async createPicto(createPictoDto: createPictoDto, user: User, filename: string): Promise<Picto> {
-        let { meaning, speech, language, collectionIds, color} = createPictoDto;
+        let { meaning, speech, collectionIds, color} = createPictoDto;
         const picto = new Picto();
-        picto.meaning = await this.MLtextFromTexts(language, meaning);
-        picto.speech = await this.MLtextFromTexts(language, speech);
+        picto.meaning = await this.MLtextsFromObjects(meaning);
+        picto.speech = await this.MLtextsFromObjects(speech);
         picto.image = filename;
         picto.userId = user.id;
         if(color){
@@ -35,12 +35,12 @@ export class PictoRepository extends Repository<Picto> {
     }
 
     async modifyPicto(picto: Picto, modifyPictoDto: modifyPictoDto, user: User, filename: string): Promise<Picto> {
-        let { language, meaning, speech, collectionIds, starred, color} = modifyPictoDto;
+        let { meaning, speech, collectionIds, starred, color} = modifyPictoDto;
         if(meaning){
-            picto.meaning = await this.MLtextFromTexts(language, meaning);
+            picto.meaning = await this.MLtextsFromObjects(meaning);
         }
         if(speech){
-            picto.speech = await this.MLtextFromTexts(language, speech);
+            picto.speech = await this.MLtextsFromObjects(speech);
         }
         if(color){
             picto.color=color;
@@ -59,18 +59,26 @@ export class PictoRepository extends Repository<Picto> {
         //delete picto.user;
         return picto;
     }
-
-    async MLtextFromTexts(language, text): Promise<MLtext[]>{
-        const length = language.length;
-        let mltexts: MLtext[]=[];
-        for(var i=0; i<length; i++){
-            const mltext= new MLtext();
-            mltext.language=language[i];
-            mltext.text= text[i];
-            mltexts.push(mltext);
-        }
-        return mltexts
+    
+    async MLtextFromObject(object :any): Promise<MLtext>{
+        const mltext = new MLtext();
+        mltext.language=object.language;
+        mltext.text=object.text;
+        return mltext
     }
+
+    async MLtextsFromObjects(objects : any): Promise<MLtext[]>{
+        const mltexts: MLtext[]=[];
+        if(objects.length!=undefined){
+            for(let index = 0; index<objects.length; index++){
+                mltexts.push(await this.MLtextFromObject(objects[index]));
+            }
+        } else {
+            mltexts.push(await this.MLtextFromObject(objects));
+        }
+        return mltexts;
+    }
+
 
     async sharePicto(picto: Picto, sharePictoDto: sharePictoDto, user: User): Promise<Picto>{
         try{

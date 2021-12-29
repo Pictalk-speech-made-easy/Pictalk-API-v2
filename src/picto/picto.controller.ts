@@ -9,7 +9,7 @@ import { editFileName, imageFileFilter } from 'src/utilities/tools';
 import { PictoService } from './picto.service';
 import { createPictoDto } from './dto/picto.create.dto';
 import { modifyPictoDto } from './dto/picto.modify.dto';
-import { verifySameLength } from 'src/utilities/creation';
+import { verifySameLength, verifyText } from 'src/utilities/creation';
 import { CollectionService } from 'src/collection/collection.service';
 import { modifyCollectionDto } from 'src/collection/dto/collection.modify.dto';
 import { ApiOperation } from '@nestjs/swagger';
@@ -67,8 +67,8 @@ export class PictoController {
           this.logger.verbose(`User "${user.username}" tryed to create Picto without file or filename`);
           throw new NotFoundException(`There is no file or no filename`);
       } else {
-        const {language, meaning, speech, fatherCollectionId} = createPictoDto;
-        if(verifySameLength(language, meaning, speech)){
+        const { meaning, speech, fatherCollectionId} = createPictoDto;
+        if(verifyText(meaning, speech) && verifySameLength(meaning, speech)){
           if(fatherCollectionId!=user.shared){
             this.logger.verbose(`User "${user.username}" creating Picto`);
             const picto = await this.pictoService.createPicto(createPictoDto, user, file.filename);
@@ -78,7 +78,6 @@ export class PictoController {
             const modifyCollectionDto : modifyCollectionDto = {
               meaning : null,
               speech : null,
-              language : null,
               collectionIds : null,
               starred : null,
               color : null,
@@ -94,8 +93,8 @@ export class PictoController {
             throw new ForbiddenException(`You cannot create a collection into your shared collection`);
           }
         } else {
-          this.logger.verbose(`User "${user.username}"Made a bad request were Languages, Meanings, and Speeches don't have the same number of arguments`);
-          throw new BadRequestException(`bad request were Languages :${language}, Meanings :${meaning}, and Speeches :${speech} don't have the same number of arguments`);
+          this.logger.verbose(`User "${user.username}"Made a bad request where Object has either invalid attributes or "meaning" and "speech" don't have the same length`);
+          throw new BadRequestException(`Object has either invalid attributes or "meaning" and "speech" don't have the same length`);
         }
       }
   }
@@ -120,8 +119,8 @@ export class PictoController {
     }),
   )
   modifyPicto(@Param('id', ParseIntPipe) id: number, @GetUser() user: User, @Body() modifyPictoDto: modifyPictoDto, file: Express.Multer.File): Promise<Picto>{
-    const {language, meaning, speech} = modifyPictoDto;
-    if(verifySameLength(language, meaning, speech)){
+    const {meaning, speech} = modifyPictoDto;
+    if((verifyText(meaning, speech) && verifySameLength(meaning, speech)) || (speech===null && meaning === null)){
       this.logger.verbose(`User "${user.username}" Modifying Picto with id ${id}`);
       if(file){
           return this.pictoService.modifyPicto(id, user, modifyPictoDto, file.filename);
@@ -129,8 +128,8 @@ export class PictoController {
           return this.pictoService.modifyPicto(id, user, modifyPictoDto, null);
       }
     } else {
-      this.logger.verbose(`User "${user.username}"Made a bad request were Languages, Meanings, and Speeches don't have the same number of arguments`);
-      throw new BadRequestException(`bad request were Languages :${language}, Meanings :${meaning}, and Speeches :${speech} don't have the same number of arguments`);
+      this.logger.verbose(`User "${user.username}"Made a bad request where Object has either invalid attributes or "meaning" and "speech" don't have the same length`);
+      throw new BadRequestException(`Object has either invalid attributes or "meaning" and "speech" don't have the same length`);
     }
   }
 }
