@@ -62,19 +62,19 @@ export class PictoRepository extends Repository<Picto> {
     
     async MLtextFromObject(object :any): Promise<MLtext>{
         const mltext = new MLtext();
-        mltext.language=object.language;
-        mltext.text=object.text;
+        mltext.language=object['language'];
+        mltext.text=object['text'];
         return mltext
     }
 
-    async MLtextsFromObjects(objects : any): Promise<MLtext[]>{
+    async MLtextsFromObjects(array : any): Promise<MLtext[]>{
         const mltexts: MLtext[]=[];
-        if(objects.length!=undefined){
-            for(let index = 0; index<objects.length; index++){
-                mltexts.push(await this.MLtextFromObject(objects[index]));
+        if(array.length!=undefined){
+            for(let index = 0; index<array.length; index++){
+                mltexts.push(await this.MLtextFromObject(array[index]));
             }
         } else {
-            mltexts.push(await this.MLtextFromObject(objects));
+            mltexts.push(await this.MLtextFromObject(array));
         }
         return mltexts;
     }

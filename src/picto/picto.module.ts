@@ -13,6 +13,7 @@ import { PictoService } from './picto.service';
     forwardRef(() => CollectionModule),
   ],
   controllers: [PictoController],
-  providers: [PictoService]
+  providers: [PictoService],
+  exports: [PictoService]
 })
 export class PictoModule {}

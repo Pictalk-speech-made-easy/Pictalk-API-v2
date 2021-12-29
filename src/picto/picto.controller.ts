@@ -14,6 +14,7 @@ import { CollectionService } from 'src/collection/collection.service';
 import { modifyCollectionDto } from 'src/collection/dto/collection.modify.dto';
 import { ApiOperation } from '@nestjs/swagger';
 import { sharePictoDto } from './dto/picto.share.dto';
+import { json } from 'stream/consumers';
 
 @Controller('picto')
 export class PictoController {
@@ -67,14 +68,18 @@ export class PictoController {
           this.logger.verbose(`User "${user.username}" tryed to create Picto without file or filename`);
           throw new NotFoundException(`There is no file or no filename`);
       } else {
-        const { meaning, speech, fatherCollectionId} = createPictoDto;
-        console.log(meaning);
-        console.log(speech);
-        if(verifyText(meaning, speech) && verifySameLength(meaning, speech)){
-          if(fatherCollectionId!=user.shared){
+        try {
+          createPictoDto.meaning = JSON.parse(createPictoDto.meaning);
+          createPictoDto.speech = JSON.parse(createPictoDto.speech);
+        } catch (error) {
+            throw new BadRequestException(`Object is invalid, should be "[{language: <xx-XX>, text: <string>}]"`);
+        }
+        
+        if(verifyText(createPictoDto.meaning, createPictoDto.speech) && verifySameLength(createPictoDto.meaning, createPictoDto.speech)){
+          if(createPictoDto.fatherCollectionId!=user.shared){
             this.logger.verbose(`User "${user.username}" creating Picto`);
             const picto = await this.pictoService.createPicto(createPictoDto, user, file.filename);
-            const fatherCollection = await this.collectionService.getCollectionById(fatherCollectionId, user);
+            const fatherCollection = await this.collectionService.getCollectionById(createPictoDto.fatherCollectionId, user);
             let fatherPictosIds = fatherCollection.pictos.map(picto => {return picto.id;})
             fatherPictosIds.push(picto.id);
             const modifyCollectionDto : modifyCollectionDto = {
@@ -84,7 +89,7 @@ export class PictoController {
               starred : null,
               color : null,
               pictoIds : fatherPictosIds}
-            this.collectionService.modifyCollection(fatherCollectionId, user, modifyCollectionDto, null);
+            this.collectionService.modifyCollection(createPictoDto.fatherCollectionId, user, modifyCollectionDto, null);
             if(createPictoDto.share!=0){
               this.pictoService.autoShare(picto, fatherCollection);
               this.logger.verbose(`Auto sharing picto "${picto.id}" with viewers and editors`);
@@ -96,7 +101,7 @@ export class PictoController {
           }
         } else {
           this.logger.verbose(`User "${user.username}"Made a bad request where Object has either invalid attributes or "meaning" and "speech" don't have the same length`);
-          throw new BadRequestException(`Object has either invalid attributes like bad language such as "en" instead of "en-US" or "meaning" and "speech" don't have the same length`);
+          throw new BadRequestException(`Object is invalid, should be "[{language: <xx-XX>, text: <string>}] and both should have same length"`);
         }
       }
   }
@@ -121,8 +126,13 @@ export class PictoController {
     }),
   )
   modifyPicto(@Param('id', ParseIntPipe) id: number, @GetUser() user: User, @Body() modifyPictoDto: modifyPictoDto, file: Express.Multer.File): Promise<Picto>{
-    const {meaning, speech} = modifyPictoDto;
-    if((verifyText(meaning, speech) && verifySameLength(meaning, speech)) || (speech===null && meaning === null)){
+    try {
+          modifyPictoDto.meaning = JSON.parse(modifyPictoDto.meaning);
+          modifyPictoDto.speech = JSON.parse(modifyPictoDto.speech);
+        } catch (error) {
+            throw new BadRequestException(`Object is invalid, should be "[{language: <xx-XX>, text: <string>}]"`);
+        }
+    if((verifyText(modifyPictoDto.meaning, modifyPictoDto.speech) && verifySameLength(modifyPictoDto.meaning, modifyPictoDto.speech)) || (modifyPictoDto.speech===null && modifyPictoDto.meaning === null)){
       this.logger.verbose(`User "${user.username}" Modifying Picto with id ${id}`);
       if(file){
           return this.pictoService.modifyPicto(id, user, modifyPictoDto, file.filename);
@@ -131,7 +141,7 @@ export class PictoController {
       }
     } else {
       this.logger.verbose(`User "${user.username}"Made a bad request where Object has either invalid attributes or "meaning" and "speech" don't have the same length`);
-      throw new BadRequestException(`Object has either invalid attributes like bad language such as "en" instead of "en-US" or "meaning" and "speech" don't have the same length`);
+      throw new BadRequestException(`Object is invalid, should be "[{language: <xx-XX>, text: <string>}] and both should have same length`);
     }
   }
 }

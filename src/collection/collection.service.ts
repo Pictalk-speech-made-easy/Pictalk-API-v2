@@ -5,6 +5,7 @@ import { Collection } from 'src/entities/collection.entity';
 import { Notif } from 'src/entities/notification.entity';
 import { Picto } from 'src/entities/picto.entity';
 import { User } from 'src/entities/user.entity';
+import { PictoService } from 'src/picto/picto.service';
 import { CollectionRepository } from './collection.repository';
 import { createCollectionDto } from './dto/collection.create.dto';
 import { modifyCollectionDto } from './dto/collection.modify.dto';
@@ -18,6 +19,9 @@ export class CollectionService {
         private collectionRepository : CollectionRepository,
         @Inject(forwardRef(() => AuthService))
         private authService : AuthService,
+        @Inject(forwardRef(() => PictoService))
+        private pictoService : PictoService,
+
     ) { }
 
     async getCollectionById(id: number, user : User): Promise<Collection>{
@@ -148,7 +152,6 @@ export class CollectionService {
                 collection.collections.map(collection => this.publishCollectionById(collection.id, publicCollectionDto, user));
             } catch(error){}
             try{
-                console.log(collection.id, collection.pictos);
                 collection.pictos.map(picto => this.collectionRepository.publishPicto(picto, publicCollectionDto.publish, user));
             } catch(error){}
             try{
@@ -172,7 +175,7 @@ export class CollectionService {
         try{
             for(var i=0; i<verificationDto.pictoIds.length; i++){
                 try{
-                    const collection = await this.getCollectionById(verificationDto.pictoIds[i], user);
+                    const picto = await this.pictoService.getPictoById(verificationDto.pictoIds[i], user);
                 } catch(error) {
                     i=i-1;
                     verificationDto.pictoIds.splice(i, 1);

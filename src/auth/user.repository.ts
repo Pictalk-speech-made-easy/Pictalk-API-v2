@@ -149,7 +149,6 @@ export class UserRepository extends Repository<User> {
         }
         if(apikeys){
           const apis = await this.APIkeyFromDto(editUserDto.apinames, editUserDto.apikeys);
-          console.log(apis);
           user.apikeys = await this.APIkeyFromDto(editUserDto.apinames, editUserDto.apikeys);
         }
         try {

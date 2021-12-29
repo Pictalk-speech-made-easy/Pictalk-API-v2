@@ -81,12 +81,17 @@ export class CollectionController {
         this.logger.verbose(`User "${user.username}" Made a bad request that doesn't contain a file`);
         throw new NotFoundException(`There is no file or no filename`);
       } else {
-        const {meaning, speech, fatherCollectionId} = createCollectionDto;
-        if(verifyText(meaning, speech) && verifySameLength(meaning, speech)){
-          if(fatherCollectionId!=user.shared){
+        try {
+          createCollectionDto.meaning = JSON.parse(createCollectionDto.meaning);
+          createCollectionDto.speech = JSON.parse(createCollectionDto.speech);
+        } catch (error) {
+            throw new BadRequestException(`Object is invalid, should be "[{language: <xx-XX>, text: <string>}]"`);
+        }
+        if(verifyText(createCollectionDto.meaning, createCollectionDto.speech) && verifySameLength(createCollectionDto.meaning, createCollectionDto.speech)){
+          if(createCollectionDto.fatherCollectionId!=user.shared){
             this.logger.verbose(`User "${user.username}" creating Collection`);
             const collection = await this.collectionService.createCollection(createCollectionDto, user, file.filename);
-            const fatherCollection = await this.collectionService.getCollectionById(fatherCollectionId, user);
+            const fatherCollection = await this.collectionService.getCollectionById(createCollectionDto.fatherCollectionId, user);
             let fatherCollectionsIds = fatherCollection.collections.map(collection => {
               return collection.id;
             })
@@ -98,7 +103,7 @@ export class CollectionController {
               starred : null,
               color : null,
               collectionIds : fatherCollectionsIds}
-            this.collectionService.modifyCollection(fatherCollectionId, user, modifyCollectionDto, null);
+            this.collectionService.modifyCollection(createCollectionDto.fatherCollectionId, user, modifyCollectionDto, null);
             if(createCollectionDto.share){
               this.collectionService.autoShare(collection, fatherCollection);
               this.logger.verbose(`Auto sharing collection "${collection.id}" with viewers and editors`);
@@ -110,7 +115,7 @@ export class CollectionController {
           }
         } else {
           this.logger.verbose(`User "${user.username}"Made a bad request where Object has either invalid attributes or "meaning" and "speech" don't have the same length`);
-          throw new BadRequestException(`Object has either invalid attributes like bad language such as "en" instead of "en-US" or "meaning" and "speech" don't have the same length`);
+          throw new BadRequestException(`Object is invalid, should be "[{language: <xx-XX>, text: <string>}] and both should have same length`);
         }
       }
   }
@@ -143,8 +148,13 @@ export class CollectionController {
   )
   modifyCollection(@Param('id', ParseIntPipe) id: number, @GetUser() user: User, @Body() modifyCollectionDto: modifyCollectionDto, file: Express.Multer.File): Promise<Collection>{
     
-    const {meaning, speech} = modifyCollectionDto;
-    if((verifyText(meaning, speech) && verifySameLength(meaning, speech)) || (speech===null && meaning === null)){
+    try {
+          modifyCollectionDto.meaning = JSON.parse(modifyCollectionDto.meaning);
+          modifyCollectionDto.speech = JSON.parse(modifyCollectionDto.speech);
+        } catch (error) {
+            throw new BadRequestException(`Object is invalid, should be "[{language: <xx-XX>, text: <string>}]"`);
+        }
+    if((verifyText(modifyCollectionDto.meaning, modifyCollectionDto.speech) && verifySameLength(modifyCollectionDto.meaning, modifyCollectionDto.speech)) || (modifyCollectionDto.speech===null && modifyCollectionDto.meaning === null)){
       this.logger.verbose(`User "${user.username}" Modifying Collection with id ${id}`);
       if(file){
         return this.collectionService.modifyCollection(id, user, modifyCollectionDto, file.filename);
@@ -153,9 +163,7 @@ export class CollectionController {
       }
     } else {
       this.logger.verbose(`User "${user.username}"Made a bad request where Object has either invalid attributes or "meaning" and "speech" don't have the same length`);
-      throw new BadRequestException(`Object has either invalid attributes like bad language such as "en" instead of "en-US" or "meaning" and "speech" don't have the same length`);
+      throw new BadRequestException(`Object is invalid, should be "[{language: <xx-XX>, text: <string>}] and both should have same length`);
     }
   }
-
-
 }

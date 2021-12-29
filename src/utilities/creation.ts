@@ -1,7 +1,7 @@
 import { languagesRegex } from "./supported.languages";
 
 export const verifySameLength = (meaning: any, speech : any) => {
-    if(meaning.length == undefined && speech.length == undefined){
+    if(meaning === undefined && speech === undefined){
         return true;
     } else if(meaning.length === speech.length){
         return true;
@@ -11,6 +11,9 @@ export const verifySameLength = (meaning: any, speech : any) => {
 };
 
 export const verifyText = (meaning: any, speech : any) => {
+    if(meaning===undefined && speech === undefined){
+        return true;
+    }
     if(speech.length!= undefined){
         for(var i=0; i<speech.length; i++){
             if(validate(speech[i])===false){
