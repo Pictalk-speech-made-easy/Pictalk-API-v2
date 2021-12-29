@@ -1,16 +1,15 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsHexColor, IsNotEmpty, IsNumberString, IsOptional, IsString, Matches } from "class-validator";
-import { MLtext } from "src/entities/MLtext.entity";
+import { IsHexColor, IsNotEmpty, IsNumberString, IsOptional, Matches } from "class-validator";
 
 export class createPictoDto {
 
     @ApiProperty()
     @IsNotEmpty()
-    meaning: MLtext[];
+    meaning: any;
 
     @ApiProperty()
     @IsNotEmpty()
-    speech: MLtext[];
+    speech: any;
 
     @ApiProperty()
     @IsOptional()

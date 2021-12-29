@@ -68,6 +68,8 @@ export class PictoController {
           throw new NotFoundException(`There is no file or no filename`);
       } else {
         const { meaning, speech, fatherCollectionId} = createPictoDto;
+        console.log(meaning);
+        console.log(speech);
         if(verifyText(meaning, speech) && verifySameLength(meaning, speech)){
           if(fatherCollectionId!=user.shared){
             this.logger.verbose(`User "${user.username}" creating Picto`);
