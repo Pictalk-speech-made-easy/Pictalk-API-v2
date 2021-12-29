@@ -1,17 +1,9 @@
 import { HttpService } from '@nestjs/axios';
 import { Controller, Get, Header, Logger, Param, Query, Res, ValidationPipe } from '@nestjs/common';
 import { flickrAPIKey } from 'api';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { FilterDto } from './dto/flickr.search.dto';
 
-class FilterDto {
-    @IsNotEmpty()
-    @IsString()
-    search: string;
 
-    @IsNotEmpty()
-    @IsString()
-    language: string;
-}
 @Controller('image')
 export class ImageController {
     constructor(private httpService: HttpService) {}
