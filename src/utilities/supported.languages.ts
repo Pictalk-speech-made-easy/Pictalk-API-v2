@@ -1,2 +1,1 @@
-export const supportedLanguages = ["de", "el", "en", "es", "fr", "it", "pt", "ro"];
-export const languagesRegex = new RegExp(supportedLanguages.join('|'))
+export const languagesRegex = new RegExp("^[a-z]{2}-[A-Z]{2}$")

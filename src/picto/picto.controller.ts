@@ -94,7 +94,7 @@ export class PictoController {
           }
         } else {
           this.logger.verbose(`User "${user.username}"Made a bad request where Object has either invalid attributes or "meaning" and "speech" don't have the same length`);
-          throw new BadRequestException(`Object has either invalid attributes or "meaning" and "speech" don't have the same length`);
+          throw new BadRequestException(`Object has either invalid attributes like bad language such as "en" instead of "en-US" or "meaning" and "speech" don't have the same length`);
         }
       }
   }
@@ -129,7 +129,7 @@ export class PictoController {
       }
     } else {
       this.logger.verbose(`User "${user.username}"Made a bad request where Object has either invalid attributes or "meaning" and "speech" don't have the same length`);
-      throw new BadRequestException(`Object has either invalid attributes or "meaning" and "speech" don't have the same length`);
+      throw new BadRequestException(`Object has either invalid attributes like bad language such as "en" instead of "en-US" or "meaning" and "speech" don't have the same length`);
     }
   }
 }

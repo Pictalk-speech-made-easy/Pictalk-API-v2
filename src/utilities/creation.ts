@@ -39,7 +39,8 @@ export const verifyText = (meaning: any, speech : any) => {
 const validate = (object : any) => {
     if(object.language==undefined || object.text == undefined){
         return false;
-    } else if(!languagesRegex.test(object.language )){
+    } else if(!languagesRegex.test(object.language)){
+        return false;
     }
     return true;
 }
