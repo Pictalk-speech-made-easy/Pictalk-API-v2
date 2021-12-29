@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsString } from "class-validator";
+import { IsNotEmpty, IsString, Matches } from "class-validator";
+import { languagesRegex } from "src/utilities/supported.languages";
 
 export class FilterDto {
     @IsNotEmpty()
@@ -7,5 +8,6 @@ export class FilterDto {
 
     @IsNotEmpty()
     @IsString()
+    @Matches(languagesRegex)
     language: string;
 }
