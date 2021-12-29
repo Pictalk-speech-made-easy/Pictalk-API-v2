@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeOrmConfig } from './config/typeorm.config';
 import { ImageController } from './image/image.controller';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { ImageController } from './image/image.controller';
     PictoModule,
     CollectionModule, 
     AuthModule,
+    HttpModule,
   ],
   controllers: [AppController, ImageController],
   providers: [AppService],

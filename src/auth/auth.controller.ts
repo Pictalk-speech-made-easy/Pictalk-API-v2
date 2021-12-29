@@ -50,7 +50,7 @@ export class AuthController {
         return this.authService.signIn(authCredentialsDto);
       }
 
-      @Post('/resetPassword')
+      @Post('user/resetPassword')
       resetPassword(
         @Body(ValidationPipe) resetPasswordDto: ResetPasswordDto,
       ): Promise<void> {
@@ -59,7 +59,7 @@ export class AuthController {
         );
         return this.authService.resetPassword(resetPasswordDto);
       }
-      @Post('/changePassword/:token')
+      @Post('user/changePassword/:token')
       changePassword(
         @Body(ValidationPipe) changePasswordDto: ChangePasswordDto,
         @Param('token') token: string,
