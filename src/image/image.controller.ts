@@ -1,17 +1,10 @@
 import { HttpService } from '@nestjs/axios';
-import { Controller, Get, Header, Logger, Param, Query, Res, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, Header, InternalServerErrorException, Logger, Param, Query, Res, ValidationPipe } from '@nestjs/common';
 import { flickrAPIKey } from 'api';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { lastValueFrom } from 'rxjs';
+import { FilterDto } from './dto/flickr.search.dto';
 
-class FilterDto {
-    @IsNotEmpty()
-    @IsString()
-    search: string;
 
-    @IsNotEmpty()
-    @IsString()
-    language: string;
-}
 @Controller('image')
 export class ImageController {
     constructor(private httpService: HttpService) {}
@@ -24,7 +17,12 @@ export class ImageController {
     }
 
     @Get('/flickr/')
-    searchFlickr(@Query(ValidationPipe) filterDto: FilterDto): any {
-        return this.httpService.get(`https://www.flickr.com/services/rest/?sort=relevance&lang=${filterDto.language}&method=flickr.photos.search&api_key=${flickrAPIKey}&text=${filterDto.search}&safe_search=true&per_page=40&format=json&nojsoncallback=1`);
+    async searchFlickr(@Query(ValidationPipe) filterDto: FilterDto): Promise<any> {
+        try{
+            const response = await lastValueFrom(this.httpService.get(`https://www.flickr.com/services/rest/?sort=relevance&lang=${filterDto.language}&method=flickr.photos.search&api_key=${flickrAPIKey}&text=${filterDto.search}&safe_search=true&per_page=40&format=json&nojsoncallback=1`));
+            return response.data;
+        } catch(error) {
+            throw new InternalServerErrorException(`couldn't get images from Flickr`);
+        }
     }
 }
