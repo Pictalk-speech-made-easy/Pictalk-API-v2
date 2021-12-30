@@ -71,7 +71,7 @@ export class CollectionController {
   @UseInterceptors(
     FileInterceptor('image', {
       storage: diskStorage({
-        destination: './tmp',
+        destination: './files',
         filename: editFileName,
       }),
       fileFilter: imageFileFilter,
@@ -142,7 +142,7 @@ export class CollectionController {
   @UseInterceptors(
     FileInterceptor('image', {
       storage: diskStorage({
-        destination: './tmp',
+        destination: './files',
         filename: editFileName,
       }),
       fileFilter: imageFileFilter,
