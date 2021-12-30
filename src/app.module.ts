@@ -8,6 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeOrmConfig } from './config/typeorm.config';
 import { ImageController } from './image/image.controller';
 import { HttpModule } from '@nestjs/axios';
+import { TranslationController } from './translation/translation.controller';
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { HttpModule } from '@nestjs/axios';
     AuthModule,
     HttpModule,
   ],
-  controllers: [AppController, ImageController],
+  controllers: [AppController, ImageController, TranslationController],
   providers: [AppService],
 })
 export class AppModule {}
