@@ -1,5 +1,4 @@
 import { ForbiddenException, InternalServerErrorException, NotFoundException } from "@nestjs/common";
-import { unlink } from "fs";
 import { Collection } from "src/entities/collection.entity";
 import { MLtext } from "src/entities/MLtext.entity";
 import { Picto } from "src/entities/picto.entity";
@@ -51,7 +50,6 @@ export class CollectionRepository extends Repository<Collection>{
             collection.speech = await this.MLtextsFromObjects(speech);
         }
         if(filename){
-            unlink('./files/' + collection.image, () => {});
             collection.image = filename;
         }  
         if(starred){

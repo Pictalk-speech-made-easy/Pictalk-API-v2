@@ -9,7 +9,6 @@ import { sharePictoDto } from './dto/picto.share.dto';
 import { AuthService } from 'src/auth/auth.service';
 import { Collection } from 'src/entities/collection.entity';
 import { CollectionService } from 'src/collection/collection.service';
-import { unlink } from 'fs';
 import { deletePictoDto } from './dto/picto.delete.dto';
 import { modifyCollectionDto } from 'src/collection/dto/collection.modify.dto';
 
@@ -93,9 +92,6 @@ export class PictoService {
                 pictoIds : fatherPictosIds
             }
             await this.collectionService.modifyCollection(deletePictoDto.fatherId, user, modifyCollectionDto, null);
-        }
-        if(picto.image){
-            unlink('./files/'+picto.image,()=>{});
         }
         try {
             const result = await this.pictoRepository.delete({

@@ -1,5 +1,4 @@
 import { InternalServerErrorException } from "@nestjs/common";
-import { unlink } from "fs";
 import { Collection } from "src/entities/collection.entity";
 import { MLtext } from "src/entities/MLtext.entity";
 import { Picto } from "src/entities/picto.entity";
@@ -47,7 +46,6 @@ export class PictoRepository extends Repository<Picto> {
             picto.color=color;
         }
         if (filename) {
-            unlink('./files/' + picto.image, () => {});
             picto.image = filename;
         }
         if(collectionIds){

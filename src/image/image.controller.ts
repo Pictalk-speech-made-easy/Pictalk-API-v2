@@ -13,7 +13,7 @@ export class ImageController {
     @Header('Cache-Control', 'max-age=31536000')
     seeUploadedFile(@Param('imgpath') image, @Res() res) {
         this.logger.verbose(`Requesting image with path : ${image}`);
-        return res.sendFile(image, { root: './files/' });
+        return res.sendFile(image, { root: './files/'});
     }
 
     @Get('/flickr/')

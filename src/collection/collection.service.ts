@@ -1,6 +1,5 @@
 import { forwardRef, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { unlink } from 'fs';
 import { AuthService } from 'src/auth/auth.service';
 import { Collection } from 'src/entities/collection.entity';
 import { Notif } from 'src/entities/notification.entity';
@@ -84,9 +83,6 @@ export class CollectionService {
                     collectionIds : fatherCollectionsIds
                 }
                 await this.modifyCollection(deleteCollectionDto.fatherId, user, modifyCollectionDto, null);
-            }
-            if(collection.image){
-                unlink('./files/' + collection.image, () => {});
             }
             try{
                 const result = await this.collectionRepository.delete({

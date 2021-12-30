@@ -6,7 +6,7 @@ import { GetUser } from 'src/auth/get-user.decorator';
 import { Collection } from 'src/entities/collection.entity';
 import { User } from 'src/entities/user.entity';
 import { verifySameLength, verifyText } from 'src/utilities/creation';
-import { editFileName, imageFileFilter } from 'src/utilities/tools';
+import { editFileName, hashImage, imageFileFilter } from 'src/utilities/tools';
 import { CollectionService } from './collection.service';
 import { createCollectionDto } from './dto/collection.create.dto';
 import {ApiOperation} from '@nestjs/swagger';
@@ -14,6 +14,7 @@ import { modifyCollectionDto } from './dto/collection.modify.dto';
 import { shareCollectionDto } from './dto/collection.share.dto';
 import { publicCollectionDto } from './dto/collection.public.dto';
 import { deleteCollectionDto } from './dto/collection.delete.dto';
+import { extname } from 'path';
 
 @Controller('collection')
 export class CollectionController {
@@ -71,7 +72,7 @@ export class CollectionController {
   @UseInterceptors(
     FileInterceptor('image', {
       storage: diskStorage({
-        destination: './files',
+        destination: './tmp',
         filename: editFileName,
       }),
       fileFilter: imageFileFilter,
@@ -91,7 +92,8 @@ export class CollectionController {
         if(verifyText(createCollectionDto.meaning, createCollectionDto.speech) && verifySameLength(createCollectionDto.meaning, createCollectionDto.speech)){
           if(createCollectionDto.fatherCollectionId!=user.shared){
             this.logger.verbose(`User "${user.username}" creating Collection`);
-            const collection = await this.collectionService.createCollection(createCollectionDto, user, file.filename);
+            const filename = await hashImage(file);
+            const collection = await this.collectionService.createCollection(createCollectionDto, user, filename);
             const fatherCollection = await this.collectionService.getCollectionById(createCollectionDto.fatherCollectionId, user);
             let fatherCollectionsIds = fatherCollection.collections.map(collection => {
               return collection.id;
@@ -142,7 +144,7 @@ export class CollectionController {
   @UseInterceptors(
     FileInterceptor('image', {
       storage: diskStorage({
-        destination: './files',
+        destination: './tmp',
         filename: editFileName,
       }),
       fileFilter: imageFileFilter,
@@ -161,7 +163,8 @@ export class CollectionController {
     if((verifyText(modifyCollectionDto.meaning, modifyCollectionDto.speech) && verifySameLength(modifyCollectionDto.meaning, modifyCollectionDto.speech)) || (modifyCollectionDto.speech===null && modifyCollectionDto.meaning === null)){
       this.logger.verbose(`User "${user.username}" Modifying Collection with id ${id}`);
       if(file){
-        return this.collectionService.modifyCollection(id, user, modifyCollectionDto, file.filename);
+          const filename = await hashImage(file);
+        return this.collectionService.modifyCollection(id, user, modifyCollectionDto, filename);
       } else {
         return this.collectionService.modifyCollection(id, user, modifyCollectionDto, null);
       }

@@ -5,7 +5,7 @@ import { diskStorage } from 'multer';
 import { GetUser } from 'src/auth/get-user.decorator';
 import { Picto } from 'src/entities/picto.entity';
 import { User } from 'src/entities/user.entity';
-import { editFileName, imageFileFilter } from 'src/utilities/tools';
+import { editFileName, hashImage, imageFileFilter } from 'src/utilities/tools';
 import { PictoService } from './picto.service';
 import { createPictoDto } from './dto/picto.create.dto';
 import { modifyPictoDto } from './dto/picto.modify.dto';
@@ -15,6 +15,7 @@ import { modifyCollectionDto } from 'src/collection/dto/collection.modify.dto';
 import { ApiOperation } from '@nestjs/swagger';
 import { sharePictoDto } from './dto/picto.share.dto';
 import { deletePictoDto } from './dto/picto.delete.dto';
+import { extname } from 'path';
 
 @Controller('picto')
 export class PictoController {
@@ -59,7 +60,7 @@ export class PictoController {
   @UseInterceptors(
     FileInterceptor('image', {
       storage: diskStorage({
-        destination: './files',
+        destination: './tmp',
         filename: editFileName,
       }),
       fileFilter: imageFileFilter,
@@ -79,7 +80,8 @@ export class PictoController {
         if(verifyText(createPictoDto.meaning, createPictoDto.speech) && verifySameLength(createPictoDto.meaning, createPictoDto.speech)){
           if(createPictoDto.fatherCollectionId!=user.shared){
             this.logger.verbose(`User "${user.username}" creating Picto`);
-            const picto = await this.pictoService.createPicto(createPictoDto, user, file.filename);
+            const filename = await hashImage(file);
+            const picto = await this.pictoService.createPicto(createPictoDto, user, filename);
             const fatherCollection = await this.collectionService.getCollectionById(createPictoDto.fatherCollectionId, user);
             let fatherPictosIds = fatherCollection.pictos.map(picto => {return picto.id;})
             fatherPictosIds.push(picto.id);
@@ -121,7 +123,7 @@ export class PictoController {
   @UseInterceptors(
     FileInterceptor('image', {
       storage: diskStorage({
-        destination: './files',
+        destination: './tmp',
         filename: editFileName,
       }),
       fileFilter: imageFileFilter,
@@ -139,7 +141,8 @@ export class PictoController {
     if((verifyText(modifyPictoDto.meaning, modifyPictoDto.speech) && verifySameLength(modifyPictoDto.meaning, modifyPictoDto.speech)) || (modifyPictoDto.speech===null && modifyPictoDto.meaning === null)){
       this.logger.verbose(`User "${user.username}" Modifying Picto with id ${id}`);
       if(file){
-          return this.pictoService.modifyPicto(id, user, modifyPictoDto, file.filename);
+          const filename = await hashImage(file);
+          return this.pictoService.modifyPicto(id, user, modifyPictoDto, filename);
       } else {
           return this.pictoService.modifyPicto(id, user, modifyPictoDto, null);
       }

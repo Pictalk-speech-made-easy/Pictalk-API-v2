@@ -1,3 +1,6 @@
+import { NotFoundException } from '@nestjs/common';
+import { copyFile, unlink, constants } from 'fs';
+import { imageHash } from 'image-hash';
 import { extname } from 'path';
 
 export const getArrayIfNeeded = function(input) {
@@ -34,3 +37,25 @@ export const boolString = (string) => {
 
   }
 }
+
+
+export async function hashImage(file: Express.Multer.File) {
+  const filename = file.filename;
+  const extension = extname(file.originalname);
+  const hash: string = await new Promise((resolve, reject) => imageHash('./tmp/'+filename, 16, false, ((error, hash1) => {
+    if (error) {
+        reject(error);
+    } else {
+        resolve(hash1);
+    }
+  })));
+  const hashedname = hash+extension;
+  copyFile('./tmp/'+filename, './files/'+hashedname, constants.COPYFILE_EXCL, (err) => {
+    if(err){
+      if(err.code != 'EEXIST'){
+        throw new NotFoundException(`Couldn't find file: ${filename}, Error is : ${err}`);
+      }
+    }
+  });
+  return hashedname;
+} 
