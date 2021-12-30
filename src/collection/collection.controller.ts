@@ -5,7 +5,7 @@ import { diskStorage } from 'multer';
 import { GetUser } from 'src/auth/get-user.decorator';
 import { Collection } from 'src/entities/collection.entity';
 import { User } from 'src/entities/user.entity';
-import { verifySameLength, verifyText } from 'src/utilities/creation';
+import { IsValid } from 'src/utilities/creation';
 import { editFileName, hashImage, imageFileFilter } from 'src/utilities/tools';
 import { CollectionService } from './collection.service';
 import { createCollectionDto } from './dto/collection.create.dto';
@@ -14,7 +14,6 @@ import { modifyCollectionDto } from './dto/collection.modify.dto';
 import { shareCollectionDto } from './dto/collection.share.dto';
 import { publicCollectionDto } from './dto/collection.public.dto';
 import { deleteCollectionDto } from './dto/collection.delete.dto';
-import { extname } from 'path';
 
 @Controller('collection')
 export class CollectionController {
@@ -83,13 +82,7 @@ export class CollectionController {
         this.logger.verbose(`User "${user.username}" Made a bad request that doesn't contain a file`);
         throw new NotFoundException(`There is no file or no filename`);
       } else {
-        try {
-          createCollectionDto.meaning = JSON.parse(createCollectionDto.meaning);
-          createCollectionDto.speech = JSON.parse(createCollectionDto.speech);
-        } catch (error) {
-            throw new BadRequestException(`Object is invalid, should be "[{language: <xx-XX>, text: <string>}]"`);
-        }
-        if(verifyText(createCollectionDto.meaning, createCollectionDto.speech) && verifySameLength(createCollectionDto.meaning, createCollectionDto.speech)){
+        if(IsValid(createCollectionDto.meaning, createCollectionDto.speech)){
           if(createCollectionDto.fatherCollectionId!=user.shared){
             this.logger.verbose(`User "${user.username}" creating Collection`);
             const filename = await hashImage(file);
@@ -118,7 +111,7 @@ export class CollectionController {
           }
         } else {
           this.logger.verbose(`User "${user.username}"Made a bad request where Object has either invalid attributes or "meaning" and "speech" don't have the same length`);
-          throw new BadRequestException(`Object is invalid, should be "[{language: <xx-XX>, text: <string>}] and both should have same length`);
+          throw new BadRequestException(`Object is invalid, should be "{language <xx-XX> : text <string>} and both should have same length`);
         }
       }
   }
@@ -151,16 +144,7 @@ export class CollectionController {
     }),
   )
   async modifyCollection(@Param('id', ParseIntPipe) id: number, @GetUser() user: User, @Body() modifyCollectionDto: modifyCollectionDto, @UploadedFile() file: Express.Multer.File): Promise<Collection>{
-    
-    try {
-          if(modifyCollectionDto.meaning != undefined &&  modifyCollectionDto.speech != undefined){
-            modifyCollectionDto.meaning = JSON.parse(modifyCollectionDto.meaning);
-            modifyCollectionDto.speech = JSON.parse(modifyCollectionDto.speech);
-          }
-        } catch (error) {
-            throw new BadRequestException(`Object is invalid, should be "[{language: <xx-XX>, text: <string>}]"`);
-        }
-    if((verifyText(modifyCollectionDto.meaning, modifyCollectionDto.speech) && verifySameLength(modifyCollectionDto.meaning, modifyCollectionDto.speech)) || (modifyCollectionDto.speech===null && modifyCollectionDto.meaning === null)){
+    if(IsValid(modifyCollectionDto.meaning, modifyCollectionDto.speech)){      
       this.logger.verbose(`User "${user.username}" Modifying Collection with id ${id}`);
       if(file){
           const filename = await hashImage(file);
@@ -170,7 +154,7 @@ export class CollectionController {
       }
     } else {
       this.logger.verbose(`User "${user.username}"Made a bad request where Object has either invalid attributes or "meaning" and "speech" don't have the same length`);
-      throw new BadRequestException(`Object is invalid, should be "[{language: <xx-XX>, text: <string>}] and both should have same length`);
+      throw new BadRequestException(`Object is invalid, should be "{language <xx-XX> : text <string>} and both should have same length`);
     }
   }
 }

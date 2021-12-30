@@ -1,6 +1,5 @@
 import { InternalServerErrorException } from "@nestjs/common";
 import { Collection } from "src/entities/collection.entity";
-import { MLtext } from "src/entities/MLtext.entity";
 import { Picto } from "src/entities/picto.entity";
 import { User } from "src/entities/user.entity";
 import { parseNumberArray } from "src/utilities/tools";
@@ -14,8 +13,8 @@ export class PictoRepository extends Repository<Picto> {
     async createPicto(createPictoDto: createPictoDto, user: User, filename: string): Promise<Picto> {
         let { meaning, speech, collectionIds, color} = createPictoDto;
         const picto = new Picto();
-        picto.meaning = await this.MLtextsFromObjects(meaning);
-        picto.speech = await this.MLtextsFromObjects(speech);
+        picto.meaning = meaning;
+        picto.speech = speech;
         picto.image = filename;
         picto.userId = user.id;
         if(color){
@@ -37,10 +36,10 @@ export class PictoRepository extends Repository<Picto> {
     async modifyPicto(picto: Picto, modifyPictoDto: modifyPictoDto, user: User, filename: string): Promise<Picto> {
         let { meaning, speech, collectionIds, starred, color} = modifyPictoDto;
         if(meaning){
-            picto.meaning = await this.MLtextsFromObjects(meaning);
+            picto.meaning = meaning;
         }
         if(speech){
-            picto.speech = await this.MLtextsFromObjects(speech);
+            picto.speech = speech;
         }
         if(color){
             picto.color=color;
@@ -59,26 +58,6 @@ export class PictoRepository extends Repository<Picto> {
         //delete picto.user;
         return picto;
     }
-    
-    async MLtextFromObject(object :any): Promise<MLtext>{
-        const mltext = new MLtext();
-        mltext.language=object['language'];
-        mltext.text=object['text'];
-        return mltext
-    }
-
-    async MLtextsFromObjects(array : any): Promise<MLtext[]>{
-        const mltexts: MLtext[]=[];
-        if(array.length!=undefined){
-            for(let index = 0; index<array.length; index++){
-                mltexts.push(await this.MLtextFromObject(array[index]));
-            }
-        } else {
-            mltexts.push(await this.MLtextFromObject(array));
-        }
-        return mltexts;
-    }
-
 
     async sharePicto(picto: Picto, sharePictoDto: sharePictoDto, user: User): Promise<Picto>{
         try{

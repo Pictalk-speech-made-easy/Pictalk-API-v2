@@ -1,6 +1,5 @@
 import { ForbiddenException, InternalServerErrorException, NotFoundException } from "@nestjs/common";
 import { Collection } from "src/entities/collection.entity";
-import { MLtext } from "src/entities/MLtext.entity";
 import { Picto } from "src/entities/picto.entity";
 import { User } from "src/entities/user.entity";
 import { getArrayIfNeeded, parseNumberArray } from "src/utilities/tools";
@@ -14,8 +13,8 @@ export class CollectionRepository extends Repository<Collection>{
     async createCollection(createCollectionDto: createCollectionDto, user: User, filename: string): Promise<Collection> {
         let { meaning, speech, pictoIds, collectionIds, color } = createCollectionDto;
         const collection = new Collection();
-        collection.meaning = await this.MLtextsFromObjects(meaning);
-        collection.speech = await this.MLtextsFromObjects(speech);
+        collection.meaning = meaning;
+        collection.speech = speech;
         collection.userId = user.id;
         if(pictoIds){
             pictoIds=parseNumberArray(pictoIds);
@@ -44,10 +43,10 @@ export class CollectionRepository extends Repository<Collection>{
     async modifyCollection(collection: Collection, modifyCollectionDto: modifyCollectionDto, user: User, filename: string): Promise<Collection>{
         let {meaning, speech, starred, pictoIds, collectionIds, color}= modifyCollectionDto;
         if(meaning){
-            collection.meaning = await this.MLtextsFromObjects(meaning);
+            collection.meaning = meaning;
         }
         if(speech){
-            collection.speech = await this.MLtextsFromObjects(speech);
+            collection.speech = speech;
         }
         if(filename){
             collection.image = filename;
@@ -109,11 +108,8 @@ export class CollectionRepository extends Repository<Collection>{
     async createRoot(user: User): Promise<number>{
         if(user.root===null){
             const root = new Collection();
-            const mltext = new MLtext();
-            mltext.language="";
-            mltext.text=""
-            root.meaning = getArrayIfNeeded(mltext);
-            root.speech = getArrayIfNeeded(mltext);
+            root.meaning = "";
+            root.speech = "";
             root.userId = user.id;
             try {
                 await root.save();
@@ -135,11 +131,8 @@ export class CollectionRepository extends Repository<Collection>{
     async createShared(user: User): Promise<number>{
         if(user.shared===null){
             const shared = new Collection();
-            const mltext = new MLtext();
-            mltext.language="";
-            mltext.text=""
-            shared.meaning = getArrayIfNeeded(mltext);
-            shared.speech = getArrayIfNeeded(mltext);
+            shared.meaning = "";
+            shared.speech = "";
             shared.userId = user.id;
             try {
                 await shared.save();
@@ -156,27 +149,6 @@ export class CollectionRepository extends Repository<Collection>{
             throw new ForbiddenException(`cannot create a new "shared with me" for User ${user.username}. User already has a shared collection ${user.shared}`);
         }
         return user.shared;
-    }
-
-    
-
-    async MLtextFromObject(object :any): Promise<MLtext>{
-        const mltext = new MLtext();
-        mltext.language=object['language'];
-        mltext.text=object['text'];
-        return mltext
-    }
-
-    async MLtextsFromObjects(array : any): Promise<MLtext[]>{
-        const mltexts: MLtext[]=[];
-        if(array.length!=undefined){
-            for(let index = 0; index<array.length; index++){
-                mltexts.push(await this.MLtextFromObject(array[index]));
-            }
-        } else {
-            mltexts.push(await this.MLtextFromObject(array));
-        }
-        return mltexts;
     }
 
     async shareCollectionFromDto(collection: Collection, shareCollectionDto: shareCollectionDto): Promise<Collection>{

@@ -1,51 +1,29 @@
 import { languagesRegex } from "./supported.languages";
+import { getArrayIfNeeded } from "./tools";
 
-export const verifySameLength = (meaning: any, speech : any) => {
-    if(meaning === undefined && speech === undefined){
-        return true;
-    } else if(meaning.length === speech.length){
-        return true;
-    } else {
-        return false;
-    }
-};
-
-export const verifyText = (meaning: any, speech : any) => {
-    if(meaning===undefined && speech === undefined){
-        return true;
-    }
-    if(speech.length!= undefined){
-        for(var i=0; i<speech.length; i++){
-            if(validate(speech[i])===false){
-                return false;
+export const IsValid = (meaning: any, speech : any) => {
+    try {
+        meaning = JSON.parse(meaning);
+        speech = JSON.parse(speech);
+        const meaningkeys=getArrayIfNeeded(Object.keys(meaning));
+        const speechkeys=getArrayIfNeeded (Object.keys(speech));
+        if(meaningkeys.length === speechkeys.length){
+            for(let index=0; index<meaningkeys.length; index++){
+                if(!(languagesRegex.test(meaningkeys[index]))||!(languagesRegex.test(speechkeys[index]))){
+                    return false
+                }
             }
+            return true;
+        } else {
+            return false;
         }
-    } else {
-        if(!validate(speech)){
+    } catch(error){
+        if(meaning === undefined && speech === undefined){
+            return true 
+        } else {
             return false;
         }
     }
-    if(meaning.length!= undefined){
-        for(i=0; i<meaning.length; i++){
-            if(validate(meaning[i])===false){
-                return false;
-            }
-        }
-    } else {
-        if(!validate(meaning)){
-            return false;
-        }
-    }
-    return true;
-}
-
-const validate = (object : any) => {
-    if(object['language']==undefined || object['text'] == undefined){
-        return false;
-    } else if(!languagesRegex.test(object['language'])){
-        return false;
-    }
-    return true;
 }
 
 export const verifyAPIs = (apinames: string[], apikeys: string[]) => {
