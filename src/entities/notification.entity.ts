@@ -1,7 +1,6 @@
 export class Notif{
     type: string;
     operation: string;
-    affected : number;
+    affected : string;
     username : string;
-    optional: string;
 }

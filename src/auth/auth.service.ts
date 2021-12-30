@@ -101,7 +101,7 @@ export class AuthService {
         return user.notifications;
     }
 
-    async pushNotification(user: User, notification : Notif): Promise<void>{
+    async pushNotification(user: User, notification : Notif): Promise<Notif[]>{
         return this.userRepository.pushNotification(user, notification);
     }
 

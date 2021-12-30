@@ -49,7 +49,7 @@ export class User extends BaseEntity {
   @Column("text",{default: [], array: true})
   directSharers: string[];
 
-  @Column({type: "jsonb", array: true, default: []})
+  @Column({type: "jsonb", default: []})
   notifications : Notif[];
 
   @Column({type: "jsonb", default: []})

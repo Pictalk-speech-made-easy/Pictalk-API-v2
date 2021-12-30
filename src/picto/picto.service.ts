@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Picto } from 'src/entities/picto.entity';
 import { User } from 'src/entities/user.entity';
@@ -10,6 +10,8 @@ import { AuthService } from 'src/auth/auth.service';
 import { Collection } from 'src/entities/collection.entity';
 import { CollectionService } from 'src/collection/collection.service';
 import { unlink } from 'fs';
+import { deletePictoDto } from './dto/picto.delete.dto';
+import { modifyCollectionDto } from 'src/collection/dto/collection.modify.dto';
 
 @Injectable()
 export class PictoService {
@@ -75,18 +77,41 @@ export class PictoService {
         return this.pictoRepository.createPicto(createPictoDto, user, filename);
     }
 
-    async deletePicto(id: number, user: User): Promise<void> {
-        const picto = await this.getPictoById(id, user);
+    async deletePicto(deletePictoDto: deletePictoDto, user: User): Promise<void> {
+        const picto = await this.getPictoById(deletePictoDto.pictoId, user);
+        if(deletePictoDto.fatherId){
+            deletePictoDto.fatherId=Number(deletePictoDto.fatherId);
+            const fatherCollection = await this.collectionService.getCollectionById(deletePictoDto.fatherId, user);
+            let fatherPictosIds = fatherCollection.pictos.map(picto => {return picto.id;})
+            fatherPictosIds.splice(fatherPictosIds.indexOf(deletePictoDto.pictoId),1);
+            const modifyCollectionDto : modifyCollectionDto = {
+                meaning : null,
+                speech : null,
+                collectionIds : null,
+                starred : null,
+                color : null,
+                pictoIds : fatherPictosIds}
+            this.collectionService.modifyCollection(deletePictoDto.fatherId, user, modifyCollectionDto, null);
+        }
         if(picto.image){
             unlink('./files/'+picto.image,()=>{});
         }
-        const result = await this.pictoRepository.delete({
-            id: id,
-            userId: user.id,
-          });
-        if(result.affected===0) {
-            throw new NotFoundException(`Picto with ID "${id}" not found`);
+        try {
+            const result = await this.pictoRepository.delete({
+                id: deletePictoDto.pictoId,
+                userId: user.id,
+              });
+            if(result.affected===0) {
+                throw new NotFoundException(`Picto with ID "${deletePictoDto.pictoId}" not found`);
+            }
+        } catch(error){
+            if(error.code === "23503"){
+                return;
+            } else {
+                throw new InternalServerErrorException(`couldn't delete picto with id ${deletePictoDto.pictoId}`);
+            }
         }
+        
     }
 
     async modifyPicto(id: number, user: User, modifyPictoDto: modifyPictoDto, filename: string): Promise<Picto>{

@@ -124,7 +124,6 @@ export class UserRepository extends Repository<User> {
         delete user.resetPasswordToken;
         delete user.resetPasswordExpires;
         delete user.pictos;
-        delete user.notifications;
         delete user.admin;
         return user;
       }
@@ -209,13 +208,14 @@ export class UserRepository extends Repository<User> {
         return user.notifications;
       }
 
-      async pushNotification(user: User, notification : Notif): Promise<void>{
+      async pushNotification(user: User, notification : Notif): Promise<Notif[]>{
         user.notifications.push(notification);
         try {
           await user.save();
         } catch (error) {
           throw new InternalServerErrorException(error);
         }
-        return;
+        return user.notifications;
+        
     }
 }

@@ -9,6 +9,7 @@ import { User } from 'src/entities/user.entity';
 import { PictoService } from 'src/picto/picto.service';
 import { CollectionRepository } from './collection.repository';
 import { createCollectionDto } from './dto/collection.create.dto';
+import { deleteCollectionDto } from './dto/collection.delete.dto';
 import { modifyCollectionDto } from './dto/collection.modify.dto';
 import { publicCollectionDto } from './dto/collection.public.dto';
 import { shareCollectionDto } from './dto/collection.share.dto';
@@ -66,18 +67,40 @@ export class CollectionService {
         return this.collectionRepository.createShared(user);
     }
 
-    async deleteCollection(id: number, user: User): Promise<void>{
-        if(id!=user.root && id!=user.shared){
-            const collection = await this.getCollectionById(id, user);
+    async deleteCollection(deleteCollectionDto: deleteCollectionDto, user: User): Promise<void>{
+        if(deleteCollectionDto.collectionId!=user.root && deleteCollectionDto.collectionId!=user.shared){
+            const collection = await this.getCollectionById(deleteCollectionDto.collectionId, user);
+            if(deleteCollectionDto.fatherId){
+                deleteCollectionDto.fatherId=Number(deleteCollectionDto.fatherId);
+                const fatherCollection = await this.getCollectionById(deleteCollectionDto.fatherId, user);
+                let fatherCollectionsIds = fatherCollection.collections.map(collection => {return collection.id;})
+                fatherCollectionsIds.splice(fatherCollectionsIds.indexOf(deleteCollectionDto.collectionId),1);
+                const modifyCollectionDto : modifyCollectionDto = {
+                    meaning : null,
+                    speech : null,
+                    pictoIds : null,
+                    starred : null,
+                    color : null,
+                    collectionIds : fatherCollectionsIds}
+                this.modifyCollection(deleteCollectionDto.fatherId, user, modifyCollectionDto, null);
+            }
             if(collection.image){
                 unlink('./files/' + collection.image, () => {});
             }
-            const result = await this.collectionRepository.delete({
-                id: id,
-                userId: user.id,
-              });
-            if(result.affected===0) {
-                throw new NotFoundException(`Collection with ID '${id}' not found`);
+            try{
+                const result = await this.collectionRepository.delete({
+                    id: deleteCollectionDto.collectionId,
+                    userId: user.id,
+                  });
+                if(result.affected===0) {
+                    throw new NotFoundException(`Collection with ID '${deleteCollectionDto.collectionId}' not found`);
+                }
+            } catch(error){
+                if(error.code === "23503"){
+                    return;
+                } else {
+                    throw new InternalServerErrorException(`couldn't delete picto with id ${deleteCollectionDto.collectionId}`);
+                }
             }
         } else {
             throw new UnauthorizedException(`Cannot delete "root" or "shared with me" Collections of User ${user.username}`);
@@ -116,9 +139,20 @@ export class CollectionService {
                     const sharerRoot = await this.getCollectionById(sharer.root, sharer);
                     this.collectionRepository.pushCollection(sharerRoot, collection);
                 }
-                const notification = await this.createNotif(id, user, "collection", "share");
-                this.authService.pushNotification(sharer, notification);
-                return this.shareCollectionById(id, shareCollectionDto, user);
+                console.log(collection.editors, collection.viewers);
+                if(shareCollectionDto.access==1){
+                    if((collection.editors.indexOf(sharer.username)===-1) && (collection.viewers.indexOf(sharer.username)===-1)){
+                        const notification = await this.createNotif(id, user, "collection", "share");
+                        this.authService.pushNotification(sharer, notification);
+                        return this.shareCollectionById(id, shareCollectionDto, user);
+                    }   
+                } else if (shareCollectionDto.access == 0){
+                    if((collection.editors.indexOf(sharer.username)!==-1) || (collection.viewers.indexOf(sharer.username)!==-1)){
+                        const notification = await this.createNotif(id, user, "collection", "unshare");
+                        this.authService.pushNotification(sharer, notification);
+                        return this.shareCollectionById(id, shareCollectionDto, user);
+                    } 
+                }
             } else {
                 throw new NotFoundException(`Collection with ID '${id}' not found`);
             }
@@ -128,10 +162,10 @@ export class CollectionService {
     }
 
     async createNotif(id : number, user: User, type: string, operation: string): Promise<Notif>{
-        const notification = new Notif()
-        notification.affected=id;
-        notification.operation=operation;
+        const notification: Notif = new Notif()
         notification.type=type;
+        notification.operation=operation;
+        notification.affected=id.toString();
         notification.username=user.username;
         return notification;
     } 

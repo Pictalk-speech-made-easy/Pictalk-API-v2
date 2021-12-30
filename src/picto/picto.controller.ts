@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, ForbiddenException, forwardRef, Get, Inject, Logger, NotFoundException, Param, ParseIntPipe, Post, Put, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, ForbiddenException, forwardRef, Get, Inject, Logger, NotFoundException, Param, ParseIntPipe, Post, Put, Query, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -15,6 +15,7 @@ import { modifyCollectionDto } from 'src/collection/dto/collection.modify.dto';
 import { ApiOperation } from '@nestjs/swagger';
 import { sharePictoDto } from './dto/picto.share.dto';
 import { NoDuplicatasService } from 'src/image/noDuplicatas.service';
+import { deletePictoDto } from './dto/picto.delete.dto';
 
 @Controller('picto')
 export class PictoController {
@@ -110,10 +111,11 @@ export class PictoController {
   }
 
   @UseGuards(AuthGuard())
-  @Delete('/:id')
-  deletePicto(@Param('id', ParseIntPipe) id: number, @GetUser() user: User): Promise<void> {
-    this.logger.verbose(`User "${user.username}" deleting Picto with id ${id}`);
-    return this.pictoService.deletePicto(id, user);
+  @Delete()
+  deletePicto(@Query(ValidationPipe) deletePictoDto: deletePictoDto, @GetUser() user: User): Promise<void> {
+    deletePictoDto.pictoId=Number(deletePictoDto.pictoId);
+    this.logger.verbose(`User "${user.username}" deleting Picto with id ${deletePictoDto.pictoId}`);
+    return this.pictoService.deletePicto(deletePictoDto, user);
   }
 
   @UseGuards(AuthGuard())
@@ -128,13 +130,15 @@ export class PictoController {
       fileFilter: imageFileFilter,
     }),
   )
-  async modifyPicto(@Param('id', ParseIntPipe) id: number, @GetUser() user: User, @Body() modifyPictoDto: modifyPictoDto, file: Express.Multer.File): Promise<Picto>{
+  async modifyPicto(@Param('id', ParseIntPipe) id: number, @GetUser() user: User, @Body() modifyPictoDto: modifyPictoDto, @UploadedFile() file: Express.Multer.File): Promise<Picto>{
     try {
+        if(modifyPictoDto.meaning != undefined &&  modifyPictoDto.speech != undefined){
           modifyPictoDto.meaning = JSON.parse(modifyPictoDto.meaning);
           modifyPictoDto.speech = JSON.parse(modifyPictoDto.speech);
-        } catch (error) {
-            throw new BadRequestException(`Object is invalid, should be "[{language: <xx-XX>, text: <string>}]"`);
         }
+      } catch (error) {
+          throw new BadRequestException(`Object is invalid, should be "[{language: <xx-XX>, text: <string>}]"`);
+      }
     if((verifyText(modifyPictoDto.meaning, modifyPictoDto.speech) && verifySameLength(modifyPictoDto.meaning, modifyPictoDto.speech)) || (modifyPictoDto.speech===null && modifyPictoDto.meaning === null)){
       this.logger.verbose(`User "${user.username}" Modifying Picto with id ${id}`);
       if(file){

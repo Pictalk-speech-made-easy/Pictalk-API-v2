@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, ForbiddenException, Get, Logger, NotFoundException, Param, ParseIntPipe, Post, Put, UnauthorizedException, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, ForbiddenException, Get, Logger, NotFoundException, Param, ParseIntPipe, Post, Put, Query, UnauthorizedException, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -14,6 +14,7 @@ import { modifyCollectionDto } from './dto/collection.modify.dto';
 import { shareCollectionDto } from './dto/collection.share.dto';
 import { publicCollectionDto } from './dto/collection.public.dto';
 import { NoDuplicatasService } from 'src/image/noDuplicatas.service';
+import { deleteCollectionDto } from './dto/collection.delete.dto';
 
 @Controller('collection')
 export class CollectionController {
@@ -131,10 +132,11 @@ export class CollectionController {
   }
 
   @UseGuards(AuthGuard())
-  @Delete('/:id')
-  deleteCollection(@Param('id', ParseIntPipe) id: number, @GetUser() user: User): Promise<void> {
-    this.logger.verbose(`User "${user.username}" deleting Collection with id ${id}`);
-    return this.collectionService.deleteCollection(id, user);
+  @Delete()
+  deleteCollection(@Query(ValidationPipe) deleteCollectionDto: deleteCollectionDto, @GetUser() user: User): Promise<void> {
+    deleteCollectionDto.collectionId=Number(deleteCollectionDto.collectionId);
+    this.logger.verbose(`User "${user.username}" deleting Collection with id ${deleteCollectionDto.collectionId}`);
+    return this.collectionService.deleteCollection(deleteCollectionDto, user);
   }
 
   @UseGuards(AuthGuard())
@@ -149,7 +151,7 @@ export class CollectionController {
       fileFilter: imageFileFilter,
     }),
   )
-  async modifyCollection(@Param('id', ParseIntPipe) id: number, @GetUser() user: User, @Body() modifyCollectionDto: modifyCollectionDto, file: Express.Multer.File): Promise<Collection>{
+  async modifyCollection(@Param('id', ParseIntPipe) id: number, @GetUser() user: User, @Body() modifyCollectionDto: modifyCollectionDto, @UploadedFile() file: Express.Multer.File): Promise<Collection>{
     
     try {
           if(modifyCollectionDto.meaning != undefined &&  modifyCollectionDto.speech != undefined){
