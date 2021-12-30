@@ -1,4 +1,5 @@
 import { BaseEntity, Column, Entity, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Image } from "./image.entity";
 import { MLtext } from "./MLtext.entity";
 import { Picto } from "./picto.entity";
 import { User } from "./user.entity";
@@ -8,7 +9,6 @@ export class Collection extends BaseEntity{
     @PrimaryGeneratedColumn()
     id: number;
 
-
     @Column({type: "jsonb"})
     meaning : MLtext[];
 
@@ -16,7 +16,7 @@ export class Collection extends BaseEntity{
     speech : MLtext[];
 
     @Column({nullable: true})
-    image: string;
+    image: Image;
 
     @Column({default: false})
     starred: boolean;

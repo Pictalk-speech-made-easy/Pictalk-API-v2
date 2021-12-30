@@ -90,8 +90,9 @@ export class PictoService {
                 collectionIds : null,
                 starred : null,
                 color : null,
-                pictoIds : fatherPictosIds}
-            this.collectionService.modifyCollection(deletePictoDto.fatherId, user, modifyCollectionDto, null);
+                pictoIds : fatherPictosIds
+            }
+            await this.collectionService.modifyCollection(deletePictoDto.fatherId, user, modifyCollectionDto, null);
         }
         if(picto.image){
             unlink('./files/'+picto.image,()=>{});

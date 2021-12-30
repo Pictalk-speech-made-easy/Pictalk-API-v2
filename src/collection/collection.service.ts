@@ -81,8 +81,9 @@ export class CollectionService {
                     pictoIds : null,
                     starred : null,
                     color : null,
-                    collectionIds : fatherCollectionsIds}
-                this.modifyCollection(deleteCollectionDto.fatherId, user, modifyCollectionDto, null);
+                    collectionIds : fatherCollectionsIds
+                }
+                await this.modifyCollection(deleteCollectionDto.fatherId, user, modifyCollectionDto, null);
             }
             if(collection.image){
                 unlink('./files/' + collection.image, () => {});
@@ -99,7 +100,7 @@ export class CollectionService {
                 if(error.code === "23503"){
                     return;
                 } else {
-                    throw new InternalServerErrorException(`couldn't delete picto with id ${deleteCollectionDto.collectionId}`);
+                    throw new InternalServerErrorException(`couldn't delete collection with id ${deleteCollectionDto.collectionId}`);
                 }
             }
         } else {

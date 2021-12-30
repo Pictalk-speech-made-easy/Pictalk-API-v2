@@ -13,24 +13,22 @@ import {ApiOperation} from '@nestjs/swagger';
 import { modifyCollectionDto } from './dto/collection.modify.dto';
 import { shareCollectionDto } from './dto/collection.share.dto';
 import { publicCollectionDto } from './dto/collection.public.dto';
-import { NoDuplicatasService } from 'src/image/noDuplicatas.service';
 import { deleteCollectionDto } from './dto/collection.delete.dto';
 
 @Controller('collection')
 export class CollectionController {
   private logger = new Logger('CollectionController');
-  constructor(private collectionService: CollectionService, 
-    private noDuplicatasService: NoDuplicatasService,){}
+  constructor(private collectionService: CollectionService){}
 
   @UseGuards(AuthGuard())
-  @Get('/:id')
+  @Get('find/:id')
   @ApiOperation({summary : 'get a collection that has the provided id'})
   getCollectionById(@Param('id', ParseIntPipe) id : number, @GetUser() user: User): Promise<Collection>{
     this.logger.verbose(`User "${user.username}" getting Collection with id ${id}`);
       return this.collectionService.getCollectionById(id, user);
   }
 
-  @Get('/pulic')
+  @Get('public')
   getPublicCollections(): Promise<Collection[]>{
       return this.collectionService.getPublicCollection();
   }
@@ -93,8 +91,7 @@ export class CollectionController {
         if(verifyText(createCollectionDto.meaning, createCollectionDto.speech) && verifySameLength(createCollectionDto.meaning, createCollectionDto.speech)){
           if(createCollectionDto.fatherCollectionId!=user.shared){
             this.logger.verbose(`User "${user.username}" creating Collection`);
-            const filename: string = await this.noDuplicatasService.noDuplicatas(file.filename);
-            const collection = await this.collectionService.createCollection(createCollectionDto, user, filename);
+            const collection = await this.collectionService.createCollection(createCollectionDto, user, file.filename);
             const fatherCollection = await this.collectionService.getCollectionById(createCollectionDto.fatherCollectionId, user);
             let fatherCollectionsIds = fatherCollection.collections.map(collection => {
               return collection.id;
@@ -164,8 +161,7 @@ export class CollectionController {
     if((verifyText(modifyCollectionDto.meaning, modifyCollectionDto.speech) && verifySameLength(modifyCollectionDto.meaning, modifyCollectionDto.speech)) || (modifyCollectionDto.speech===null && modifyCollectionDto.meaning === null)){
       this.logger.verbose(`User "${user.username}" Modifying Collection with id ${id}`);
       if(file){
-        const filename: string = await this.noDuplicatasService.noDuplicatas(file.filename);
-        return this.collectionService.modifyCollection(id, user, modifyCollectionDto, filename);
+        return this.collectionService.modifyCollection(id, user, modifyCollectionDto, file.filename);
       } else {
         return this.collectionService.modifyCollection(id, user, modifyCollectionDto, null);
       }

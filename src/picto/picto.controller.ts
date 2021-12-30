@@ -14,7 +14,6 @@ import { CollectionService } from 'src/collection/collection.service';
 import { modifyCollectionDto } from 'src/collection/dto/collection.modify.dto';
 import { ApiOperation } from '@nestjs/swagger';
 import { sharePictoDto } from './dto/picto.share.dto';
-import { NoDuplicatasService } from 'src/image/noDuplicatas.service';
 import { deletePictoDto } from './dto/picto.delete.dto';
 
 @Controller('picto')
@@ -22,7 +21,6 @@ export class PictoController {
   private logger = new Logger('PictosController');
   constructor(
   private pictoService: PictoService,
-  private noDuplicatasService: NoDuplicatasService,
   @Inject(forwardRef(() => CollectionService))
   private collectionService: CollectionService
   ){}
@@ -81,8 +79,7 @@ export class PictoController {
         if(verifyText(createPictoDto.meaning, createPictoDto.speech) && verifySameLength(createPictoDto.meaning, createPictoDto.speech)){
           if(createPictoDto.fatherCollectionId!=user.shared){
             this.logger.verbose(`User "${user.username}" creating Picto`);
-            const filename: string = await this.noDuplicatasService.noDuplicatas(file.filename);
-            const picto = await this.pictoService.createPicto(createPictoDto, user, filename);
+            const picto = await this.pictoService.createPicto(createPictoDto, user, file.filename);
             const fatherCollection = await this.collectionService.getCollectionById(createPictoDto.fatherCollectionId, user);
             let fatherPictosIds = fatherCollection.pictos.map(picto => {return picto.id;})
             fatherPictosIds.push(picto.id);
@@ -142,8 +139,7 @@ export class PictoController {
     if((verifyText(modifyPictoDto.meaning, modifyPictoDto.speech) && verifySameLength(modifyPictoDto.meaning, modifyPictoDto.speech)) || (modifyPictoDto.speech===null && modifyPictoDto.meaning === null)){
       this.logger.verbose(`User "${user.username}" Modifying Picto with id ${id}`);
       if(file){
-          const filename: string = await this.noDuplicatasService.noDuplicatas(file.filename);
-          return this.pictoService.modifyPicto(id, user, modifyPictoDto, filename);
+          return this.pictoService.modifyPicto(id, user, modifyPictoDto, file.filename);
       } else {
           return this.pictoService.modifyPicto(id, user, modifyPictoDto, null);
       }
