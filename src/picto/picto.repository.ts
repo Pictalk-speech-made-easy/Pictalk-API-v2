@@ -1,9 +1,10 @@
 import { InternalServerErrorException } from "@nestjs/common";
+import { unlink } from "fs";
 import { Collection } from "src/entities/collection.entity";
 import { MLtext } from "src/entities/MLtext.entity";
 import { Picto } from "src/entities/picto.entity";
 import { User } from "src/entities/user.entity";
-import { getArrayIfNeeded } from "src/utilities/tools";
+import { parseNumberArray } from "src/utilities/tools";
 import { EntityRepository, Repository } from "typeorm";
 import { createPictoDto } from "./dto/picto.create.dto";
 import { modifyPictoDto } from "./dto/picto.modify.dto";
@@ -22,7 +23,7 @@ export class PictoRepository extends Repository<Picto> {
             picto.color=color;
         }
         if(collectionIds){
-            collectionIds=getArrayIfNeeded(collectionIds);
+            collectionIds=parseNumberArray(collectionIds);
             picto.collections = collectionIds.map(collectionIds => ({ id: collectionIds } as any));
         }
         try {
@@ -45,11 +46,12 @@ export class PictoRepository extends Repository<Picto> {
         if(color){
             picto.color=color;
         }
-        if(filename){
+        if (filename) {
+            unlink('./files/' + picto.image, () => {});
             picto.image = filename;
         }
         if(collectionIds){
-            collectionIds=getArrayIfNeeded(collectionIds);
+            collectionIds=parseNumberArray(collectionIds);
             picto.collections = collectionIds.map(collectionIds => ({ id: collectionIds } as any));
         }
         if(starred){

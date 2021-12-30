@@ -55,7 +55,7 @@ export class User extends BaseEntity {
   @Column({type: "jsonb", default: []})
   apikeys : APIkey[];
 
-  @Column({type: "jsonb"})
+  @Column({type: "jsonb", default: []})
   settings : UserSettings;
 
   @Column({default: false})

@@ -9,6 +9,7 @@ import { sharePictoDto } from './dto/picto.share.dto';
 import { AuthService } from 'src/auth/auth.service';
 import { Collection } from 'src/entities/collection.entity';
 import { CollectionService } from 'src/collection/collection.service';
+import { unlink } from 'fs';
 
 @Injectable()
 export class PictoService {
@@ -75,6 +76,10 @@ export class PictoService {
     }
 
     async deletePicto(id: number, user: User): Promise<void> {
+        const picto = await this.getPictoById(id, user);
+        if(picto.image){
+            unlink('./files/'+picto.image,()=>{});
+        }
         const result = await this.pictoRepository.delete({
             id: id,
             userId: user.id,

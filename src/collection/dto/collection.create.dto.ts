@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsHexColor, IsNotEmpty, IsNumberString, IsOptional, IsString, Matches } from "class-validator";
+import { IsArray, IsHexColor, IsNotEmpty, IsNumberString, IsOptional, IsString, Matches } from "class-validator";
 
 export class createCollectionDto {
 
@@ -15,12 +15,14 @@ export class createCollectionDto {
 
     @ApiProperty()
     @IsOptional()
-    @IsNumberString({each: true})
+    @IsArray()
+    @IsNumberString({},{each: true})
     pictoIds: number[];
 
     @ApiProperty()
     @IsOptional()
-    @IsNumberString({each: true})
+    @IsArray()
+    @IsNumberString({},{each: true})
     collectionIds: number[];
 
     @ApiProperty()

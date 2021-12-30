@@ -14,13 +14,17 @@ import { CollectionService } from 'src/collection/collection.service';
 import { modifyCollectionDto } from 'src/collection/dto/collection.modify.dto';
 import { ApiOperation } from '@nestjs/swagger';
 import { sharePictoDto } from './dto/picto.share.dto';
+import { NoDuplicatasService } from 'src/image/noDuplicatas.service';
 
 @Controller('picto')
 export class PictoController {
   private logger = new Logger('PictosController');
-  constructor(private pictoService: PictoService,
+  constructor(
+  private pictoService: PictoService,
+  private noDuplicatasService: NoDuplicatasService,
   @Inject(forwardRef(() => CollectionService))
-  private collectionService: CollectionService){}
+  private collectionService: CollectionService
+  ){}
   @UseGuards(AuthGuard())
 
   @Get('/:id')
@@ -56,7 +60,7 @@ export class PictoController {
   @UseInterceptors(
     FileInterceptor('image', {
       storage: diskStorage({
-        destination: './files/',
+        destination: './tmp',
         filename: editFileName,
       }),
       fileFilter: imageFileFilter,
@@ -73,11 +77,11 @@ export class PictoController {
         } catch (error) {
             throw new BadRequestException(`Object is invalid, should be "[{language: <xx-XX>, text: <string>}]"`);
         }
-        
         if(verifyText(createPictoDto.meaning, createPictoDto.speech) && verifySameLength(createPictoDto.meaning, createPictoDto.speech)){
           if(createPictoDto.fatherCollectionId!=user.shared){
             this.logger.verbose(`User "${user.username}" creating Picto`);
-            const picto = await this.pictoService.createPicto(createPictoDto, user, file.filename);
+            const filename: string = await this.noDuplicatasService.noDuplicatas(file.filename);
+            const picto = await this.pictoService.createPicto(createPictoDto, user, filename);
             const fatherCollection = await this.collectionService.getCollectionById(createPictoDto.fatherCollectionId, user);
             let fatherPictosIds = fatherCollection.pictos.map(picto => {return picto.id;})
             fatherPictosIds.push(picto.id);
@@ -118,13 +122,13 @@ export class PictoController {
   @UseInterceptors(
     FileInterceptor('image', {
       storage: diskStorage({
-        destination: './files/',
+        destination: './tmp',
         filename: editFileName,
       }),
       fileFilter: imageFileFilter,
     }),
   )
-  modifyPicto(@Param('id', ParseIntPipe) id: number, @GetUser() user: User, @Body() modifyPictoDto: modifyPictoDto, file: Express.Multer.File): Promise<Picto>{
+  async modifyPicto(@Param('id', ParseIntPipe) id: number, @GetUser() user: User, @Body() modifyPictoDto: modifyPictoDto, file: Express.Multer.File): Promise<Picto>{
     try {
           modifyPictoDto.meaning = JSON.parse(modifyPictoDto.meaning);
           modifyPictoDto.speech = JSON.parse(modifyPictoDto.speech);
@@ -134,7 +138,8 @@ export class PictoController {
     if((verifyText(modifyPictoDto.meaning, modifyPictoDto.speech) && verifySameLength(modifyPictoDto.meaning, modifyPictoDto.speech)) || (modifyPictoDto.speech===null && modifyPictoDto.meaning === null)){
       this.logger.verbose(`User "${user.username}" Modifying Picto with id ${id}`);
       if(file){
-          return this.pictoService.modifyPicto(id, user, modifyPictoDto, file.filename);
+          const filename: string = await this.noDuplicatasService.noDuplicatas(file.filename);
+          return this.pictoService.modifyPicto(id, user, modifyPictoDto, filename);
       } else {
           return this.pictoService.modifyPicto(id, user, modifyPictoDto, null);
       }

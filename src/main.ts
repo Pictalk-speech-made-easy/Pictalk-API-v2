@@ -5,7 +5,10 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   if(!existsSync('files')){
-    mkdir("files", null);
+    mkdir("files", () => {});
+  }
+  if(!existsSync('tmp')){
+    mkdir("tmp", () => {});
   }
   const app = await NestFactory.create(AppModule, { cors: true });
   const config = new DocumentBuilder()

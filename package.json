@@ -36,6 +36,8 @@
     "class-validator": "^0.13.1",
     "config": "^3.3.6",
     "express": "^4.17.1",
+    "image-hash": "^4.0.1",
+    "image-size": "^1.0.0",
     "passport-jwt": "^4.0.0",
     "pg": "^8.7.1",
     "reflect-metadata": "^0.1.13",

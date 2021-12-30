@@ -13,11 +13,13 @@ import {ApiOperation} from '@nestjs/swagger';
 import { modifyCollectionDto } from './dto/collection.modify.dto';
 import { shareCollectionDto } from './dto/collection.share.dto';
 import { publicCollectionDto } from './dto/collection.public.dto';
+import { NoDuplicatasService } from 'src/image/noDuplicatas.service';
 
 @Controller('collection')
 export class CollectionController {
   private logger = new Logger('CollectionController');
-  constructor(private collectionService: CollectionService){}
+  constructor(private collectionService: CollectionService, 
+    private noDuplicatasService: NoDuplicatasService,){}
 
   @UseGuards(AuthGuard())
   @Get('/:id')
@@ -70,7 +72,7 @@ export class CollectionController {
   @UseInterceptors(
     FileInterceptor('image', {
       storage: diskStorage({
-        destination: './files/',
+        destination: './tmp',
         filename: editFileName,
       }),
       fileFilter: imageFileFilter,
@@ -90,7 +92,8 @@ export class CollectionController {
         if(verifyText(createCollectionDto.meaning, createCollectionDto.speech) && verifySameLength(createCollectionDto.meaning, createCollectionDto.speech)){
           if(createCollectionDto.fatherCollectionId!=user.shared){
             this.logger.verbose(`User "${user.username}" creating Collection`);
-            const collection = await this.collectionService.createCollection(createCollectionDto, user, file.filename);
+            const filename: string = await this.noDuplicatasService.noDuplicatas(file.filename);
+            const collection = await this.collectionService.createCollection(createCollectionDto, user, filename);
             const fatherCollection = await this.collectionService.getCollectionById(createCollectionDto.fatherCollectionId, user);
             let fatherCollectionsIds = fatherCollection.collections.map(collection => {
               return collection.id;
@@ -140,24 +143,27 @@ export class CollectionController {
   @UseInterceptors(
     FileInterceptor('image', {
       storage: diskStorage({
-        destination: './files/',
+        destination: './tmp',
         filename: editFileName,
       }),
       fileFilter: imageFileFilter,
     }),
   )
-  modifyCollection(@Param('id', ParseIntPipe) id: number, @GetUser() user: User, @Body() modifyCollectionDto: modifyCollectionDto, file: Express.Multer.File): Promise<Collection>{
+  async modifyCollection(@Param('id', ParseIntPipe) id: number, @GetUser() user: User, @Body() modifyCollectionDto: modifyCollectionDto, file: Express.Multer.File): Promise<Collection>{
     
     try {
-          modifyCollectionDto.meaning = JSON.parse(modifyCollectionDto.meaning);
-          modifyCollectionDto.speech = JSON.parse(modifyCollectionDto.speech);
+          if(modifyCollectionDto.meaning != undefined &&  modifyCollectionDto.speech != undefined){
+            modifyCollectionDto.meaning = JSON.parse(modifyCollectionDto.meaning);
+            modifyCollectionDto.speech = JSON.parse(modifyCollectionDto.speech);
+          }
         } catch (error) {
             throw new BadRequestException(`Object is invalid, should be "[{language: <xx-XX>, text: <string>}]"`);
         }
     if((verifyText(modifyCollectionDto.meaning, modifyCollectionDto.speech) && verifySameLength(modifyCollectionDto.meaning, modifyCollectionDto.speech)) || (modifyCollectionDto.speech===null && modifyCollectionDto.meaning === null)){
       this.logger.verbose(`User "${user.username}" Modifying Collection with id ${id}`);
       if(file){
-        return this.collectionService.modifyCollection(id, user, modifyCollectionDto, file.filename);
+        const filename: string = await this.noDuplicatasService.noDuplicatas(file.filename);
+        return this.collectionService.modifyCollection(id, user, modifyCollectionDto, filename);
       } else {
         return this.collectionService.modifyCollection(id, user, modifyCollectionDto, null);
       }

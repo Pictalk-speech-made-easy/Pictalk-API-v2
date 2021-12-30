@@ -4,6 +4,10 @@ export const getArrayIfNeeded = function(input) {
     return Array.isArray(input) == false ? new Array(input) : input;
 };
 
+export const parseNumberArray = function(input) {
+  return input.map(inputString => {return +inputString;})
+}
+
 export const imageFileFilter = (req, file, callback) => {
   if (!file.originalname.normalize().match(/\.(jpeg|png|gif|jpg)$/)) {
     return callback(new Error('Only image files are allowed!'), false);

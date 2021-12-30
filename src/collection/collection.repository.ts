@@ -1,9 +1,10 @@
 import { ForbiddenException, InternalServerErrorException, NotFoundException } from "@nestjs/common";
+import { unlink } from "fs";
 import { Collection } from "src/entities/collection.entity";
 import { MLtext } from "src/entities/MLtext.entity";
 import { Picto } from "src/entities/picto.entity";
 import { User } from "src/entities/user.entity";
-import { getArrayIfNeeded } from "src/utilities/tools";
+import { getArrayIfNeeded, parseNumberArray } from "src/utilities/tools";
 import { EntityRepository, Repository } from "typeorm";
 import { createCollectionDto } from "./dto/collection.create.dto";
 import { modifyCollectionDto } from "./dto/collection.modify.dto";
@@ -18,11 +19,11 @@ export class CollectionRepository extends Repository<Collection>{
         collection.speech = await this.MLtextsFromObjects(speech);
         collection.userId = user.id;
         if(pictoIds){
-            pictoIds=getArrayIfNeeded(pictoIds);
+            pictoIds=parseNumberArray(pictoIds);
             collection.pictos = pictoIds.map(pictoIds => ({ id: pictoIds } as any));
         }
         if(collectionIds){
-            collectionIds=getArrayIfNeeded(collectionIds);
+            collectionIds=parseNumberArray(collectionIds);
             collection.collections = collectionIds.map(collectionIds => ({id: collectionIds} as any));
         }
         if(color){
@@ -50,18 +51,20 @@ export class CollectionRepository extends Repository<Collection>{
             collection.speech = await this.MLtextsFromObjects(speech);
         }
         if(filename){
+            unlink('./files/' + collection.image, () => {});
             collection.image = filename;
         }  
         if(starred){
             collection.starred = starred;
         }
         if(pictoIds){
-            pictoIds=getArrayIfNeeded(pictoIds);
             collection.pictos = pictoIds.map(pictoIds => ({ id: pictoIds } as any));
         }
         if(collectionIds){
-            collectionIds=getArrayIfNeeded(collectionIds);
+            collectionIds=parseNumberArray(collectionIds);
             collection.collections = collectionIds.map(collectionIds => ({ id: collectionIds } as any));
+
+            
         }
         if(color){
             collection.color = color;
@@ -69,6 +72,7 @@ export class CollectionRepository extends Repository<Collection>{
         try {
             await collection.save();
         } catch (error) {
+            console.log(error)
             throw new InternalServerErrorException(error);
         }
         //delete collection.user;
