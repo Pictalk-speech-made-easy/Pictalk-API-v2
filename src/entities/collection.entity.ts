@@ -1,5 +1,4 @@
 import { BaseEntity, Column, Entity, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { Image } from "./image.entity";
 import { MLtext } from "./MLtext.entity";
 import { Picto } from "./picto.entity";
 import { User } from "./user.entity";
@@ -16,7 +15,7 @@ export class Collection extends BaseEntity{
     speech : MLtext[];
 
     @Column({nullable: true})
-    image: Image;
+    image: string;
 
     @Column({default: false})
     starred: boolean;
