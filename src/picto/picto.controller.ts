@@ -5,7 +5,7 @@ import { diskStorage } from 'multer';
 import { GetUser } from 'src/auth/get-user.decorator';
 import { Picto } from 'src/entities/picto.entity';
 import { User } from 'src/entities/user.entity';
-import { editFileName, hashImage, imageFileFilter } from 'src/utilities/tools';
+import { editFileName, hashImage, imageFileFilter, maxSize } from 'src/utilities/tools';
 import { PictoService } from './picto.service';
 import { createPictoDto } from './dto/picto.create.dto';
 import { modifyPictoDto } from './dto/picto.modify.dto';
@@ -62,6 +62,7 @@ export class PictoController {
         destination: './tmp',
         filename: editFileName,
       }),
+      limits: {fileSize: maxSize},
       fileFilter: imageFileFilter,
     }),
   )
@@ -117,8 +118,9 @@ export class PictoController {
     FileInterceptor('image', {
       storage: diskStorage({
         destination: './tmp',
-        filename: editFileName,
+        filename: editFileName,  
       }),
+      limits: {fileSize: maxSize},
       fileFilter: imageFileFilter,
     }),
   )

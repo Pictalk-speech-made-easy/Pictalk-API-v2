@@ -5,7 +5,9 @@ import { Collection } from 'src/entities/collection.entity';
 import { Notif } from 'src/entities/notification.entity';
 import { Picto } from 'src/entities/picto.entity';
 import { User } from 'src/entities/user.entity';
+import { createPictoDto  } from 'src/picto/dto/picto.create.dto';
 import { PictoService } from 'src/picto/picto.service';
+import { getArrayIfNeeded } from 'src/utilities/tools';
 import { CollectionRepository } from './collection.repository';
 import { createCollectionDto } from './dto/collection.create.dto';
 import { deleteCollectionDto } from './dto/collection.delete.dto';
@@ -232,5 +234,43 @@ export class CollectionService {
         } else {
             throw new NotFoundException(`there are no public collections`);
         }
+    }
+
+    
+    async copyPicto(fatherId: number, picto: Picto, user: User): Promise<number>{
+        const editor = picto.editors.indexOf(user.username);
+        const viewer = picto.viewers.indexOf(user.username);
+        if(picto.userId===user.id || editor!=-1 || viewer!=-1){
+            const createPictoDto : createPictoDto = {
+                meaning : picto.meaning,
+                speech : picto.speech,
+                color : picto.color,
+                collectionIds : null,
+                fatherCollectionId : fatherId,
+                share : 1,
+            }  
+            const copiedPicto = await this.pictoService.createPicto(createPictoDto, user, picto.image);
+            return copiedPicto.id;  
+        }
+    }
+
+    async copyCollection(fatherId: number, collectionId: number, user: User): Promise<number>{
+        try{
+            console.log(fatherId, collectionId);
+            const collection = await this.getCollectionById(collectionId, user);
+            if(collection){
+                const createCollectionDto : createCollectionDto = {
+                    meaning : collection.meaning,
+                    speech : collection.speech,
+                    color : collection.color,
+                    collectionIds : await Promise.all(collection.collections.map(child => {return this.copyCollection(collection.id, child.id, user);})),
+                    pictoIds : await Promise.all(collection.pictos.map(child => {return this.copyPicto(collection.id, child, user);})),
+                    fatherCollectionId : fatherId,
+                    share : 1,
+            }  
+            const copiedCollection = await this.createCollection(createCollectionDto, user, collection.image);
+            return copiedCollection.id;  
+            }
+        } catch(error){console.log(error);}
     }
 }

@@ -6,7 +6,7 @@ import { GetUser } from 'src/auth/get-user.decorator';
 import { Collection } from 'src/entities/collection.entity';
 import { User } from 'src/entities/user.entity';
 import { IsValid } from 'src/utilities/creation';
-import { editFileName, hashImage, imageFileFilter } from 'src/utilities/tools';
+import { editFileName, hashImage, imageFileFilter, maxSize } from 'src/utilities/tools';
 import { CollectionService } from './collection.service';
 import { createCollectionDto } from './dto/collection.create.dto';
 import {ApiOperation} from '@nestjs/swagger';
@@ -14,6 +14,7 @@ import { modifyCollectionDto } from './dto/collection.modify.dto';
 import { shareCollectionDto } from './dto/collection.share.dto';
 import { publicCollectionDto } from './dto/collection.public.dto';
 import { deleteCollectionDto } from './dto/collection.delete.dto';
+import { copyCollectionDto } from './dto/collection.copy.dto';
 
 @Controller('collection')
 export class CollectionController {
@@ -39,6 +40,27 @@ export class CollectionController {
   getAllUserCollections(@GetUser() user: User): Promise<Collection[]>{
     this.logger.verbose(`User "${user.username}" getting all Collection`);
     return this.collectionService.getAllUserCollections(user);
+  }
+
+  @UseGuards(AuthGuard())
+  @Get('copy')
+  @ApiOperation({summary : 'copy a collection with its ID'})
+  async copyCollection(@Body() copyCollectionDto: copyCollectionDto, @GetUser() user: User): Promise<Collection>{
+    const copiedId = await this.collectionService.copyCollection(copyCollectionDto.fatherCollectionId, copyCollectionDto.collectionId, user);
+    const fatherCollection = await this.collectionService.getCollectionById(copyCollectionDto.fatherCollectionId, user);
+    let fatherCollectionsIds = fatherCollection.collections.map(collection => {
+      return collection.id;
+    })
+    fatherCollectionsIds.push(copiedId);
+    const modifyCollectionDto : modifyCollectionDto = {
+      meaning : null,
+      speech : null,
+      pictoIds : null,
+      starred : null,
+      color : null,
+      collectionIds : fatherCollectionsIds}
+    await this.collectionService.modifyCollection(copyCollectionDto.fatherCollectionId, user, modifyCollectionDto, null);
+    return this.getCollectionById(copyCollectionDto.fatherCollectionId, user);
   }
 
   @UseGuards(AuthGuard())
@@ -74,6 +96,7 @@ export class CollectionController {
         destination: './tmp',
         filename: editFileName,
       }),
+      limits: {fileSize: maxSize},
       fileFilter: imageFileFilter,
     }),
   )
@@ -140,6 +163,7 @@ export class CollectionController {
         destination: './tmp',
         filename: editFileName,
       }),
+      limits: {fileSize: maxSize},
       fileFilter: imageFileFilter,
     }),
   )
