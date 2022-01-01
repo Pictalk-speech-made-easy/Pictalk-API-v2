@@ -266,11 +266,17 @@ export class CollectionService {
                     collectionIds : await Promise.all(collection.collections.map(child => {return this.copyCollection(collection.id, child.id, user);})),
                     pictoIds : await Promise.all(collection.pictos.map(child => {return this.copyPicto(collection.id, child, user);})),
                     fatherCollectionId : fatherId,
-                    share : 1,
-            }  
-            const copiedCollection = await this.createCollection(createCollectionDto, user, collection.image);
-            return copiedCollection.id;  
+                    share : 0,
+                }  
+                const copiedCollection = await this.createCollection(createCollectionDto, user, collection.image);
+                return copiedCollection.id;  
             }
-        } catch(error){console.log(error);}
+        } catch(error){
+            if(error.code == "401" || error.code == "404"){
+                return null;
+            } else {
+                throw new InternalServerErrorException(`couldn't copy Collection`);
+            }
+        }
     }
 }

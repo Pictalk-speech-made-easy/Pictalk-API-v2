@@ -46,8 +46,8 @@ export class CollectionController {
   @Get('copy')
   @ApiOperation({summary : 'copy a collection with its ID'})
   async copyCollection(@Body() copyCollectionDto: copyCollectionDto, @GetUser() user: User): Promise<Collection>{
-    const copiedId = await this.collectionService.copyCollection(copyCollectionDto.fatherCollectionId, copyCollectionDto.collectionId, user);
     const fatherCollection = await this.collectionService.getCollectionById(copyCollectionDto.fatherCollectionId, user);
+    const copiedId = await this.collectionService.copyCollection(copyCollectionDto.fatherCollectionId, copyCollectionDto.collectionId, user);
     let fatherCollectionsIds = fatherCollection.collections.map(collection => {
       return collection.id;
     })
