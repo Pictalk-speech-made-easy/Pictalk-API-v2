@@ -9,12 +9,13 @@ import { typeOrmConfig } from './config/typeorm.config';
 import { ImageController } from './image/image.controller';
 import { HttpModule } from '@nestjs/axios';
 import { TranslationController } from './translation/translation.controller';
-
+import { ConfigModule } from '@nestjs/config';
 @Module({
   imports: [
+    ConfigModule.forRoot(),
     TypeOrmModule.forRoot(typeOrmConfig),
     PictoModule,
-    CollectionModule, 
+    CollectionModule,
     AuthModule,
     HttpModule,
   ],
