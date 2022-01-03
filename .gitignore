@@ -4,7 +4,7 @@
 /files
 /tmp
 api.ts
-
+.env
 # Logs
 logs
 *.log
