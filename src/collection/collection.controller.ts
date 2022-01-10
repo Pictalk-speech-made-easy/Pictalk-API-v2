@@ -43,7 +43,7 @@ export class CollectionController {
   }
 
   @UseGuards(AuthGuard())
-  @Get('copy')
+  @Post('copy')
   @ApiOperation({summary : 'copy a collection with its ID'})
   async copyCollection(@Body() copyCollectionDto: copyCollectionDto, @GetUser() user: User): Promise<Collection>{
     const fatherCollection = await this.collectionService.getCollectionById(copyCollectionDto.fatherCollectionId, user);
