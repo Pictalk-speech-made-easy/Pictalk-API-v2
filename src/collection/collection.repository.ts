@@ -55,6 +55,7 @@ export class CollectionRepository extends Repository<Collection>{
             collection.starred = starred;
         }
         if(pictoIds){
+            pictoIds=parseNumberArray(pictoIds);
             collection.pictos = pictoIds.map(pictoIds => ({ id: pictoIds } as any));
         }
         if(collectionIds){
