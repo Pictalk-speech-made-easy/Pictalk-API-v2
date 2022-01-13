@@ -2,7 +2,7 @@ import { ForbiddenException, InternalServerErrorException, NotFoundException } f
 import { Collection } from "src/entities/collection.entity";
 import { Picto } from "src/entities/picto.entity";
 import { User } from "src/entities/user.entity";
-import { getArrayIfNeeded, parseNumberArray } from "src/utilities/tools";
+import { parseNumberArray } from "src/utilities/tools";
 import { EntityRepository, Repository } from "typeorm";
 import { createCollectionDto } from "./dto/collection.create.dto";
 import { modifyCollectionDto } from "./dto/collection.modify.dto";
@@ -60,9 +60,7 @@ export class CollectionRepository extends Repository<Collection>{
         }
         if(collectionIds){
             collectionIds=parseNumberArray(collectionIds);
-            collection.collections = collectionIds.map(collectionIds => ({ id: collectionIds } as any));
-
-            
+            collection.collections = collectionIds.map(collectionIds => ({ id: collectionIds } as any));            
         }
         if(color){
             collection.color = color;
