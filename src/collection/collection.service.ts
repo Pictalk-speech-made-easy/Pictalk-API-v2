@@ -128,9 +128,9 @@ export class CollectionService {
             const collection=await this.getCollectionById(id, user);
             if(collection){
                 const editor = collection.editors.indexOf(user.username);
-                if(!(shareCollectionDto.role==="editor" && (collection.userId === user.id || editor!=-1))){
+                if(shareCollectionDto.role==="editor" && !(collection.userId === user.id || editor!=-1)){
                     throw new UnauthorizedException(`${user.username} cannot share to ${sharer.username} as editor being a viewer youself`);
-                 }
+                }
                 const sharedWithMe = await this.getCollectionById(sharer.shared, sharer);
                 this.collectionRepository.pushCollection(sharedWithMe, collection);
                 const directSharer = sharer.directSharers.indexOf(user.username);

@@ -56,6 +56,10 @@ export class PictoService {
         if(exists){
             const picto=await this.getPictoById(id, user);
             if(picto){
+                const editor = picto.editors.indexOf(user.username);
+                if(sharePictoDto.role==="editor" && !(picto.userId === user.id || editor!=-1)){
+                    throw new UnauthorizedException(`${user.username} cannot share to ${sharer.username} as editor being a viewer youself`);
+                }
                 const sharedWithMe = await this.collectionService.getCollectionById(sharer.shared, sharer);
                 this.collectionService.pushPicto(sharedWithMe, picto);
                 return this.pictoRepository.sharePicto(picto, sharePictoDto, user);
