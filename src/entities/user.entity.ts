@@ -19,14 +19,14 @@ export class User extends BaseEntity {
   @Column({unique: true})
   username: string;
 
-  @Column({default: "en"})
+  @Column({default: ""})
   displayLanguage: string;
 
-  @Column({default: "en"})
+  @Column({default: ""})
   language: string;
 
-  @Column("text",{default:["en"], array: true})
-  languages : string[]
+  @Column({default: ""})
+  languages : string
 
   @Column()
   password: string;

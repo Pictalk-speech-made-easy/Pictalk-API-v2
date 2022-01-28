@@ -11,6 +11,7 @@ import { ChangePasswordDto } from "./dto/change-password.dto";
 import { getArrayIfNeeded } from "src/utilities/tools";
 import { Notif } from "src/entities/notification.entity";
 import { APIkey } from "src/entities/keys.entity";
+import { stringifyMap, validLanguage } from "src/utilities/creation";
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
     private logger = new Logger('AuthService');
@@ -26,13 +27,16 @@ export class UserRepository extends Repository<User> {
         user.resetPasswordToken = '';
         user.resetPasswordExpires = '';
         user.language = language;
+        user.displayLanguage = language;
+        const voices = validLanguage(languages);
+        user.languages = stringifyMap(voices);
         if(directSharers){
           user.directSharers = getArrayIfNeeded(directSharers);
         }
         if(apikeys){
           user.apikeys = getArrayIfNeeded(apikeys);
         }
-        user.languages = languages
+        //user.languages = languages
     
         try {
           await user.save();
@@ -129,7 +133,7 @@ export class UserRepository extends Repository<User> {
       }
 
       async editUser(user: User, editUserDto: EditUserDto): Promise<void> {
-        const { username, language, password, directSharers, languages, apikeys, apinames } = editUserDto;
+        const { username, language, password, directSharers, languages, apikeys, apinames, display } = editUserDto;
         if (username) {
           user.username = username;
         }
@@ -146,6 +150,9 @@ export class UserRepository extends Repository<User> {
         if (languages){
           user.languages = languages;
         }
+        if(display){
+          user.displayLanguage = display;
+        }
         if(apikeys){
           const apis = await this.APIkeyFromDto(editUserDto.apinames, editUserDto.apikeys);
           user.apikeys = await this.APIkeyFromDto(editUserDto.apinames, editUserDto.apikeys);
@@ -161,9 +168,7 @@ export class UserRepository extends Repository<User> {
         const length = apinames.length;
         let apis: APIkey[]=[];
         for(var i=0; i<length; i++){
-            const api= new APIkey();
-            api.name=apinames[i];
-            api.key=apikeys[i];
+            const api= new APIkey(apinames[i], apikeys[i]);
             apis.push(api);
         }
         return apis

@@ -2,12 +2,12 @@ export class VoiceURI{
 
     voiceURI: string;
     pitch : number;
-    speed : number;
+    rate : number;
 
-    constructor(voiceURI: string, pitch : number, speed : number){
+    constructor(voiceURI: string, pitch : number, rate : number){
         this.voiceURI = voiceURI;
         this.pitch = pitch;
-        this.speed = speed;
+        this.rate = rate;
     }
 }
 
@@ -29,6 +29,9 @@ export class Voice{
 
 export class Languages {
    languages : Map<string, Map<string, VoiceURI>>
+   constructor(){
+       this.languages = new Map<string, Map<string, VoiceURI>>();
+   }
     public add(language: string, voice: Voice) {
         if(this.languages.has(`${language}`)){
             if(this.languages.get(`${language}`).has(`${voice.device}`)){
@@ -40,4 +43,5 @@ export class Languages {
         }
         return this.languages;
        }
+    
 }

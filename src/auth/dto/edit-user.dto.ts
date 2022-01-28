@@ -24,20 +24,21 @@ export class EditUserDto {
 
   @ApiProperty()
   @IsOptional()
-  @IsString({each: true})
-  @Matches(languagesRegex, {
-    message: 'language is not supported',
-  })
+  @IsString()
   language: string;
 
   @ApiProperty()
   @IsOptional()
-  @IsString({each: true})
+  @IsString()
   @Matches(languagesRegex, {
-    each:true,
-    message: 'one or more languages are not supported',
+    message: 'language is not supported',
   })
-  languages: string[];
+  display: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+  languages: string;
 
   @ApiProperty()
   @IsOptional()

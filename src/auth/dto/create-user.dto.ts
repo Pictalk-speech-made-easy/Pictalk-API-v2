@@ -32,20 +32,13 @@ export class CreateUserDto {
 
   @ApiProperty()
   @IsNotEmpty()
-  @IsString({each: true})
-  @Matches(languagesRegex, {
-    message: 'language is not supported',
-  })
+  @IsString()
   language: string;
 
   @ApiProperty()
   @IsNotEmpty()
-  @IsString({each: true})
-  @Matches(languagesRegex, {
-    each:true,
-    message: 'one or more languages are not supported',
-  })
-  languages: string[];
+  @IsString()
+  languages: string;
 
   @ApiProperty()
   @IsOptional()

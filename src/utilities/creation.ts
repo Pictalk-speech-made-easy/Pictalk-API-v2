@@ -1,3 +1,5 @@
+import { BadRequestException, InternalServerErrorException } from "@nestjs/common";
+import { Languages, Voice, VoiceURI } from "src/entities/voices.entity";
 import { languagesRegex } from "./supported.languages";
 import { getArrayIfNeeded } from "./tools";
 
@@ -41,3 +43,48 @@ export const verifyAPIs = (apinames: string[], apikeys: string[]) => {
         
     }
 };
+
+export const validLanguage = (language : string) => {
+    try{
+        let languages = new Languages();
+        const languageDict = JSON.parse(language);
+        const langKeys = Object.keys(languageDict);
+        langKeys.map(langKey => {
+            const deviceKeys = Object.keys(languageDict[`${langKey}`]);
+            deviceKeys.map(deviceKey => {
+                const voiceKeys = Object.keys(languageDict[`${langKey}`][`${deviceKey}`]);
+                if(voiceKeys.indexOf('voiceURI')==-1){
+                    throw new BadRequestException('there is no voiceURI key');
+                }
+                let pitch = languageDict[`${langKey}`][`${deviceKey}`]['pitch'];
+                let rate = languageDict[`${langKey}`][`${deviceKey}`]['rate'];
+                const URI = languageDict[`${langKey}`][`${deviceKey}`]['voiceURI'];
+                pitch = pitch && !isNaN(pitch) ? pitch: 0
+                rate = rate && !isNaN(rate) ? rate: 0
+                const voiceURI = new VoiceURI(URI, pitch, rate);
+                const voice = new Voice(deviceKey, voiceURI);
+                languages.add(langKey, voice);
+            });
+        });
+        return languages.languages;
+    } catch(error){
+        throw new InternalServerErrorException(error);
+    }
+}
+// not mine but gets the job done, flemme de renommer variable !
+export const stringifyMap = (myMap) => {
+    function selfIterator(map) {
+        return Array.from(map).reduce((acc, [key, value]) => {
+            if (value instanceof Map) {
+                acc[key] = selfIterator(value);
+            } else {
+                acc[key] = value;
+            }
+
+            return acc;
+        }, {})
+    }
+
+    const res = selfIterator(myMap)
+    return JSON.stringify(res);
+}

@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, forwardRef, Get, Inject, Logger, Param, Post, Put, Req, UseGuards, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, forwardRef, Get, Inject, Logger, Param, Post, Put, UseGuards, ValidationPipe } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { AuthGuard } from '@nestjs/passport';
@@ -11,7 +11,6 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { EditUserDto } from './dto/edit-user.dto';
 import { Notif } from 'src/entities/notification.entity';
-import { verify } from 'crypto';
 import { verifyAPIs } from 'src/utilities/creation';
 import { getArrayIfNeeded } from 'src/utilities/tools';
 @Controller('')
@@ -24,10 +23,6 @@ export class AuthController {
     @Post('auth/signup')
     async signUp(@Body(ValidationPipe) createUserDto: CreateUserDto): Promise<void> {
         this.logger.verbose(`User signin up`);
-        const index = createUserDto.languages.indexOf(createUserDto.language);
-        if(index===-1){
-          createUserDto.languages.push(createUserDto.language);
-        }
         if(createUserDto.apinames && createUserDto.apikeys){
           createUserDto.apinames=getArrayIfNeeded(createUserDto.apinames);
           createUserDto.apikeys=getArrayIfNeeded(createUserDto.apikeys);
