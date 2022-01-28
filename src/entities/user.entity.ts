@@ -29,9 +29,6 @@ export class User extends BaseEntity {
   languages : string[]
 
   @Column()
-  voices: 
-
-  @Column()
   password: string;
 
   @Column()
