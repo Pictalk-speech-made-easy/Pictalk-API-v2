@@ -20,7 +20,16 @@ export class User extends BaseEntity {
   username: string;
 
   @Column({default: "en"})
+  displayLanguage: string;
+
+  @Column({default: "en"})
   language: string;
+
+  @Column("text",{default:["en"], array: true})
+  languages : string[]
+
+  @Column()
+  voices: 
 
   @Column()
   password: string;
@@ -60,9 +69,6 @@ export class User extends BaseEntity {
 
   @Column({default: false})
   admin: boolean;
-
-  @Column("text",{default:["en"], array: true})
-  languages : string[]
 
   async validatePassword(password: string): Promise<boolean> {
     const hash = await bcrypt.hash(password, this.salt);
