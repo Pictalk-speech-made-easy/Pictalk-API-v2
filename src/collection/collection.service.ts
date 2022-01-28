@@ -91,9 +91,6 @@ export class CollectionService {
                     id: deleteCollectionDto.collectionId,
                     userId: user.id,
                   });
-                if(result.affected===0) {
-                    throw new NotFoundException(`Collection with ID '${deleteCollectionDto.collectionId}' not found`);
-                }
             } catch(error){
                 if(error.code === "23503"){
                     return;
@@ -161,11 +158,7 @@ export class CollectionService {
     }
 
     async createNotif(id : number, user: User, type: string, operation: string): Promise<Notif>{
-        const notification: Notif = new Notif()
-        notification.type=type;
-        notification.operation=operation;
-        notification.affected=id.toString();
-        notification.username=user.username;
+        const notification: Notif = new Notif(type, operation, id.toString(), user.username)
         return notification;
     } 
 
