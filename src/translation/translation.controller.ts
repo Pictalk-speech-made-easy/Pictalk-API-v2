@@ -19,9 +19,13 @@ export class TranslationController {
   @Get()
   async getTraduction(@Query(ValidationPipe) TranslateDto: TranslateDto) {
     try {
+      let request = `https://api-free.deepl.com/v2/translate?auth_key=${this.deeplApiDeepL}&text=${TranslateDto.text}&target_lang=${TranslateDto.targetLang}`;
+      if(TranslateDto.sourceLang){
+        request = request + `&source_lang=${TranslateDto.sourceLang}`
+      }
       const response = await lastValueFrom(
         this.httpService.get(
-          `https://api-free.deepl.com/v2/translate?auth_key=${this.deeplApiDeepL}&text=${TranslateDto.text}&target_lang=${TranslateDto.targetLang}`,
+          request,
         ),
       );
       return response.data;
