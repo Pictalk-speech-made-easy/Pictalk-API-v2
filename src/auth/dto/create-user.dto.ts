@@ -43,20 +43,6 @@ export class CreateUserDto {
   @ApiProperty()
   @IsOptional()
   @IsString({each: true})
-  @Matches(APIsRegex, {
-    each:true,
-    message: 'one or more of those APIs are not supported',
-  })
-  apinames: string[];
-
-  @ApiProperty()
-  @IsOptional()
-  @IsString({each: true})
-  apikeys: string[];
-
-  @ApiProperty()
-  @IsOptional()
-  @IsString({each: true})
   directSharers: string[];
 
 

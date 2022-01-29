@@ -4,26 +4,24 @@ import * as bcrypt from 'bcrypt';
 import { AuthCredentialsDto } from "./dto/auth-credentials.dto";
 import { User } from "src/entities/user.entity";
 import { CreateUserDto } from "./dto/create-user.dto";
-import sgMail = require('@sendgrid/mail');
 import { ResetPasswordDto } from "./dto/reset-password.dto";
 import { EditUserDto } from "./dto/edit-user.dto";
 import { ChangePasswordDto } from "./dto/change-password.dto";
 import { getArrayIfNeeded } from "src/utilities/tools";
 import { Notif } from "src/entities/notification.entity";
-import { APIkey } from "src/entities/keys.entity";
 import { stringifyMap, validLanguage } from "src/utilities/creation";
+import sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(process.env.SENDGRID_KEY);
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
     private logger = new Logger('AuthService');
 
     async signUp(createUserDto: CreateUserDto): Promise<User> {
-        const { username, password, language, directSharers, languages, apikeys } = createUserDto;
-    
+        const { username, password, language, directSharers, languages } = createUserDto;
         const user = this.create();
         user.username = username;
         user.salt = await bcrypt.genSalt();
         user.password = await this.hashPassword(password, user.salt);
-    
         user.resetPasswordToken = '';
         user.resetPasswordExpires = '';
         user.language = language;
@@ -32,9 +30,6 @@ export class UserRepository extends Repository<User> {
         user.languages = stringifyMap(voices);
         if(directSharers){
           user.directSharers = getArrayIfNeeded(directSharers);
-        }
-        if(apikeys){
-          user.apikeys = getArrayIfNeeded(apikeys);
         }
         //user.languages = languages
     
@@ -133,7 +128,7 @@ export class UserRepository extends Repository<User> {
       }
 
       async editUser(user: User, editUserDto: EditUserDto): Promise<void> {
-        const { username, language, password, directSharers, languages, apikeys, apinames, display } = editUserDto;
+        const { username, language, password, directSharers, languages, display } = editUserDto;
         if (username) {
           user.username = username;
         }
@@ -153,10 +148,6 @@ export class UserRepository extends Repository<User> {
         if(display){
           user.displayLanguage = display;
         }
-        if(apikeys){
-          const apis = await this.APIkeyFromDto(editUserDto.apinames, editUserDto.apikeys);
-          user.apikeys = await this.APIkeyFromDto(editUserDto.apinames, editUserDto.apikeys);
-        }
         try {
           await user.save();
         } catch (error) {
@@ -164,15 +155,6 @@ export class UserRepository extends Repository<User> {
         }
       }
 
-      async APIkeyFromDto(apinames: string[], apikeys: string[]): Promise<APIkey[]>{
-        const length = apinames.length;
-        let apis: APIkey[]=[];
-        for(var i=0; i<length; i++){
-            const api= new APIkey(apinames[i], apikeys[i]);
-            apis.push(api);
-        }
-        return apis
-    }
 
       async changePassword(changePasswordDto: ChangePasswordDto, token: string): Promise<void> {
         const { password } = changePasswordDto;

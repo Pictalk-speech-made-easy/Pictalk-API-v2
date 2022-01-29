@@ -23,13 +23,6 @@ export class AuthController {
     @Post('auth/signup')
     async signUp(@Body(ValidationPipe) createUserDto: CreateUserDto): Promise<void> {
         this.logger.verbose(`User signin up`);
-        if(createUserDto.apinames && createUserDto.apikeys){
-          createUserDto.apinames=getArrayIfNeeded(createUserDto.apinames);
-          createUserDto.apikeys=getArrayIfNeeded(createUserDto.apikeys);
-          if(!verifyAPIs(createUserDto.apinames, createUserDto.apikeys)){
-            throw new BadRequestException(`You must have as many API names as API keys`);
-          }
-        }
         const user = await this.authService.signUp(createUserDto);
         await this.collectionService.createRoot(user);
         await this.collectionService.createShared(user);
@@ -78,13 +71,6 @@ export class AuthController {
         @GetUser() user: User,
         @Body(ValidationPipe) editUserDto: EditUserDto,
       ): Promise<void> {
-        if(editUserDto.apinames && editUserDto.apikeys){
-          editUserDto.apinames=getArrayIfNeeded(editUserDto.apinames);
-          editUserDto.apikeys=getArrayIfNeeded(editUserDto.apikeys);
-          if(!verifyAPIs(editUserDto.apinames, editUserDto.apikeys)){
-            throw new BadRequestException(`You must have as many API names as API keys`);
-          }
-        }
         this.logger.verbose(`User "${user.username}" is trying to modify Details`);
         return this.authService.editUser(user, editUserDto);
       }
