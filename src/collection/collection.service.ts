@@ -7,7 +7,6 @@ import { Picto } from 'src/entities/picto.entity';
 import { User } from 'src/entities/user.entity';
 import { createPictoDto  } from 'src/picto/dto/picto.create.dto';
 import { PictoService } from 'src/picto/picto.service';
-import { getArrayIfNeeded } from 'src/utilities/tools';
 import { CollectionRepository } from './collection.repository';
 import { createCollectionDto } from './dto/collection.create.dto';
 import { deleteCollectionDto } from './dto/collection.delete.dto';
@@ -111,6 +110,13 @@ export class CollectionService {
         const index = collection.editors.indexOf(user.username);
         if(collection.userId===user.id || index!=-1){
             modifyCollectionDto = await this.verifyOwnership(modifyCollectionDto, user);
+            if(collection.public){
+                const admins = await this.authService.admins();
+                admins.map(async(admin) => {
+                    const notification = await this.createNotif(id, admin, "public collection", "modified");
+                    this.authService.pushNotification(admin, notification);
+                });
+            }
             return this.collectionRepository.modifyCollection(collection, modifyCollectionDto, user, filename);
         } else {
             throw new UnauthorizedException(`User '${user.username}' is not authorized to modify this collection`);
@@ -135,13 +141,12 @@ export class CollectionService {
                     const sharerRoot = await this.getCollectionById(sharer.root, sharer);
                     this.collectionRepository.pushCollection(sharerRoot, collection);
                 }
-                console.log(collection.editors, collection.viewers);
                 if(shareCollectionDto.access==1){
-                    if((collection.editors.indexOf(sharer.username)===-1) && (collection.viewers.indexOf(sharer.username)===-1)){
+                    if((collection.editors.indexOf(sharer.username)==-1) && (collection.viewers.indexOf(sharer.username)==-1)){
                         const notification = await this.createNotif(id, user, "collection", "share");
                         this.authService.pushNotification(sharer, notification);
-                        return this.shareCollectionById(id, shareCollectionDto, user);
                     }   
+                    return this.shareCollectionById(id, shareCollectionDto, user);
                 } else if (shareCollectionDto.access == 0){
                     if((collection.editors.indexOf(sharer.username)!==-1) || (collection.viewers.indexOf(sharer.username)!==-1)){
                         const notification = await this.createNotif(id, user, "collection", "unshare");
@@ -249,7 +254,6 @@ export class CollectionService {
 
     async copyCollection(fatherId: number, collectionId: number, user: User): Promise<number>{
         try{
-            console.log(fatherId, collectionId);
             const collection = await this.getCollectionById(collectionId, user);
             if(collection){
                 const createCollectionDto : createCollectionDto = {

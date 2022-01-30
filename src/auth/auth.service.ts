@@ -40,6 +40,10 @@ export class AuthService {
         return this.userRepository.userValidation(validationToken);
     }
 
+    async admins(): Promise<User[]>{
+        return this.userRepository.find({where: {admin: true}});
+    }
+
     async signIn(
         authCredentialsDto: AuthCredentialsDto,
         ): Promise<{ accessToken: string; expiresIn: string }> {

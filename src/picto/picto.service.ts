@@ -11,6 +11,7 @@ import { Collection } from 'src/entities/collection.entity';
 import { CollectionService } from 'src/collection/collection.service';
 import { deletePictoDto } from './dto/picto.delete.dto';
 import { modifyCollectionDto } from 'src/collection/dto/collection.modify.dto';
+import { Notif } from 'src/entities/notification.entity';
 
 @Injectable()
 export class PictoService {
@@ -117,6 +118,23 @@ export class PictoService {
 
     async modifyPicto(id: number, user: User, modifyPictoDto: modifyPictoDto, filename: string): Promise<Picto>{
         const picto=await this.getPictoById(id, user);
-        return this.pictoRepository.modifyPicto(picto, modifyPictoDto, user, filename);
+        const index = picto.editors.indexOf(user.username);
+        if(picto.userId===user.id || index!=-1){
+            if(picto.public){
+                const admins = await this.authService.admins();
+                admins.map(async(admin) => {
+                    const notification = await this.createNotif(id, admin, "public picto", "modified");
+                    this.authService.pushNotification(admin, notification);
+                });
+            }
+            return this.pictoRepository.modifyPicto(picto, modifyPictoDto, user, filename);
+        } else {
+            throw new UnauthorizedException(`User '${user.username}' is not authorized to modify this picto`);
+        }
     }
+
+    async createNotif(id : number, user: User, type: string, operation: string): Promise<Notif>{
+        const notification: Notif = new Notif(type, operation, id.toString(), user.username)
+        return notification;
+    } 
 }
