@@ -1,5 +1,5 @@
 import { EntityRepository, Repository } from "typeorm";
-import { ConflictException, ForbiddenException, InternalServerErrorException, Logger } from "@nestjs/common";
+import { ConflictException, ForbiddenException, InternalServerErrorException, Logger, UnauthorizedException } from "@nestjs/common";
 import * as bcrypt from 'bcrypt';
 import { AuthCredentialsDto } from "./dto/auth-credentials.dto";
 import { User } from "src/entities/user.entity";
@@ -11,6 +11,8 @@ import { getArrayIfNeeded } from "src/utilities/tools";
 import { Notif } from "src/entities/notification.entity";
 import { stringifyMap, validLanguage } from "src/utilities/creation";
 import sgMail = require('@sendgrid/mail');
+import { randomBytes } from "crypto";
+import { Validation } from "./dto/user-validation.dto";
 sgMail.setApiKey(process.env.SENDGRID_KEY);
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -26,6 +28,7 @@ export class UserRepository extends Repository<User> {
         user.resetPasswordExpires = '';
         user.language = language;
         user.displayLanguage = language;
+        user.validationToken = randomBytes(20).toString('hex');
         const voices = validLanguage(languages);
         user.languages = stringifyMap(voices);
         if(directSharers){
@@ -47,17 +50,35 @@ export class UserRepository extends Repository<User> {
           }
         }
         try{
-          await sgMail.send({from: 'alex@pictalk.xyz', to: user.username, templateId: 'd-33dea01340e5496691a5741588e2d9f7'});
+          sgMail.send({
+            from: 'alex@pictalk.xyz', 
+            to: user.username, 
+            templateId: 'd-33dea01340e5496691a5741588e2d9f7',
+            dynamicTemplateData: {
+              token: user.validationToken,
+            },
+          });
         } catch(error){}
         this.logger.verbose(`User ${user.username} is being saved !`);
         return user;
       }
+    
+    async userValidation(validationToken: string): Promise<void>{
+      const user = await this.findOne({ where: { validationToken: validationToken } });
+      if(user){
+        if(user.validationToken === validationToken){
+          user.validationToken = "verified"
+        } 
+      } else {
+        throw new UnauthorizedException(`wrong token ${validationToken}`)
+      }
+    }
 
-    async validateUserPassword(authCredentialsDto: AuthCredentialsDto): Promise<string> {
+    async validateUserPassword(authCredentialsDto: AuthCredentialsDto): Promise<Validation> {
         const {username, password} = authCredentialsDto;
         const user = await this.findOne({ username });
         if(user && await user.validatePassword(password)){
-            return user.username;
+            return new Validation(user.username, user.validationToken);
         } else{
             return null;
         }

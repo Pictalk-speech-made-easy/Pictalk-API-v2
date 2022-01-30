@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, forwardRef, Get, Inject, Logger, Param, Post, Put, UseGuards, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, forwardRef, Get, Inject, Logger, Param, Post, Put, UseGuards, ValidationPipe } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { AuthGuard } from '@nestjs/passport';
@@ -11,8 +11,6 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { EditUserDto } from './dto/edit-user.dto';
 import { Notif } from 'src/entities/notification.entity';
-import { verifyAPIs } from 'src/utilities/creation';
-import { getArrayIfNeeded } from 'src/utilities/tools';
 @Controller('')
 export class AuthController {
     private logger = new Logger('AuthController');
@@ -27,6 +25,15 @@ export class AuthController {
         await this.collectionService.createRoot(user);
         await this.collectionService.createShared(user);
         return;
+    }
+
+    @Get('auth/verify/:validationToken')
+    async validateUser(@Param('validationToken') validationToken: string){
+      if(validationToken != "verified"){
+        return this.authService.userValidation(validationToken);
+      } else {
+        return
+      }
     }
 
     @Post('auth/signin')

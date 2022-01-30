@@ -48,6 +48,9 @@ export class User extends BaseEntity {
   resetPasswordToken: string;
 
   @Column()
+  validationToken: string;
+
+  @Column()
   resetPasswordExpires: string;
 
   @Column("text",{default: [], array: true})

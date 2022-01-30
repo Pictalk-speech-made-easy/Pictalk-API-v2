@@ -36,18 +36,24 @@ export class AuthService {
         return this.userRepository.signUp(createUserDto);
     }
 
+    async userValidation(validationToken: string): Promise<void>{
+        return this.userRepository.userValidation(validationToken);
+    }
+
     async signIn(
         authCredentialsDto: AuthCredentialsDto,
         ): Promise<{ accessToken: string; expiresIn: string }> {
         const jwtConfig = config.get('jwt');
         const expiresIn = jwtConfig.expiresIn;
-        const username = await this.userRepository.validateUserPassword(
+        const validate = await this.userRepository.validateUserPassword(
             authCredentialsDto,
         );
-
-        if (!username) {
+        if (!validate) {
             throw new UnauthorizedException('Invalid Credentials');
+        } else if (validate.validationToken!='verified') {
+            throw new UnauthorizedException('User has not verified his account, please verify your mailing address')
         } else {
+            const username = validate.username
             const payload: JwtPayload = { username };
             const accessToken = await this.jwtService.sign(payload);
             this.logger.debug(
