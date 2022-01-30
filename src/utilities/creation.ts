@@ -68,7 +68,7 @@ export const validLanguage = (language : string) => {
         });
         return languages.languages;
     } catch(error){
-        throw new InternalServerErrorException(error);
+        throw new InternalServerErrorException(`couldn't parse languages`);
     }
 }
 // not mine but gets the job done, flemme de renommer variable !

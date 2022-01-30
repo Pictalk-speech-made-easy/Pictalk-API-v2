@@ -3,7 +3,6 @@
 /node_modules
 /files
 /tmp
-api.ts
 .env
 # Logs
 logs

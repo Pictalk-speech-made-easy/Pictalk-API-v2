@@ -68,8 +68,7 @@ export class CollectionRepository extends Repository<Collection>{
         try {
             await collection.save();
         } catch (error) {
-            console.log(error)
-            throw new InternalServerErrorException(error);
+            throw new InternalServerErrorException(`could not save collection properly`);
         }
         //delete collection.user;
         return collection;
@@ -169,7 +168,7 @@ export class CollectionRepository extends Repository<Collection>{
                     collection.editors.splice(index);
                 }
                 index = collection.viewers.indexOf(username);
-                if(!(index!=-1)){
+                if((index==-1)){
                     collection.viewers.push(username);
                 } 
             } else {
