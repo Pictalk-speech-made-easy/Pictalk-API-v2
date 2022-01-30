@@ -1,4 +1,4 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/entities/user.entity';
@@ -45,13 +45,11 @@ export class AuthService {
         ): Promise<{ accessToken: string; expiresIn: string }> {
         const jwtConfig = config.get('jwt');
         const expiresIn = jwtConfig.expiresIn;
-        const validate = await this.userRepository.validateUserPassword(
-            authCredentialsDto,
-        );
+        const validate = await this.userRepository.validateUserPassword(authCredentialsDto);
         if (!validate) {
             throw new UnauthorizedException('Invalid Credentials');
         } else if (validate.validationToken!='verified') {
-            throw new UnauthorizedException('User has not verified his account, please verify your mailing address')
+            throw new ForbiddenException('User has not verified his account, please verify your mailing address')
         } else {
             const username = validate.username
             const payload: JwtPayload = { username };

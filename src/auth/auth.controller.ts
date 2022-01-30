@@ -27,8 +27,8 @@ export class AuthController {
         return;
     }
 
-    @Get('auth/verify/:validationToken')
-    async validateUser(@Param('validationToken') validationToken: string){
+    @Get('auth/validation/:validationToken')
+    async validateUser(@Param('validationToken') validationToken: string): Promise<void>{
       if(validationToken != "verified"){
         return this.authService.userValidation(validationToken);
       } else {

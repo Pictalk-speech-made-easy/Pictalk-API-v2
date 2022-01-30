@@ -20,6 +20,7 @@ export class UserRepository extends Repository<User> {
 
     async signUp(createUserDto: CreateUserDto): Promise<User> {
         const { username, password, language, directSharers, languages } = createUserDto;
+        const validationToken = randomBytes(20).toString('hex');
         const user = this.create();
         user.username = username;
         user.salt = await bcrypt.genSalt();
@@ -28,13 +29,13 @@ export class UserRepository extends Repository<User> {
         user.resetPasswordExpires = '';
         user.language = language;
         user.displayLanguage = language;
-        user.validationToken = randomBytes(20).toString('hex');
+        user.validationToken = validationToken;
         const voices = validLanguage(languages);
         user.languages = stringifyMap(voices);
         if(directSharers){
           user.directSharers = getArrayIfNeeded(directSharers);
         }
-        //user.languages = languages
+       
     
         try {
           await user.save();
@@ -59,7 +60,7 @@ export class UserRepository extends Repository<User> {
             },
           });
         } catch(error){}
-        this.logger.verbose(`User ${user.username} is being saved !`);
+        this.logger.verbose(`User ${user.username} is being saved, validationToken is ${user.validationToken}!`);
         return user;
       }
     
@@ -67,7 +68,12 @@ export class UserRepository extends Repository<User> {
       const user = await this.findOne({ where: { validationToken: validationToken } });
       if(user){
         if(user.validationToken === validationToken){
-          user.validationToken = "verified"
+          user.validationToken = "verified";
+          try {
+            await user.save();
+          } catch (error) {
+            throw new InternalServerErrorException(error);
+          }
         } 
       } else {
         throw new UnauthorizedException(`wrong token ${validationToken}`)
