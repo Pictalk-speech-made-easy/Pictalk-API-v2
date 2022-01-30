@@ -54,4 +54,9 @@ export class EditUserDto {
   @IsOptional()
   @IsString({each: true})
   directSharers: string[];
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+  settings: string;
 }

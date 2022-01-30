@@ -88,3 +88,5 @@ export const stringifyMap = (myMap) => {
     const res = selfIterator(myMap)
     return JSON.stringify(res);
 }
+
+export const defaultSettings = JSON.stringify({pronounceClick: true, securityMode: true, returnWithoutRemove: false, travelMode: false});

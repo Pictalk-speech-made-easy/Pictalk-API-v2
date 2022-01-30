@@ -35,8 +35,7 @@ export class UserRepository extends Repository<User> {
         if(directSharers){
           user.directSharers = getArrayIfNeeded(directSharers);
         }
-       
-    
+
         try {
           await user.save();
         } catch (error) {
