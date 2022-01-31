@@ -34,57 +34,12 @@ export class ImageController {
     return res.sendFile(image, { root: './files/' });
   }
 
-  @Get('/flickr/')
-  async searchFlickr(
-    @Query(ValidationPipe) filterDto: FilterDto): Promise<any> {
-    try {
-      let perPage = filterDto.perPage ? filterDto.perPage : 8;
-      const response = await lastValueFrom(
-        this.httpService.get(
-          `https://www.flickr.com/services/rest/?sort=relevance&lang=${filterDto.language}&method=flickr.photos.search&api_key=${this.flickrAPIKey}&text=${filterDto.search}&safe_search=true&per_page=${perPage}&format=json&nojsoncallback=1`,
-        ),
-      );
-    } catch (error) {
-      console.log(error);
-      throw new InternalServerErrorException(`couldn't get images from Flickr`);
-    }
-  }
-
-  @Get('/unsplash/')
-  async searchUnsplash(@Query(ValidationPipe) filterDto: FilterDto): Promise<any> {
-    try {
-      let perPage = filterDto.perPage ? filterDto.perPage : 8;
-      const response = await lastValueFrom(
-        this.httpService.get(
-          `https://api.unsplash.com/search/photos?query=${filterDto.search}&content_filter=high&lang=${filterDto.language}&per_page=${perPage}&client_id=${this.unsplashAPIKey}`,
-        ),
-      );
-      return response.data;
-    } catch (error) {
-      throw new InternalServerErrorException(`couldn't get images from unsplash`);
-    }
-  }
-
-  @Get('/pexels/')
-  async searchPexels(@Query(ValidationPipe) filterDto: FilterDto): Promise<any> {
-    try {
-      let perPage = filterDto.perPage ? filterDto.perPage : 8;
-      const response = client.photos.search({ query: filterDto.search, size: "small", locale: "fr-FR", per_page: perPage });
-      return response;
-    } catch (error) {
-      throw new InternalServerErrorException(`couldn't get images from pexels`);
-    }
-  }
-
-  @Get('/images/')
-  async searchImages(@Query(ValidationPipe) filterDto: FilterDto): Promise<any> {
+  @Get('/web/')
+  async searchImages(@Query(ValidationPipe) filterDto: FilterDto): Promise<WebImage[]> {
     let webImages : WebImage[]= [];
-    let perPage = filterDto.perPage ? filterDto.perPage : 8;
-    const flickrRes = await lastValueFrom(
-      this.httpService.get(
-        `https://www.flickr.com/services/rest/?sort=relevance&lang=${filterDto.language}&method=flickr.photos.search&api_key=${this.flickrAPIKey}&text=${filterDto.search}&safe_search=true&per_page=${perPage}&format=json&nojsoncallback=1`,
-      ),
-    ).then((flickrRes) => {
+    let promises : Promise<any>[] = [];
+    
+    const flickrRes = lastValueFrom(this.httpService.get(this.generateLinks(filterDto, "flickr"))).then((flickrRes) => {
       const images = flickrRes.data.photos.photo;
       for(let image of images){
         webImages.push(new WebImage(
@@ -95,11 +50,10 @@ export class ImageController {
           `${this.flickr}/${image.server}/${image.id}_${image.secret}.jpg`
           ));
       }
-    }).catch((error) => {})
-    const unsplashRes = await lastValueFrom(
-    this.httpService.get(
-      `https://api.unsplash.com/search/photos?query=${filterDto.search}&content_filter=high&lang=${filterDto.language}&per_page=${perPage}&client_id=${this.unsplashAPIKey}`,
-    ),
+    }).catch((error) => {if(error.response.status ==429){this.logger.verbose("[ERR] FLICKR TOO MUCH REQUESTS");}});
+
+    const unsplashRes = lastValueFrom(
+    this.httpService.get(this.generateLinks(filterDto, "unsplash")),
     ).then((unsplashRes) => {
       const images = unsplashRes.data.results;
       for(let image of images){
@@ -111,8 +65,13 @@ export class ImageController {
           image.urls.small
           ));
       }
-    }).catch((error) => {});
-    const pexelsRes = await client.photos.search({ query: filterDto.search, size: "small", locale: "fr-FR", per_page: perPage }).then(
+    }).catch((error) => {if(error.response.status ==429){this.logger.verbose("[ERR] UNSPLASH TOO MUCH REQUESTS");}});
+
+    const pexelsRes = client.photos.search({
+      query: filterDto.search,
+      size: "small",
+      locale: "fr-FR",
+      per_page: filterDto.perPage ? filterDto.perPage : 8}).then(
       (pexelsRes : any) => {
         const images = pexelsRes.photos;
         for(let image of images){
@@ -125,9 +84,9 @@ export class ImageController {
             ));
         }
       }
-    ).catch((error) => {});
+    ).catch((error) => {if(error.response.status ==429){this.logger.verbose("[ERR] PEXELS TOO MUCH REQUESTS");}});
 
-    const pixabayRes = await lastValueFrom(this.httpService.get(`https://pixabay.com/api/?q=${filterDto.search}&lang=${filterDto.language}&safesearch=true&key=${this.pixabayAPIKey}&per_page=${perPage}`)
+    const pixabayRes = lastValueFrom(this.httpService.get(this.generateLinks(filterDto, "pixabay"))
     ).then((pixabayRes) => {
       const images = pixabayRes.data.hits;
       for(let image of images){
@@ -139,7 +98,23 @@ export class ImageController {
           image.webformatURL
         ));
       }
-    }).catch((error) => {});
-    return webImages
+    }).catch((error) => {if(error.response.status ==429){this.logger.verbose("[ERR] PIXABAY TOO MUCH REQUESTS");}});
+    promises.push(flickrRes);
+    promises.push(unsplashRes);
+    promises.push(pexelsRes);
+    promises.push(pixabayRes);
+    return Promise.allSettled(promises).then(()=>{return webImages});
+  }
+
+  generateLinks(filterDto: FilterDto, api: string): string{
+    let perPage = filterDto.perPage ? filterDto.perPage : 8;
+    if(api === "flickr"){
+      return `https://www.flickr.com/services/rest/?sort=relevance&lang=${filterDto.language}&method=flickr.photos.search&api_key=${this.flickrAPIKey}&text=${filterDto.search}&safe_search=true&per_page=${perPage}&format=json&nojsoncallback=1`
+    } else if(api === "unsplash"){
+      return `https://api.unsplash.com/search/photos?query=${filterDto.search}&content_filter=high&lang=${filterDto.language}&per_page=${perPage}&client_id=${this.unsplashAPIKey}`
+    } else if(api === "pixabay"){
+      return `https://pixabay.com/api/?q=${filterDto.search}&lang=${filterDto.language}&safesearch=true&key=${this.pixabayAPIKey}&per_page=${perPage}`
+    }
+    return null;
   }
 }
