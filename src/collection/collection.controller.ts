@@ -15,6 +15,7 @@ import { shareCollectionDto } from './dto/collection.share.dto';
 import { publicCollectionDto } from './dto/collection.public.dto';
 import { deleteCollectionDto } from './dto/collection.delete.dto';
 import { copyCollectionDto } from './dto/collection.copy.dto';
+import { SearchCollectionDto } from './dto/collection.search.public.dto';
 
 @Controller('collection')
 export class CollectionController {
@@ -30,8 +31,8 @@ export class CollectionController {
   }
 
   @Get('public')
-  getPublicCollections(): Promise<Collection[]>{
-      return this.collectionService.getPublicCollection();
+  getPublicCollections(@Query(ValidationPipe) SearchCollectionDto: SearchCollectionDto): Promise<Collection[]>{
+      return this.collectionService.getPublicCollection(SearchCollectionDto);
   }
   
   @UseGuards(AuthGuard())

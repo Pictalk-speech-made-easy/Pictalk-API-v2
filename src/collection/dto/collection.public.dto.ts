@@ -5,6 +5,6 @@ export class publicCollectionDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsNumberString()
-  @Matches(/0|1/, { message: "Public should be either 1 or 0'"})
+  @Matches(/0|1/, { message: "publish should be either 1 or 0'"})
   publish: number;
 }

@@ -12,6 +12,7 @@ import { createCollectionDto } from './dto/collection.create.dto';
 import { deleteCollectionDto } from './dto/collection.delete.dto';
 import { modifyCollectionDto } from './dto/collection.modify.dto';
 import { publicCollectionDto } from './dto/collection.public.dto';
+import { SearchCollectionDto } from './dto/collection.search.public.dto';
 import { shareCollectionDto } from './dto/collection.share.dto';
 
 @Injectable()
@@ -224,7 +225,7 @@ export class CollectionService {
     async pushPicto(collection: Collection, picto: Picto):Promise<void>{
         return this.collectionRepository.pushPicto(collection, picto);
     }
-
+/*
     async getPublicCollection(): Promise<Collection[]>{
         const publicCollections = await this.collectionRepository.find({relations: ["pictos", "collections"],where : {public : true}});
         if(publicCollections){
@@ -233,7 +234,10 @@ export class CollectionService {
             throw new NotFoundException(`there are no public collections`);
         }
     }
-
+*/
+    async getPublicCollection(SearchCollectionDto: SearchCollectionDto): Promise<Collection[]>{
+        return this.collectionRepository.getPublicCollections(SearchCollectionDto);
+    }
     
     async copyPicto(fatherId: number, picto: Picto, user: User): Promise<number>{
         const editor = picto.editors.indexOf(user.username);

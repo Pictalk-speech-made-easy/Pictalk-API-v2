@@ -6,6 +6,7 @@ import { parseNumberArray } from "src/utilities/tools";
 import { EntityRepository, Repository } from "typeorm";
 import { createCollectionDto } from "./dto/collection.create.dto";
 import { modifyCollectionDto } from "./dto/collection.modify.dto";
+import { SearchCollectionDto } from "./dto/collection.search.public.dto";
 import { shareCollectionDto } from "./dto/collection.share.dto";
 
 @EntityRepository(Collection)
@@ -263,5 +264,23 @@ export class CollectionRepository extends Repository<Collection>{
             throw new InternalServerErrorException(error);
         }
         return;
+    }
+
+    async getPublicCollections(filterDto: SearchCollectionDto): Promise<Collection[]> {
+        const page = filterDto.page ? filterDto.page-1 : 0;
+        const per_page = filterDto.per_page ? filterDto.per_page: 40;
+        const toSkip = page*per_page;
+        const toTake = per_page;
+        const query = this.createQueryBuilder('collection');
+        try {
+            query.where('collection.public = :bool', { bool: true });
+            if(filterDto.search){
+                query.where('collection.meaning like :search', {search: `%${filterDto.search}%`});
+            }
+            const collections = await query.skip(toSkip).take(toTake).getMany();
+            return collections;
+        } catch(err){
+            throw new InternalServerErrorException(err);
+        }
     }
 }
