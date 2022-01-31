@@ -75,7 +75,7 @@ export class AuthService {
     );
     }
 
-    async editUser(user: User, editUserDto: EditUserDto): Promise<void> {
+    async editUser(user: User, editUserDto: EditUserDto): Promise<User> {
     return this.userRepository.editUser(user, editUserDto);
     }
     async getUserDetails(user: User): Promise<User> {

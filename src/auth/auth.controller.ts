@@ -38,49 +38,49 @@ export class AuthController {
 
     @Post('auth/signin')
     signIn(
-        @Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto): Promise<{ accessToken: string; expiresIn: string }> {
-        this.logger.verbose(
-          `User "${authCredentialsDto.username}" is trying to Sign In`,
-        );
-        return this.authService.signIn(authCredentialsDto);
-      }
+      @Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto): Promise<{ accessToken: string; expiresIn: string }> {
+      this.logger.verbose(
+        `User "${authCredentialsDto.username}" is trying to Sign In`,
+      );
+      return this.authService.signIn(authCredentialsDto);
+    }
 
-      @Post('user/resetPassword')
-      resetPassword(
-        @Body(ValidationPipe) resetPasswordDto: ResetPasswordDto,
-      ): Promise<void> {
-        this.logger.verbose(
-          `User "${resetPasswordDto.username}" is trying to Reset Password`,
-        );
-        return this.authService.resetPassword(resetPasswordDto);
-      }
-      @Post('user/changePassword/:token')
-      changePassword(
-        @Body(ValidationPipe) changePasswordDto: ChangePasswordDto,
-        @Param('token') token: string,
-      ): Promise<void> {
-        this.logger.verbose(
-          `${token} is being used !`,
-        );
-        return this.authService.changePassword(changePasswordDto, token);
-      }
-    
-      @Get('user/details')
-      @UseGuards(AuthGuard())
-      getUserDetails(@GetUser() user: User): Promise<User> {
-        this.logger.verbose(`User "${user.username}" is trying to get Details`);
-        return this.authService.getUserDetails(user);
-      }
-    
-      @Put('user/details')
-      @UseGuards(AuthGuard())
-      editUser(
-        @GetUser() user: User,
-        @Body(ValidationPipe) editUserDto: EditUserDto,
-      ): Promise<void> {
-        this.logger.verbose(`User "${user.username}" is trying to modify Details`);
-        return this.authService.editUser(user, editUserDto);
-      }
+    @Post('user/resetPassword')
+    resetPassword(
+      @Body(ValidationPipe) resetPasswordDto: ResetPasswordDto,
+    ): Promise<void> {
+      this.logger.verbose(
+        `User "${resetPasswordDto.username}" is trying to Reset Password`,
+      );
+      return this.authService.resetPassword(resetPasswordDto);
+    }
+    @Post('user/changePassword/:token')
+    changePassword(
+      @Body(ValidationPipe) changePasswordDto: ChangePasswordDto,
+      @Param('token') token: string,
+    ): Promise<void> {
+      this.logger.verbose(
+        `${token} is being used !`,
+      );
+      return this.authService.changePassword(changePasswordDto, token);
+    }
+  
+    @Get('user/details')
+    @UseGuards(AuthGuard())
+    getUserDetails(@GetUser() user: User): Promise<User> {
+      this.logger.verbose(`User "${user.username}" is trying to get Details`);
+      return this.authService.getUserDetails(user);
+    }
+  
+    @Put('user/details')
+    @UseGuards(AuthGuard())
+    editUser(
+      @GetUser() user: User,
+      @Body(ValidationPipe) editUserDto: EditUserDto,
+    ): Promise<User> {
+      this.logger.verbose(`User "${user.username}" is trying to modify Details`);
+      return this.authService.editUser(user, editUserDto);
+    }
 
     @UseGuards(AuthGuard())
     @Get('/user/root')

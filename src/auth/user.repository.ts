@@ -153,8 +153,8 @@ export class UserRepository extends Repository<User> {
         return user;
       }
 
-      async editUser(user: User, editUserDto: EditUserDto): Promise<void> {
-        const { username, language, password, directSharers, languages, display } = editUserDto;
+      async editUser(user: User, editUserDto: EditUserDto): Promise<User> {
+        const { username, language, password, directSharers, languages, display, settings } = editUserDto;
         if (username) {
           user.username = username;
         }
@@ -174,11 +174,15 @@ export class UserRepository extends Repository<User> {
         if(display){
           user.displayLanguage = display;
         }
+        if(settings){
+          user.settings = settings;
+        }
         try {
           await user.save();
         } catch (error) {
           throw new InternalServerErrorException(error);
         }
+        return this.getUserDetails(user);
       }
 
 
