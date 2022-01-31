@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { CacheModule, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PictoModule } from './picto/picto.module';
@@ -18,6 +18,7 @@ import { ConfigModule } from '@nestjs/config';
     CollectionModule,
     AuthModule,
     HttpModule,
+    CacheModule.register({ttl: 864000}),
   ],
   controllers: [AppController, ImageController, TranslationController],
   providers: [AppService],

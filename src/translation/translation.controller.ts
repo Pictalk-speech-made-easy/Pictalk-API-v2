@@ -1,10 +1,12 @@
 import { HttpService } from '@nestjs/axios';
 import {
+  CacheInterceptor,
   Controller,
   Get,
   InternalServerErrorException,
   Query,
   UseGuards,
+  UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
@@ -12,6 +14,7 @@ import { lastValueFrom } from 'rxjs';
 import { TranslateDto } from './dto/translation.dto';
 
 @Controller('translation')
+@UseInterceptors(CacheInterceptor)
 export class TranslationController {
   constructor(private httpService: HttpService) {}
   private deeplApiDeepL = process.env.DEEPL_API_KEY;
