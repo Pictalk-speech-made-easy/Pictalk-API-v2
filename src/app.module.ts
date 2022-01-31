@@ -18,7 +18,7 @@ import { ConfigModule } from '@nestjs/config';
     CollectionModule,
     AuthModule,
     HttpModule,
-    CacheModule.register({ttl: 864000}),
+    CacheModule.register({ttl: 2592000}), // 1 month
   ],
   controllers: [AppController, ImageController, TranslationController],
   providers: [AppService],
