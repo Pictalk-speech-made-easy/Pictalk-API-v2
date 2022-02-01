@@ -13,11 +13,14 @@ import { stringifyMap, validLanguage } from "src/utilities/creation";
 import sgMail = require('@sendgrid/mail');
 import { randomBytes } from "crypto";
 import { Validation } from "./dto/user-validation.dto";
-sgMail.setApiKey(process.env.SENDGRID_KEY);
+
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
     private logger = new Logger('AuthService');
-
+    constructor() {
+      super();
+      sgMail.setApiKey(process.env.SENDGRID_KEY);
+    }
     async signUp(createUserDto: CreateUserDto): Promise<User> {
         const { username, password, language, directSharers, languages } = createUserDto;
         const validationToken = randomBytes(20).toString('hex');
@@ -50,15 +53,22 @@ export class UserRepository extends Repository<User> {
           }
         }
         try{
-          sgMail.send({
-            from: 'alex@pictalk.xyz', 
+          console.log(process.env.SENDGRID_KEY);
+          await sgMail.send({
+            from: 'alex@pictalk.org', 
             to: user.username, 
             templateId: 'd-33dea01340e5496691a5741588e2d9f7',
             dynamicTemplateData: {
               token: user.validationToken,
             },
           });
-        } catch(error){}
+        } catch(error){
+          console.error(error);
+          console.error(error.request);
+    if (error.response) {
+      console.error(error.response.body)
+    }
+        }
         this.logger.verbose(`User ${user.username} is being saved, validationToken is ${user.validationToken}!`);
         return user;
       }
@@ -129,7 +139,7 @@ export class UserRepository extends Repository<User> {
     
         try {
           sgMail.send({
-            from: 'alex@pictalk.xyz',
+            from: 'alex@pictalk.org',
             to: user.username,
             templateId: 'd-d68b41c356ba493eac635229b678744e',
             dynamicTemplateData: {
@@ -205,7 +215,7 @@ export class UserRepository extends Repository<User> {
         }
         try {
           sgMail.send({
-            from: 'alex@pictalk.xyz',
+            from: 'alex@pictalk.org',
             to: user.username,
             templateId: 'd-55a93fc67fa346939b6507a6f5cc477f',
           });
