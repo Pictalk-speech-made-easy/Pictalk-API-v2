@@ -24,8 +24,8 @@ export class PictoController {
   @Inject(forwardRef(() => CollectionService))
   private collectionService: CollectionService
   ){}
-  @UseGuards(AuthGuard())
 
+ 
   @Get('/:id')
   getPictoById(@Param('id', ParseIntPipe) id : number, @GetUser() user: User): Promise<Picto>{
     this.logger.verbose(`User "${user.username}" getting Picto with id ${id}`);
