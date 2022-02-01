@@ -32,6 +32,20 @@ export class CollectionController {
 
   @Get('public')
   getPublicCollections(@Query(ValidationPipe) SearchCollectionDto: SearchCollectionDto): Promise<Collection[]>{
+    if(SearchCollectionDto.page){
+      if(SearchCollectionDto.page>=1){
+        SearchCollectionDto.page = SearchCollectionDto.page|0;
+      } else {
+        throw new BadRequestException(`page must be an integer greater or equal to 1`);
+      }
+    }
+    if(SearchCollectionDto.per_page){
+      if(SearchCollectionDto.per_page>=5 && SearchCollectionDto.per_page<=100){
+        SearchCollectionDto.page = SearchCollectionDto.page|0;
+      } else {
+        throw new BadRequestException(`per_page must be an integer greater or equal to 5 and inferior or equal to 100`);
+      }
+    }
       return this.collectionService.getPublicCollection(SearchCollectionDto);
   }
   

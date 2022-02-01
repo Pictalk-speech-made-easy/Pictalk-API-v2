@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNumberString, IsOptional, IsString, Max, MaxLength, Min} from "class-validator";
+import { IsNumberString, IsOptional, IsString, Matches, MaxLength } from "class-validator";
+export const numberRegexp = RegExp(`^[1-9]+\d*$`);
 
 export class SearchCollectionDto{
     @ApiProperty()
@@ -11,13 +12,10 @@ export class SearchCollectionDto{
     @ApiProperty()
     @IsOptional()
     @IsNumberString()
-    @Min(1)
     page: number;
 
     @ApiProperty()
     @IsOptional()
     @IsNumberString()
-    @Min(4)
-    @Max(20)
     per_page: number;
 }
