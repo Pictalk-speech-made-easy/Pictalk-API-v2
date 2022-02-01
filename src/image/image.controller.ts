@@ -8,6 +8,7 @@ import {
   Param,
   Query,
   Res,
+  UseGuards,
   UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
@@ -15,6 +16,7 @@ import { lastValueFrom } from 'rxjs';
 import { FilterDto } from './dto/search.dto';
 import { createClient } from 'pexels';
 import { WebImage } from 'src/entities/webImage.entity';
+import { AuthGuard } from '@nestjs/passport';
 const client = createClient('563492ad6f9170000100000141844035a31b4fe8acba00dfd6436b14');
 
 @Controller('image')
@@ -34,6 +36,7 @@ export class ImageController {
   }
 
   @Get('/web/')
+  @UseGuards(AuthGuard())
   async searchImages(@Query(ValidationPipe) filterDto: FilterDto): Promise<WebImage[]> {
     let webImages : WebImage[]= [];
     let promises : Promise<any>[] = [];
