@@ -267,6 +267,7 @@ export class CollectionRepository extends Repository<Collection>{
     }
 
     async getPublicCollections(filterDto: SearchCollectionDto): Promise<Collection[]> {
+        let collections: Collection[];
         const page = filterDto.page ? filterDto.page-1 : 0;
         const per_page = filterDto.per_page ? filterDto.per_page: 40;
         const toSkip = page*per_page;
@@ -276,8 +277,12 @@ export class CollectionRepository extends Repository<Collection>{
             query.where('collection.public = :bool', { bool: true });
             if(filterDto.search){
                 query.where('collection.meaning like :search', {search: `%${filterDto.search}%`});
+                collections = await query.skip(toSkip).take(toTake).getMany();
+            } else if (filterDto.page) {
+                collections = await query.skip(toSkip).take(toTake).getMany();
+            } else {
+                collections = await query.getMany();
             }
-            const collections = await query.skip(toSkip).take(toTake).getMany();
             return collections;
         } catch(err){
             throw new InternalServerErrorException(err);
