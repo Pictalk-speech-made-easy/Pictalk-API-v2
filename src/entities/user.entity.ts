@@ -3,6 +3,8 @@ import {BaseEntity,
   PrimaryGeneratedColumn,
   Column,
   OneToMany,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Collection } from './collection.entity';
@@ -65,6 +67,12 @@ export class User extends BaseEntity {
 
   @Column({default: false})
   admin: boolean;
+
+  @CreateDateColumn()
+  createdDate: Date;
+  
+  @UpdateDateColumn()
+  updatedDate: Date;
 
   async validatePassword(password: string): Promise<boolean> {
     const hash = await bcrypt.hash(password, this.salt);

@@ -1,4 +1,4 @@
-import { BaseEntity, Column, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, CreateDateColumn, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Collection } from "./collection.entity";
 import { User } from "./user.entity";
 
@@ -43,4 +43,10 @@ export class Picto extends BaseEntity{
 
     @Column({default: false})
     public: boolean;
+
+    @CreateDateColumn()
+    createdDate: Date;
+    
+    @UpdateDateColumn()
+    updatedDate: Date;
 }
