@@ -78,15 +78,19 @@ export class AuthController {
       @GetUser() user: User,
       @Body(ValidationPipe) editUserDto: EditUserDto,
     ): Promise<User> {
-      try{
-        JSON.parse(editUserDto.mailingList);
-      } catch(error){
-        throw new BadRequestException(`mailing list ${editUserDto.mailingList} is not valid`);
+      if(editUserDto.mailingList){
+        try{
+          JSON.parse(editUserDto.mailingList);
+        } catch(error){
+          throw new BadRequestException(`mailing list ${editUserDto.mailingList} is not valid`);
+        }
       }
-      try{
-        JSON.parse(editUserDto.settings);
-      } catch(error){
-        throw new BadRequestException(`settings ${editUserDto.settings} is not valid`);
+      if(editUserDto.settings){
+        try{
+          JSON.parse(editUserDto.settings);
+        } catch(error){
+          throw new BadRequestException(`settings ${editUserDto.settings} is not valid`);
+        }
       }
       this.logger.verbose(`User "${user.username}" is trying to modify Details`);
       return this.authService.editUser(user, editUserDto);
