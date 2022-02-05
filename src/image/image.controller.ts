@@ -63,7 +63,7 @@ export class ImageController {
       for(let image of images){
         webImages.push(new WebImage(
           "unsplash", 
-          filterDto.search, 
+          "", 
           image.user.username, 
           image.urls.thumb,
           image.urls.small
@@ -81,7 +81,7 @@ export class ImageController {
         for(let image of images){
           webImages.push(new WebImage(
             "pexels", 
-            filterDto.search, 
+            "", 
             image.photographer, 
             image.src.tiny,
             image.src.medium
@@ -96,7 +96,7 @@ export class ImageController {
       for(let image of images){
         webImages.push(new WebImage(
           "pixabay",
-          filterDto.search,
+          "",
           image.user,
           image.previewURL,
           image.webformatURL
