@@ -17,6 +17,7 @@ import { FilterDto } from './dto/search.dto';
 import { createClient } from 'pexels';
 import { WebImage } from 'src/entities/webImage.entity';
 import { AuthGuard } from '@nestjs/passport';
+import { languageMapping } from 'src/utilities/supported.languages';
 const client = createClient('563492ad6f9170000100000141844035a31b4fe8acba00dfd6436b14');
 
 @Controller('image')
@@ -28,6 +29,7 @@ export class ImageController {
   private pixabayAPIKey = process.env.PIXABAY_API_KEY
   private logger = new Logger('ImageController');
   private flickr = "https://live.staticflickr.com";
+  private per_page_default = 10;
   @Get('/pictalk/:imgpath')
   @Header('Cache-Control', 'max-age=31536000')
   seeUploadedFile(@Param('imgpath') image, @Res() res) {
@@ -72,8 +74,8 @@ export class ImageController {
     const pexelsRes = client.photos.search({
       query: filterDto.search,
       size: "small",
-      locale: "fr-FR",
-      per_page: filterDto.perPage ? filterDto.perPage : 8}).then(
+      locale: languageMapping[`${filterDto.language}`],
+      per_page: filterDto.perPage ? filterDto.perPage : this.per_page_default}).then(
       (pexelsRes : any) => {
         const images = pexelsRes.photos;
         for(let image of images){
@@ -109,7 +111,7 @@ export class ImageController {
   }
 
   generateLinks(filterDto: FilterDto, api: string): string{
-    let perPage = filterDto.perPage ? filterDto.perPage : 8;
+    let perPage = filterDto.perPage ? filterDto.perPage : this.per_page_default;
     if(api === "flickr"){
       return `https://www.flickr.com/services/rest/?sort=relevance&lang=${filterDto.language}&method=flickr.photos.search&api_key=${this.flickrAPIKey}&text=${filterDto.search}&safe_search=true&per_page=${perPage}&format=json&nojsoncallback=1`
     } else if(api === "unsplash"){
