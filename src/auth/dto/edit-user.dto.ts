@@ -7,7 +7,6 @@ import {
   Matches,
   IsOptional,
 } from 'class-validator';
-import { APIsRegex } from 'src/utilities/supported.APIs';
 
 
 export class EditUserDto {
@@ -58,10 +57,12 @@ export class EditUserDto {
   @ApiProperty()
   @IsOptional()
   @IsString()
+  @MaxLength(16384)
   settings: string;
 
   @ApiProperty()
   @IsOptional()
   @IsString()
+  @MaxLength(16384)
   mailingList: string;
 }
