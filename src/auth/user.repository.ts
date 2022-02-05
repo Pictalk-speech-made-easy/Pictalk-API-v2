@@ -164,7 +164,7 @@ export class UserRepository extends Repository<User> {
       }
 
       async editUser(user: User, editUserDto: EditUserDto): Promise<User> {
-        const { username, language, password, directSharers, languages, display, settings } = editUserDto;
+        const { username, language, password, directSharers, languages, display, settings, mailingList } = editUserDto;
         if (username) {
           user.username = username;
         }
@@ -186,6 +186,9 @@ export class UserRepository extends Repository<User> {
         }
         if(settings){
           user.settings = settings;
+        }
+        if(mailingList){
+          user.mailingList = mailingList;
         }
         try {
           await user.save();

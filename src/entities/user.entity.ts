@@ -10,7 +10,7 @@ import * as bcrypt from 'bcrypt';
 import { Collection } from './collection.entity';
 import { Picto } from './picto.entity';
 import { Notif } from './notification.entity';
-import { defaultSettings } from 'src/utilities/creation';
+import { defaultMailingList, defaultSettings } from 'src/utilities/creation';
 
 @Entity()
 export class User extends BaseEntity {
@@ -64,6 +64,9 @@ export class User extends BaseEntity {
 
   @Column({default: defaultSettings})
   settings : string;
+
+  @Column({default: defaultMailingList})
+  mailingList : string;
 
   @Column({default: false})
   admin: boolean;
