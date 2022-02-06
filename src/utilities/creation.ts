@@ -3,6 +3,8 @@ import { Languages, Voice, VoiceURI } from "src/entities/voices.entity";
 import { languagesRegex } from "./supported.languages";
 import { getArrayIfNeeded } from "./tools";
 
+export const usernameRegexp = new RegExp(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
+
 export const IsValid = (meaning: any, speech : any) => {
     try {
         meaning = JSON.parse(meaning);

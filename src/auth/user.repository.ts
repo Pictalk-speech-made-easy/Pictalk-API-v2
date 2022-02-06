@@ -65,13 +65,29 @@ export class UserRepository extends Repository<User> {
         } catch(error){
           console.error(error);
           console.error(error.request);
-    if (error.response) {
-      console.error(error.response.body)
-    }
+          if (error.response) {
+            console.error(error.response.body)
+          }
         }
         this.logger.verbose(`User ${user.username} is being saved, validationToken is ${user.validationToken}!`);
         return user;
       }
+    
+    async sendMail(user: User): Promise<void>{
+      try{
+        await sgMail.send({
+          from: 'alex@pictalk.org', 
+          to: user.username, 
+          templateId: 'd-33dea01340e5496691a5741588e2d9f7',
+          dynamicTemplateData: {
+            token: user.validationToken,
+          },
+        });
+      } catch(error){
+        throw new InternalServerErrorException(`could not send mail to ${user.username}`)
+      }
+    }
+    
     
     async userValidation(validationToken: string): Promise<void>{
       const user = await this.findOne({ where: { validationToken: validationToken } });

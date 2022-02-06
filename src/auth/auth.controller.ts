@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, forwardRef, Get, Inject, Logger, Param, Post, Put, UseGuards, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, forwardRef, Get, Inject, Logger, NotFoundException, Param, Post, Put, UseGuards, ValidationPipe } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { AuthGuard } from '@nestjs/passport';
@@ -11,6 +11,7 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { EditUserDto } from './dto/edit-user.dto';
 import { Notif } from 'src/entities/notification.entity';
+import { usernameRegexp } from 'src/utilities/creation';
 @Controller('')
 export class AuthController {
     private logger = new Logger('AuthController');
@@ -27,13 +28,28 @@ export class AuthController {
         return;
     }
 
-    @Get('auth/validation/:validationToken')
+    @Post('auth/validation/:validationToken')
     async validateUser(@Param('validationToken') validationToken: string): Promise<void>{
       if(validationToken != "verified"){
         return this.authService.userValidation(validationToken);
       } else {
         return
       }
+    }
+
+    @Get('auth/validation/:username')
+    async sendMail(@Param('username') username: string): Promise<void>{
+      if(usernameRegexp.test(username)){
+        const user= await this.authService.findWithUsername(username);
+        if(user){
+          return this.authService.sendMail(user);
+        } else {
+          throw new NotFoundException(`username ${username} not found`);
+        }
+      } else {
+        throw new BadRequestException(`username ${username} is not a valid username`);
+      }
+      
     }
 
     @Post('auth/signin')

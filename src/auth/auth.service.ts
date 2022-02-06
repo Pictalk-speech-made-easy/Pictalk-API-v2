@@ -121,4 +121,8 @@ export class AuthService {
         const user = await this.userRepository.findOne({where : {username: username}});
         return user;
     }
+
+    async sendMail(user: User): Promise<void>{
+        return this.userRepository.sendMail(user);
+    }
 }
