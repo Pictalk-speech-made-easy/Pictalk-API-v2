@@ -1,4 +1,4 @@
-import { ForbiddenException, InternalServerErrorException, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, InternalServerErrorException, NotFoundException } from "@nestjs/common";
 import { Collection } from "src/entities/collection.entity";
 import { Picto } from "src/entities/picto.entity";
 import { User } from "src/entities/user.entity";
@@ -173,7 +173,7 @@ export class CollectionRepository extends Repository<Collection>{
                     collection.viewers.push(username);
                 } 
             } else {
-               throw new InternalServerErrorException(`role must be 'viewer or 'editor'`); 
+               throw new BadRequestException(`role must be 'viewer or 'editor'`); 
             }
         } else {
             index = collection.viewers.indexOf(username);
@@ -188,7 +188,7 @@ export class CollectionRepository extends Repository<Collection>{
         try {
             await collection.save();
         } catch (error) {
-            throw new InternalServerErrorException(error);
+            throw new InternalServerErrorException(`could not save collection ${error}`);
         }
         return collection;
     }
@@ -216,7 +216,7 @@ export class CollectionRepository extends Repository<Collection>{
                     picto.editors.push(username);
                 } 
             } else {
-               throw new InternalServerErrorException(`role must be 'viewer or 'editor'`); 
+               throw new BadRequestException(`role must be 'viewer or 'editor'`); 
             }
         } else {
             index = picto.viewers.indexOf(username);
@@ -231,7 +231,7 @@ export class CollectionRepository extends Repository<Collection>{
         try {
             await picto.save();
         } catch (error) {
-            throw new InternalServerErrorException(error);
+            throw new InternalServerErrorException(`could not save picto ${error}`);
         }
         return picto;
     }
@@ -241,7 +241,7 @@ export class CollectionRepository extends Repository<Collection>{
         try {
             await collection.save();
         } catch (error) {
-            throw new InternalServerErrorException(error);
+            throw new InternalServerErrorException(`could not auto share collection ${error}`);
         }
         return collection;
     }
