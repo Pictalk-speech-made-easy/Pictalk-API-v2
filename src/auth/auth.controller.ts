@@ -28,7 +28,7 @@ export class AuthController {
         return;
     }
 
-    @Post('auth/validation/:validationToken')
+    @Get('auth/validation/:validationToken')
     async validateUser(@Param('validationToken') validationToken: string): Promise<void>{
       if(validationToken != "verified"){
         return this.authService.userValidation(validationToken);
@@ -37,7 +37,7 @@ export class AuthController {
       }
     }
 
-    @Get('auth/validation/:username')
+    @Post('auth/validation/:username')
     async sendMail(@Param('username') username: string): Promise<void>{
       if(usernameRegexp.test(username)){
         const user= await this.authService.findWithUsername(username);
