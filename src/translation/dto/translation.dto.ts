@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString, Matches } from "class-validator";
+import { IsNotEmpty, IsString, Matches } from "class-validator";
 import { deeplLangRegex } from "src/utilities/supported.languages";
 
 export class TranslateDto{
@@ -11,7 +11,7 @@ export class TranslateDto{
     @Matches(deeplLangRegex)
     targetLang: string;
 
-    @IsOptional()
+    @IsNotEmpty()
     @IsString()
     @Matches(deeplLangRegex)
     sourceLang: string;
