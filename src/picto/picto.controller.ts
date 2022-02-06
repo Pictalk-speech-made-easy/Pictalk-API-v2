@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, ForbiddenException, forwardRef, Get, Inject, Logger, NotFoundException, Param, ParseIntPipe, Post, Put, Query, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, ForbiddenException, forwardRef, Get, Inject, InternalServerErrorException, Logger, NotFoundException, Param, ParseIntPipe, Post, Put, Query, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -13,7 +13,7 @@ import { IsValid } from 'src/utilities/creation';
 import { CollectionService } from 'src/collection/collection.service';
 import { modifyCollectionDto } from 'src/collection/dto/collection.modify.dto';
 import { ApiOperation } from '@nestjs/swagger';
-import { sharePictoDto } from './dto/picto.share.dto';
+import { multipleSharePictoDto, sharePictoDto } from './dto/picto.share.dto';
 import { deletePictoDto } from './dto/picto.delete.dto';
 
 @Controller('picto')
@@ -25,7 +25,7 @@ export class PictoController {
   private collectionService: CollectionService
   ){}
 
- 
+  @UseGuards(AuthGuard())
   @Get('/:id')
   getPictoById(@Param('id', ParseIntPipe) id : number, @GetUser() user: User): Promise<Picto>{
     this.logger.verbose(`User "${user.username}" getting Picto with id ${id}`);
@@ -44,14 +44,18 @@ export class PictoController {
   @Put('share/:id')
   @UsePipes(ValidationPipe)
   @ApiOperation({summary : 'share a picto with another user, with readonly or editor role'})
-  sharePictoById(@Param('id', ParseIntPipe) id : number, @Body() sharePictoDto: sharePictoDto, @GetUser() user: User): Promise<Picto>{
-    if(sharePictoDto.access){
-      this.logger.verbose(`User "${user.username}" sharing Picto with id ${id} to User ${sharePictoDto.username} as ${sharePictoDto.role}`);
-    } else {
-      this.logger.verbose(`User "${user.username}" revoking access to Picto with id ${id} for User ${sharePictoDto.username}`);
+  async sharePictoById(@Param('id', ParseIntPipe) id : number, @Body() multipleSharePictoDto: multipleSharePictoDto, @GetUser() user: User): Promise<Picto>{
+      let picto: Picto;
+      for(let username of multipleSharePictoDto.usernames){
+        if(multipleSharePictoDto.access){
+          this.logger.verbose(`User "${user.username}" sharing Picto with id ${id} to User ${username} as ${multipleSharePictoDto.role}`);
+        } else {
+          this.logger.verbose(`User "${user.username}" revoking access to Picto with id ${id} for User ${username}`);
+        }
+        picto = await this.pictoService.sharePictoById(id, user, new sharePictoDto(multipleSharePictoDto.access, username, multipleSharePictoDto.role));
+      }
+      return picto;
     }
-    return this.pictoService.sharePictoById(id, user, sharePictoDto);
-  }
   
   @UseGuards(AuthGuard())
   @Post()

@@ -152,7 +152,7 @@ export class CollectionRepository extends Repository<Collection>{
 
     async shareCollectionFromDto(collection: Collection, shareCollectionDto: shareCollectionDto): Promise<Collection>{
         const {access, username, role} = shareCollectionDto;
-        let index;
+        let index: number;
         if(access==1){
             if(role==='editor'){
                 index = collection.viewers.indexOf(username);
@@ -195,7 +195,7 @@ export class CollectionRepository extends Repository<Collection>{
 
     async sharePictoFromDto(picto: Picto, shareCollectionDto: shareCollectionDto): Promise<Picto>{
         const {access, username, role} = shareCollectionDto;
-        let index;
+        let index: number;
         if(access==1){
             if(role==='editor'){
                 index = picto.viewers.indexOf(username);

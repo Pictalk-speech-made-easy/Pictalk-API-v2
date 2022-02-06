@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Picto } from 'src/entities/picto.entity';
 import { User } from 'src/entities/user.entity';
@@ -26,24 +26,18 @@ export class PictoService {
 
     async getPictoById(id: number, user : User): Promise<Picto>{
         const picto = await this.pictoRepository.findOne({where : {id}});
-        let index;
         if(!picto) {
             throw new NotFoundException(`Picto with ID '${id}' not found`);
-        } else if(user.id === picto.userId){
-            return picto;    
         } else {
-            index = picto.viewers.indexOf(user.username);
-            if(index!=-1){
-                return picto;
+            let viewer : number;
+            let editor : number;
+            viewer = picto.viewers.indexOf(user.username);
+            editor = picto.editors.indexOf(user.username);
+            if(picto.public === true || viewer!=-1 || editor!=-1 || picto.userId === user.id){
+                return picto
+            } else {
+                throw new UnauthorizedException(`User ${user.username} does not have access to this picto`);
             }
-            index = picto.editors.indexOf(user.username);
-            if(index!=-1){
-                return picto;
-            }
-            if(picto.public===true){
-                return picto;
-            }
-            throw new UnauthorizedException(`User ${user.username} does not have access to this picto`);
         }
     }
 
@@ -54,6 +48,9 @@ export class PictoService {
     async sharePictoById(id: number, user: User, sharePictoDto: sharePictoDto): Promise<Picto>{
         const sharer = await this.authService.findWithUsername(sharePictoDto.username);
         const exists = await this.authService.verifyExistence(sharer);
+        if(sharer.username === user.username){
+            throw new BadRequestException(`cannot share picto to yourself`);
+        }
         if(exists){
             const picto=await this.getPictoById(id, user);
             if(picto){

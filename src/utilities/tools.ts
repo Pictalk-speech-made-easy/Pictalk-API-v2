@@ -10,6 +10,12 @@ export const getArrayIfNeeded = function(input) {
 };
 
 export const parseNumberArray = function(input) {
+  let index = input.indexOf(null);
+  while(index!=-1){
+    input.splice(index)
+    index = input.indexOf(null);
+    console.log(index);
+  }
   return input.map(inputString => {return +inputString;})
 }
 

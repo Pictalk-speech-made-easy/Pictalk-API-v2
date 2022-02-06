@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthService } from 'src/auth/auth.service';
 import { Collection } from 'src/entities/collection.entity';
@@ -29,25 +29,40 @@ export class CollectionService {
 
     async getCollectionById(id: number, user : User): Promise<Collection>{
         const collection = await this.collectionRepository.findOne({relations: ["pictos", "collections"],where : {id}});
-        let index;
+        
         if(!collection) {
-            throw new NotFoundException(`Collection with ID '${id}' not found`);
-        } else if(user.id === collection.userId){
-            return collection;    
+            throw new NotFoundException(`Collection with ID '${id}' not found`);  
         } else {
-            index = collection.viewers.indexOf(user.username);
-            if(index!=-1){
-                return collection;
+            let viewer : number;
+            let editor : number;
+            viewer = collection.viewers.indexOf(user.username);
+            editor = collection.editors.indexOf(user.username);
+            if(collection.public === true || viewer!=-1 || editor!=-1 || collection.userId === user.id){
+                return this.verifyAcces(collection, user);
+            } else {
+                throw new UnauthorizedException(`User ${user.username} does not have access to this collection`);
             }
-            index = collection.editors.indexOf(user.username);
-            if(index!=-1){
-                return collection;
-            }
-            if(collection.public===true){
-                return collection;
-            }
-            throw new UnauthorizedException(`User ${user.username} does not have access to this collection`);
         }
+    }
+
+    verifyAcces(collection: Collection, user: User): Collection{
+        let viewer : number;
+        let editor : number;
+        for(let index = 0; index < collection.collections.length; index++){
+            viewer = collection.collections[index].viewers.indexOf(user.username);
+            editor = collection.collections[index].editors.indexOf(user.username);
+            if(collection.collections[index].public === false && viewer ===-1 && editor ===-1 && collection.collections[index].userId != user.id){
+                delete collection.collections[index]
+            }   
+        }
+        for(let index = 0; index < collection.pictos.length; index++){
+            viewer = collection.pictos[index].viewers.indexOf(user.username);
+            editor = collection.pictos[index].editors.indexOf(user.username);
+            if(collection.pictos[index].public === false && viewer ===-1 && editor ===-1 && collection.pictos[index].userId != user.id){
+                delete collection.pictos[index]
+            }   
+        }
+        return collection;
     }
 
     async getAllUserCollections(user:User): Promise<Collection[]>{
@@ -128,6 +143,9 @@ export class CollectionService {
     async shareCollectionVerification(id: number, user: User, shareCollectionDto: shareCollectionDto): Promise<Collection>{
         const sharer = await this.authService.findWithUsername(shareCollectionDto.username);
         const exists = await this.authService.verifyExistence(sharer);
+        if(sharer.username === user.username){
+            throw new BadRequestException(`cannot share collection to yourself`);
+        }
         if(exists){
             const collection=await this.getCollectionById(id, user);
             if(collection){
@@ -225,16 +243,7 @@ export class CollectionService {
     async pushPicto(collection: Collection, picto: Picto):Promise<void>{
         return this.collectionRepository.pushPicto(collection, picto);
     }
-/*
-    async getPublicCollection(): Promise<Collection[]>{
-        const publicCollections = await this.collectionRepository.find({relations: ["pictos", "collections"],where : {public : true}});
-        if(publicCollections){
-            return publicCollections;
-        } else {
-            throw new NotFoundException(`there are no public collections`);
-        }
-    }
-*/
+
     async getPublicCollection(SearchCollectionDto: SearchCollectionDto): Promise<Collection[]>{
         return this.collectionRepository.getPublicCollections(SearchCollectionDto);
     }
@@ -253,6 +262,8 @@ export class CollectionService {
             }  
             const copiedPicto = await this.pictoService.createPicto(createPictoDto, user, picto.image);
             return copiedPicto.id;  
+        } else {
+            return null;
         }
     }
 
@@ -273,9 +284,10 @@ export class CollectionService {
                 return copiedCollection.id;  
             }
         } catch(error){
-            if(error.code == "401" || error.code == "404"){
+            if(error.status == "401" || error.status == "404"){
                 return null;
             } else {
+                console.log(error);
                 throw new InternalServerErrorException(`couldn't copy Collection`);
             }
         }

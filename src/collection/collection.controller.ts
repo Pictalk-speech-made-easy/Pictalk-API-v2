@@ -11,7 +11,7 @@ import { CollectionService } from './collection.service';
 import { createCollectionDto } from './dto/collection.create.dto';
 import {ApiOperation} from '@nestjs/swagger';
 import { modifyCollectionDto } from './dto/collection.modify.dto';
-import { shareCollectionDto } from './dto/collection.share.dto';
+import { multipleShareCollectionDto, shareCollectionDto } from './dto/collection.share.dto';
 import { publicCollectionDto } from './dto/collection.public.dto';
 import { deleteCollectionDto } from './dto/collection.delete.dto';
 import { copyCollectionDto } from './dto/collection.copy.dto';
@@ -21,7 +21,7 @@ import { SearchCollectionDto } from './dto/collection.search.public.dto';
 export class CollectionController {
   private logger = new Logger('CollectionController');
   constructor(private collectionService: CollectionService){}
-
+  @UseGuards(AuthGuard())
   @Get('find/:id')
   @ApiOperation({summary : 'get a collection that has the provided id'})
   getCollectionById(@Param('id', ParseIntPipe) id : number, @GetUser() user: User): Promise<Collection>{
@@ -81,13 +81,17 @@ export class CollectionController {
   @Put('share/:id')
   @UsePipes(ValidationPipe)
   @ApiOperation({summary : 'share a collection with another user, with readonly or editor role'})
-  shareCollectionById(@Param('id', ParseIntPipe) id : number, @Body() shareCollectionDto: shareCollectionDto, @GetUser() user: User): Promise<Collection>{
-    if(shareCollectionDto.access){
-      this.logger.verbose(`User "${user.username}" sharing Collection with id ${id} to User ${shareCollectionDto.username} as ${shareCollectionDto.role}`);
-    } else {
-      this.logger.verbose(`User "${user.username}" revoking access to Collection with id ${id} for User ${shareCollectionDto.username}`);
-    }
-    return this.collectionService.shareCollectionVerification(id, user, shareCollectionDto);
+  async shareCollectionById(@Param('id', ParseIntPipe) id : number, @Body() multipleShareCollectionDto: multipleShareCollectionDto, @GetUser() user: User): Promise<Collection>{
+    let collection: Collection;
+      for(let username of multipleShareCollectionDto.usernames){
+        if(multipleShareCollectionDto.access){
+          this.logger.verbose(`User "${user.username}" sharing Collection with id ${id} to User ${username} as ${multipleShareCollectionDto.role}`);
+        } else {
+          this.logger.verbose(`User "${user.username}" revoking access to Collection with id ${id} for User ${username}`);
+        }
+        collection = await this.collectionService.shareCollectionVerification(id, user, new shareCollectionDto(multipleShareCollectionDto.access, username, multipleShareCollectionDto.role));
+      }
+      return collection;
   }
 
   @UseGuards(AuthGuard())
@@ -137,7 +141,7 @@ export class CollectionController {
               color : null,
               collectionIds : fatherCollectionsIds}
             this.collectionService.modifyCollection(createCollectionDto.fatherCollectionId, user, modifyCollectionDto, null);
-            if(createCollectionDto.share){
+            if(createCollectionDto.share!=0){
               this.collectionService.autoShare(collection, fatherCollection);
               this.logger.verbose(`Auto sharing collection "${collection.id}" with viewers and editors`);
             }

@@ -73,7 +73,7 @@ export class PictoRepository extends Repository<Picto> {
 
     async sharePictoFromDto(picto: Picto, sharePictoDto: sharePictoDto): Promise<Picto>{
         const {access, username, role} = sharePictoDto;
-        let index;
+        let index: number;
         if(access==1){
             if(role==='editor'){
                 index = picto.viewers.indexOf(username);
