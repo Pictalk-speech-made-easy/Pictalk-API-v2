@@ -251,7 +251,7 @@ export class CollectionRepository extends Repository<Collection>{
         try {
             await toPushInto.save();
         } catch (error) {
-            throw new InternalServerErrorException(error);
+            throw new InternalServerErrorException(`Could not push collection ${collection.id} into ${toPushInto.id}`);
         }
         return;
     }
@@ -261,7 +261,7 @@ export class CollectionRepository extends Repository<Collection>{
         try {
             await toPushInto.save();
         } catch (error) {
-            throw new InternalServerErrorException(error);
+            throw new InternalServerErrorException(`Could not push picto ${picto.id} into ${toPushInto.id}`);
         }
         return;
     }
@@ -285,7 +285,7 @@ export class CollectionRepository extends Repository<Collection>{
             }
             return collections;
         } catch(err){
-            throw new InternalServerErrorException(err);
+            throw new InternalServerErrorException(`could not get public collections ${err}`);
         }
     }
 }
