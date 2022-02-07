@@ -92,4 +92,3 @@ export const stringifyMap = (myMap) => {
 }
 
 export const defaultSettings = JSON.stringify({pronounceClick: true, securityMode: true, returnWithoutRemove: false, travelMode: false});
-export const defaultMailingList = JSON.stringify([]);
