@@ -14,17 +14,6 @@ export class EditUserDto {
   @ApiProperty()
   @IsOptional()
   @IsString()
-  @MinLength(3)
-  @MaxLength(254)
-  @Matches(
-    usernameRegexp,
-    { message: 'Not a valid email address' },
-  )
-  username: string;
-
-  @ApiProperty()
-  @IsOptional()
-  @IsString()
   language: string;
 
   @ApiProperty()
