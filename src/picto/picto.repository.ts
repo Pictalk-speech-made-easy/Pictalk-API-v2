@@ -62,11 +62,13 @@ export class PictoRepository extends Repository<Picto> {
     async sharePicto(picto: Picto, sharePictoDto: sharePictoDto, user: User): Promise<Picto>{
         try{
             picto=await this.sharePictoFromDto(picto, sharePictoDto);
-        } catch(error){}
-        try {
-            await picto.save();
-        } catch (error) {
-            throw new InternalServerErrorException(error);
+            try {
+                await picto.save();
+            } catch (error) {
+                throw new InternalServerErrorException('could not save picto');
+            }
+        } catch(error){
+            throw new InternalServerErrorException('could not share picto');
         }
         return picto;
     }
@@ -114,7 +116,7 @@ export class PictoRepository extends Repository<Picto> {
         try {
             await picto.save();
         } catch (error) {
-            throw new InternalServerErrorException(error);
+            throw new InternalServerErrorException('could not auto share picto');
         }
         return picto;
     }

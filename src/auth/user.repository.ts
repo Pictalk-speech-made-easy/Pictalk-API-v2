@@ -49,7 +49,7 @@ export class UserRepository extends Repository<User> {
             this.logger.verbose(
               `Problem while saving the User: ${user.username}, error is : ${error} !`,
             );
-            throw new InternalServerErrorException(error);
+            throw new InternalServerErrorException(`could not save user`);
           }
         }
         try{
@@ -97,7 +97,7 @@ export class UserRepository extends Repository<User> {
           try {
             await user.save();
           } catch (error) {
-            throw new InternalServerErrorException(error);
+            throw new InternalServerErrorException("cannot save user");
           }
         } 
       } else {

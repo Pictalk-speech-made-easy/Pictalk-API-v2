@@ -143,10 +143,10 @@ export class CollectionService {
     async shareCollectionVerification(id: number, user: User, shareCollectionDto: shareCollectionDto): Promise<Collection>{
         const sharer = await this.authService.findWithUsername(shareCollectionDto.username);
         const exists = await this.authService.verifyExistence(sharer);
-        if(sharer.username === user.username){
-            throw new BadRequestException(`cannot share collection to yourself`);
-        }
         if(exists){
+            if(sharer.username === user.username){
+                throw new BadRequestException(`cannot share collection to yourself`);
+            }
             const collection=await this.getCollectionById(id, user);
             if(collection){
                 const editor = collection.editors.indexOf(user.username);
@@ -182,8 +182,12 @@ export class CollectionService {
     }
 
     async createNotif(id : number, user: User, type: string, operation: string): Promise<Notif>{
-        const notification: Notif = new Notif(type, operation, id.toString(), user.username)
-        return notification;
+        try{
+            const notification: Notif = new Notif(type, operation, id.toString(), user.username);
+            return notification;
+        } catch(error){
+            throw new InternalServerErrorException(`could not create notification ${error}`);
+        }
     } 
 
     async shareCollectionById(collectionId : number, shareCollectionDto: shareCollectionDto, user: User): Promise<Collection>{
