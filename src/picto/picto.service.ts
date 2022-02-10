@@ -120,7 +120,7 @@ export class PictoService {
             if(picto.public){
                 const admins = await this.authService.admins();
                 admins.map(async(admin) => {
-                    const notification = await this.createNotif(id, admin, "public picto", "modified");
+                    const notification = await this.createNotif(picto, admin, "public picto", "modified");
                     this.authService.pushNotification(admin, notification);
                 });
             }
@@ -130,8 +130,8 @@ export class PictoService {
         }
     }
 
-    async createNotif(id : number, user: User, type: string, operation: string): Promise<Notif>{
-        const notification: Notif = new Notif(type, operation, id.toString(), user.username)
+    async createNotif(picto: Picto, user: User, type: string, operation: string): Promise<Notif>{
+        const notification: Notif = new Notif(type, operation, picto.id.toString(), picto.meaning, user.username);
         return notification;
     } 
 }

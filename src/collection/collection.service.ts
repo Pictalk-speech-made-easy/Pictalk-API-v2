@@ -129,7 +129,7 @@ export class CollectionService {
             if(collection.public){
                 const admins = await this.authService.admins();
                 admins.map(async(admin) => {
-                    const notification = await this.createNotif(id, admin, "public collection", "modified");
+                    const notification = await this.createNotif(collection, admin, "public collection", "modified");
                     this.authService.pushNotification(admin, notification);
                 });
             }
@@ -162,13 +162,13 @@ export class CollectionService {
                 }
                 if(shareCollectionDto.access==1){
                     if((collection.editors.indexOf(sharer.username)==-1) && (collection.viewers.indexOf(sharer.username)==-1)){
-                        const notification = await this.createNotif(id, user, "collection", "share");
+                        const notification = await this.createNotif(collection, user, "collection", "share");
                         this.authService.pushNotification(sharer, notification);
                     }   
                     return this.shareCollectionById(id, shareCollectionDto, user);
                 } else if (shareCollectionDto.access == 0){
                     if((collection.editors.indexOf(sharer.username)!==-1) || (collection.viewers.indexOf(sharer.username)!==-1)){
-                        const notification = await this.createNotif(id, user, "collection", "unshare");
+                        const notification = await this.createNotif(collection, user, "collection", "unshare");
                         this.authService.pushNotification(sharer, notification);
                         return this.shareCollectionById(id, shareCollectionDto, user);
                     } 
@@ -181,9 +181,9 @@ export class CollectionService {
         }
     }
 
-    async createNotif(id : number, user: User, type: string, operation: string): Promise<Notif>{
+    async createNotif(collection: Collection, user: User, type: string, operation: string): Promise<Notif>{
         try{
-            const notification: Notif = new Notif(type, operation, id.toString(), user.username);
+            const notification: Notif = new Notif(type, operation, collection.id.toString(), collection.meaning, user.username);
             return notification;
         } catch(error){
             throw new InternalServerErrorException(`could not create notification ${error}`);
