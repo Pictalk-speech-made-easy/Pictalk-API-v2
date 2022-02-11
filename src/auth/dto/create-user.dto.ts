@@ -44,5 +44,12 @@ export class CreateUserDto {
   @IsString({each: true})
   directSharers: string[];
 
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+  @Matches(languagesRegex, {
+    message: 'language is not supported',
+  })
+  display: string;
 
 }
