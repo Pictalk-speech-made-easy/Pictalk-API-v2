@@ -28,6 +28,18 @@ export class AuthController {
         return;
     }
 
+
+    @Get('user/verify/:username')
+    async verifyUserExistence(@Param('username') username: string): Promise<void>{
+      const user = await this.authService.findWithUsername(username);
+      const result = await this.authService.verifyExistence(user);
+      if(result){
+        return;
+      } else {
+        throw new NotFoundException();
+      }
+    }
+
     @Get('auth/validation/:validationToken')
     async validateUser(@Param('validationToken') validationToken: string): Promise<void>{
       if(validationToken != "verified"){
@@ -70,6 +82,7 @@ export class AuthController {
       );
       return this.authService.resetPassword(resetPasswordDto);
     }
+
     @Post('user/changePassword/:token')
     changePassword(
       @Body(ValidationPipe) changePasswordDto: ChangePasswordDto,
