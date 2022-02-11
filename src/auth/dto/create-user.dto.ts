@@ -8,6 +8,7 @@ import {
   IsOptional,
 } from 'class-validator';
 import { usernameRegexp } from 'src/utilities/creation';
+import { languagesRegex } from 'src/utilities/supported.languages';
 
 export class CreateUserDto {
   @ApiProperty()

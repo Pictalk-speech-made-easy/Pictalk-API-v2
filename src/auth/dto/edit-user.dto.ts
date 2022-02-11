@@ -7,7 +7,6 @@ import {
   Matches,
   IsOptional,
 } from 'class-validator';
-import { usernameRegexp } from 'src/utilities/creation';
 
 
 export class EditUserDto {
