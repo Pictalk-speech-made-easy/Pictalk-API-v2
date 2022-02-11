@@ -180,7 +180,7 @@ export class UserRepository extends Repository<User> {
       }
 
       async editUser(user: User, editUserDto: EditUserDto): Promise<User> {
-        const { language, password, directSharers, languages, display, settings, mailingList } = editUserDto;
+        const { language, password, directSharers, languages, displayLanguage, settings, mailingList } = editUserDto;
         if (language) {
           user.language = language;
         }
