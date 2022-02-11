@@ -22,7 +22,7 @@ export class UserRepository extends Repository<User> {
       sgMail.setApiKey(process.env.SENDGRID_KEY);
     }
     async signUp(createUserDto: CreateUserDto): Promise<User> {
-        const { username, password, language, directSharers, languages, display } = createUserDto;
+        const { username, password, language, directSharers, languages, displayLanguage } = createUserDto;
         const validationToken = randomBytes(20).toString('hex');
         const user = this.create();
         user.username = username;
@@ -31,7 +31,7 @@ export class UserRepository extends Repository<User> {
         user.resetPasswordToken = '';
         user.resetPasswordExpires = '';
         user.language = language;
-        user.displayLanguage = display;
+        user.displayLanguage = displayLanguage;
         user.validationToken = validationToken;
         const voices = validLanguage(languages);
         user.languages = stringifyMap(voices);
@@ -194,8 +194,8 @@ export class UserRepository extends Repository<User> {
         if (languages){
           user.languages = languages;
         }
-        if(display){
-          user.displayLanguage = display;
+        if(displayLanguage){
+          user.displayLanguage = displayLanguage;
         }
         if(settings){
           user.settings = settings;

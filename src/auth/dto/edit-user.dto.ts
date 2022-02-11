@@ -22,7 +22,7 @@ export class EditUserDto {
   @Matches(languagesRegex, {
     message: 'language is not supported',
   })
-  display: string;
+  displayLanguage: string;
 
   @ApiProperty()
   @IsOptional()

@@ -50,6 +50,6 @@ export class CreateUserDto {
   @Matches(languagesRegex, {
     message: 'language is not supported',
   })
-  display: string;
+  displayLanguage: string;
 
 }
