@@ -83,6 +83,9 @@ export class CollectionController {
   @ApiOperation({summary : 'share a collection with another user, with readonly or editor role'})
   async shareCollectionById(@Param('id', ParseIntPipe) id : number, @Body() multipleShareCollectionDto: multipleShareCollectionDto, @GetUser() user: User): Promise<Collection>{
     let collection: Collection;
+    if(!multipleShareCollectionDto.role){
+      multipleShareCollectionDto.role='viewer';
+    }
       for(let username of multipleShareCollectionDto.usernames){
         if(multipleShareCollectionDto.access){
           this.logger.verbose(`User "${user.username}" sharing Collection with id ${id} to User ${username} as ${multipleShareCollectionDto.role}`);

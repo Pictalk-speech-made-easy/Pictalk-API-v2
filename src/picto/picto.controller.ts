@@ -46,6 +46,9 @@ export class PictoController {
   @ApiOperation({summary : 'share a picto with another user, with readonly or editor role'})
   async sharePictoById(@Param('id', ParseIntPipe) id : number, @Body() multipleSharePictoDto: multipleSharePictoDto, @GetUser() user: User): Promise<Picto>{
       let picto: Picto;
+      if(!multipleSharePictoDto.role){
+        multipleSharePictoDto.role = 'viewer';
+      }
       for(let username of multipleSharePictoDto.usernames){
         if(multipleSharePictoDto.access){
           this.logger.verbose(`User "${user.username}" sharing Picto with id ${id} to User ${username} as ${multipleSharePictoDto.role}`);

@@ -91,9 +91,9 @@ export class PictoRepository extends Repository<Picto> {
                 if(index!=-1){
                     picto.editors.splice(index);
                 }
-                index = picto.editors.indexOf(username);
+                index = picto.viewers.indexOf(username);
                 if(!(index!=-1)){
-                    picto.editors.push(username);
+                    picto.viewers.push(username);
                 } 
             } else {
                throw new InternalServerErrorException(`role must be 'viewer or 'editor'`); 

@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsNumberString, Matches } from "class-validator";
+import { IsNotEmpty, IsNumberString, IsOptional, Matches } from "class-validator";
 import { usernameRegexp } from "src/utilities/creation";
 
 export class multipleSharePictoDto {
@@ -19,7 +19,7 @@ export class multipleSharePictoDto {
     usernames: string[];
 
     @ApiProperty()
-    @IsNotEmpty()
+    @IsOptional()
     @Matches(/viewer|editor/, { message: "Role must be either 'viewer' or 'editor'"})
     role: string;
 }
