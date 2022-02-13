@@ -87,6 +87,7 @@ export class CollectionController {
       multipleShareCollectionDto.role='viewer';
     }
       for(let username of multipleShareCollectionDto.usernames){
+        multipleShareCollectionDto.access= +multipleShareCollectionDto.access;
         if(multipleShareCollectionDto.access){
           this.logger.verbose(`User "${user.username}" sharing Collection with id ${id} to User ${username} as ${multipleShareCollectionDto.role}`);
         } else {

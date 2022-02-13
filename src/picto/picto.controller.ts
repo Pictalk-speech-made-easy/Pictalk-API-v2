@@ -50,6 +50,7 @@ export class PictoController {
         multipleSharePictoDto.role = 'viewer';
       }
       for(let username of multipleSharePictoDto.usernames){
+        multipleSharePictoDto.access= +multipleSharePictoDto.access;
         if(multipleSharePictoDto.access){
           this.logger.verbose(`User "${user.username}" sharing Picto with id ${id} to User ${username} as ${multipleSharePictoDto.role}`);
         } else {
