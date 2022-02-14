@@ -53,7 +53,7 @@ export class CollectionRepository extends Repository<Collection>{
             collection.image = filename;
         }  
         if(starred){
-            collection.starred = starred;
+            collection.starred = (starred=="true");
         }
         if(pictoIds){
             pictoIds=parseNumberArray(pictoIds);

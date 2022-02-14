@@ -26,5 +26,5 @@ export class modifyPictoDto {
     @ApiProperty()
     @IsOptional()
     @IsBooleanString()
-    starred : boolean;
+    starred : string;
 }

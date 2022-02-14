@@ -27,7 +27,7 @@ export class modifyCollectionDto {
     @ApiProperty()
     @IsOptional()
     @IsBooleanString()
-    starred : boolean;
+    starred : string;
 
     @ApiProperty()
     @IsOptional()

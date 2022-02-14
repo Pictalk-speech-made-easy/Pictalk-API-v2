@@ -52,7 +52,7 @@ export class PictoRepository extends Repository<Picto> {
             picto.collections = collectionIds.map(collectionIds => ({ id: collectionIds } as any));
         }
         if(starred){
-            picto.starred = starred;
+            picto.starred = (starred=="true");
         }
         await picto.save();
         //delete picto.user;
