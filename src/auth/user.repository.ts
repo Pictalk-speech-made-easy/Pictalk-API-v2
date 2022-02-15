@@ -13,6 +13,7 @@ import { stringifyMap, validLanguage } from "src/utilities/creation";
 import sgMail = require('@sendgrid/mail');
 import { randomBytes } from "crypto";
 import { Validation } from "./dto/user-validation.dto";
+import { welcome } from "src/utilities/emails";
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -59,6 +60,7 @@ export class UserRepository extends Repository<User> {
             to: user.username, 
             templateId: 'd-33dea01340e5496691a5741588e2d9f7',
             dynamicTemplateData: {
+              welcome : welcome[`${user.displayLanguage}`] ? welcome[`${user.displayLanguage}`] : welcome.en,
               token: user.validationToken,
             },
           });
@@ -80,6 +82,7 @@ export class UserRepository extends Repository<User> {
           to: user.username, 
           templateId: 'd-33dea01340e5496691a5741588e2d9f7',
           dynamicTemplateData: {
+            welcome : welcome[`${user.displayLanguage}`] ? welcome[`${user.displayLanguage}`] : welcome.en,
             token: user.validationToken,
           },
         });
