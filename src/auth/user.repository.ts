@@ -13,7 +13,7 @@ import { stringifyMap, validLanguage } from "src/utilities/creation";
 import sgMail = require('@sendgrid/mail');
 import { randomBytes } from "crypto";
 import { Validation } from "./dto/user-validation.dto";
-import { welcome } from "src/utilities/emails";
+import { resetPassword, welcome } from "src/utilities/emails";
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
@@ -162,6 +162,7 @@ export class UserRepository extends Repository<User> {
             to: user.username,
             templateId: 'd-d68b41c356ba493eac635229b678744e',
             dynamicTemplateData: {
+              resetPassword : resetPassword[`${user.displayLanguage}`] ? resetPassword[`${user.displayLanguage}`] : resetPassword.en,
               token: resetTokenValue,
             },
           });
@@ -231,15 +232,6 @@ export class UserRepository extends Repository<User> {
           } catch (error) {
             throw new InternalServerErrorException(error);
           }
-        }
-        try {
-          sgMail.send({
-            from: 'alex@pictalk.org',
-            to: user.username,
-            templateId: 'd-55a93fc67fa346939b6507a6f5cc477f',
-          });
-        } catch (error) {
-          throw new Error(error);
         }
         return;
       }

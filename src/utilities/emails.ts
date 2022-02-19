@@ -8,3 +8,14 @@ export const welcome = {
     po : "Olá, bem-vindo a Pictalk! Aqui está o seu símbolo de validação. Também pode clicar no botão para verificar o seu endereço de correio electrónico.",
     el : "Γεια σας, καλώς ήρθατε στην Pictalk! Εδώ είναι το σύμβολο επικύρωσης. Μπορείτε επίσης να κάνετε κλικ στο κουμπί για να επαληθεύσετε τη διεύθυνση ηλεκτρονικού ταχυδρομείου σας"
 }
+
+export const resetPassword = {
+    en : "reset password",
+    fr : "réinitialiser le mot de passe",
+    es : "restablecer contraseña",
+    it : "reimpostare la password",
+    de : "Passwort zurücksetzen",
+    ro : "resetare parolă",
+    po : "redefinir palavra-passe",
+    el : "επαναφορά κωδικού πρόσβασης"
+}
