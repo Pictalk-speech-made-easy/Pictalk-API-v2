@@ -14,7 +14,6 @@ export const parseNumberArray = function(input) {
   while(index!=-1){
     input.splice(index)
     index = input.indexOf(null);
-    console.log(index);
   }
   return input.map(inputString => {return +inputString;})
 }

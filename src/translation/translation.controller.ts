@@ -39,7 +39,6 @@ export class TranslationController {
           request,
         ),
       );
-      console.log(response.data);
       return new TranslationResponse(response.data.translations[0].text);
     } catch (error) {
       console.log(error);

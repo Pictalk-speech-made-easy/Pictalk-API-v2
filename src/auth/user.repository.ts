@@ -54,7 +54,6 @@ export class UserRepository extends Repository<User> {
           }
         }
         try{
-          console.log(process.env.SENDGRID_KEY);
           await sgMail.send({
             from: 'alex@pictalk.org', 
             to: user.username, 
