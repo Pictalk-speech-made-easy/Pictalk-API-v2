@@ -144,7 +144,6 @@ export class AuthController {
     @UseGuards(AuthGuard())
     @Get('/user/notification')
     async getNotifications(@GetUser() user: User): Promise<Notif[]>{
-        this.logger.verbose(`User "${user.username}" getting his notifications`);
         return this.authService.getNotifications(user);
     }
 
