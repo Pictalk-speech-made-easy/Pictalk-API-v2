@@ -45,6 +45,9 @@ export class User extends BaseEntity {
   root: number;
 
   @Column({nullable : true, unique: true})
+  sider: number;
+
+  @Column({nullable : true, unique: true})
   shared: number;
 
   @Column()

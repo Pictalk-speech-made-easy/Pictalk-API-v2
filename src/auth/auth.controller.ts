@@ -25,6 +25,7 @@ export class AuthController {
         const user = await this.authService.signUp(createUserDto);
         await this.collectionService.createRoot(user);
         await this.collectionService.createShared(user);
+        await this.collectionService.createSider(user);
         return;
     }
 

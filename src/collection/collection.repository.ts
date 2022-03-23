@@ -150,6 +150,29 @@ export class CollectionRepository extends Repository<Collection>{
         return user.shared;
     }
 
+    async createSider(user: User): Promise<number>{
+        if(user.sider===null){
+            const sider = new Collection();
+            sider.meaning = "";
+            sider.speech = "";
+            sider.userId = user.id;
+            try {
+                await sider.save();
+            } catch (error) {
+                throw new InternalServerErrorException(error);
+            }
+            user.sider=sider.id;
+            try {
+                await user.save();
+            } catch (error) {
+                throw new InternalServerErrorException(error);
+            }
+        } else {
+            throw new ForbiddenException(`cannot create a new sider for User ${user.username}. User already has sider ${user.sider}`);
+        } 
+        return user.sider;
+    }
+
     async shareCollectionFromDto(collection: Collection, shareCollectionDto: shareCollectionDto): Promise<Collection>{
         const {access, username, role} = shareCollectionDto;
         let index: number;

@@ -79,6 +79,10 @@ export class CollectionService {
         return this.collectionRepository.createRoot(user);
     }
 
+    async createSider(user: User): Promise<number>{
+        return this.collectionRepository.createSider(user);
+    }
+
     async createShared (user: User): Promise<number>{
         return this.collectionRepository.createShared(user);
     }
