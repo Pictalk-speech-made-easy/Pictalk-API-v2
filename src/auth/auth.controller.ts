@@ -66,12 +66,27 @@ export class AuthController {
     }
 
     @Post('auth/signin')
-    signIn(
+    async signIn(
       @Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto): Promise<{ accessToken: string; expiresIn: string }> {
       this.logger.verbose(
         `User "${authCredentialsDto.username}" is trying to Sign In`,
       );
-      return this.authService.signIn(authCredentialsDto);
+      try {
+      const signinResponse: any = await this.authService.signIn(authCredentialsDto);
+      
+      if (signinResponse.accessToken) {
+        const user: User = await this.authService.isSiderToCreate(authCredentialsDto.username);
+        if (user) {
+          this.logger.verbose(
+            `User "${authCredentialsDto.username}" is has not a siderbar collection. Creating one.`,
+          );
+          await this.collectionService.createSider(user);
+        }
+      }
+      return signinResponse;
+      } catch(err) {
+        throw new Error(err);
+      }
     }
 
     @Post('user/resetPassword')

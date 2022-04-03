@@ -55,7 +55,7 @@ export class AuthService {
         } else if (validate.validationToken!='verified') {
             throw new ForbiddenException('User has not verified his account, please verify your mailing address')
         } else {
-            const username = validate.username
+            const username = validate.username;
             const payload: JwtPayload = { username };
             const accessToken = await this.jwtService.sign(payload);
             this.logger.debug(
@@ -124,5 +124,10 @@ export class AuthService {
 
     async sendMail(user: User): Promise<void>{
         return this.userRepository.sendMail(user);
+    }
+
+    async isSiderToCreate(username): Promise<User> {
+        const user:User = await this.findWithUsername(username);
+        return user.sider ? null : user;
     }
 }
