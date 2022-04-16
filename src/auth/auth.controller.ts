@@ -71,7 +71,7 @@ export class AuthController {
       this.logger.verbose(
         `User "${authCredentialsDto.username}" is trying to Sign In`,
       );
-      try {
+      
       const signinResponse: any = await this.authService.signIn(authCredentialsDto);
       
       if (signinResponse.accessToken) {
@@ -84,9 +84,6 @@ export class AuthController {
         }
       }
       return signinResponse;
-      } catch(err) {
-        throw new Error(err);
-      }
     }
 
     @Post('user/resetPassword')
