@@ -31,7 +31,18 @@ export class TranslationController {
   @Post()
   async getTraduction(@Body() TranslateDto: TranslateDto): Promise<TranslationResponse> {
     try {
-      let request = `http://libretranslate.home.asidiras.dev/translate`;
+      let request = encodeURI(`https://api-free.deepl.com/v2/translate?auth_key=${this.deeplApiDeepL}&text=${TranslateDto.text}&target_lang=${TranslateDto.targetLang}`);
+        const response = await lastValueFrom(
+          this.httpService.get(
+            request,
+          ),
+        );
+        return new TranslationResponse(response.data.translations[0].text);
+
+      
+    } catch (error) {
+      try {
+        let request = `http://libretranslate.home.asidiras.dev/translate`;
       const body = {
         q : TranslateDto.text,
         source : TranslateDto.sourceLang,
@@ -39,15 +50,6 @@ export class TranslationController {
       };
       const response = await lastValueFrom(this.httpService.post(request, body));
       return new TranslationResponse(response.data.translatedText);;
-    } catch (error) {
-      try {
-        let request = encodeURI(`https://api-free.deepl.com/v2/translate?auth_key=${this.deeplApiDeepL}&text=${TranslateDto.text}&target_lang=${TranslateDto.targetLang}`);
-        const response = await lastValueFrom(
-          this.httpService.get(
-            request,
-          ),
-        );
-        return new TranslationResponse(response.data.translations[0].text);
       } catch (error) {
         console.log(error);
         throw new InternalServerErrorException(
