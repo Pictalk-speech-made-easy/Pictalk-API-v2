@@ -101,6 +101,10 @@ export class AuthService {
         return user.root;
     }
 
+    async getSider(user: User): Promise<number>{
+        return user.sider;
+    }
+
     async getShared(user: User): Promise<number>{
         return user.shared;
     }

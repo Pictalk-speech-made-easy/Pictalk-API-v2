@@ -150,6 +150,14 @@ export class AuthController {
     }
 
     @UseGuards(AuthGuard())
+    @Get('/user/sider')
+    async getSider(@GetUser() user: User): Promise<Collection>{
+        this.logger.verbose(`User "${user.username}" getting his root`);
+        const sider = await this.authService.getSider(user);
+        return this.collectionService.getCollectionById(sider, user);
+    }
+
+    @UseGuards(AuthGuard())
     @Get('/user/shared')
     async getShared(@GetUser() user: User): Promise<Collection>{
         this.logger.verbose(`User "${user.username}" getting his shared with me Collection`);
