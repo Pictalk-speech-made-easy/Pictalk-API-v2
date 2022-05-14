@@ -15,6 +15,7 @@ import { modifyCollectionDto } from 'src/collection/dto/collection.modify.dto';
 import { ApiOperation } from '@nestjs/swagger';
 import { multipleSharePictoDto, sharePictoDto } from './dto/picto.share.dto';
 import { deletePictoDto } from './dto/picto.delete.dto';
+import { copyPictoDto } from './dto/picto.copy.dto';
 
 @Controller('picto')
 export class PictoController {
@@ -145,5 +146,10 @@ export class PictoController {
       this.logger.verbose(`User "${user.username}"Made a bad request where Object has either invalid attributes or "meaning" and "speech" don't have the same length`);
       throw new BadRequestException(`Object is invalid, should be "{language <xx-XX> : text <string>} and both should have same length`);
     }
+  }
+  @UseGuards(AuthGuard())
+  @Post('copy')
+  async copyPicto(@Body() copyPictoDto: copyPictoDto, @GetUser() user: User): Promise<Picto>{
+    return this.pictoService.copyPicto(copyPictoDto.fatherCollectionId, copyPictoDto.pictoId, user);
   }
 }

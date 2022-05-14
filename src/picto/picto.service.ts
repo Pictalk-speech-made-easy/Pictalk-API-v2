@@ -134,4 +134,9 @@ export class PictoService {
         const notification: Notif = new Notif(type, operation, picto.id.toString(), picto.meaning, user.username);
         return notification;
     } 
+
+    async copyPicto(fatherCollectionId : number, pictoId: number, user: User): Promise<Picto>{
+        const picto = await this.getPictoById(pictoId, user);
+        return this.pictoRepository.copyPicto(picto, fatherCollectionId,user)
+    }
 }

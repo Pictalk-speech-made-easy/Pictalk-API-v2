@@ -120,4 +120,22 @@ export class PictoRepository extends Repository<Picto> {
         }
         return picto;
     }
+
+    async copyPicto(picto: Picto, fatherCollectionId: number ,user: User): Promise<Picto>{
+        const copiedPicto = new Picto();
+        copiedPicto.meaning = picto.meaning;
+        copiedPicto.speech = picto.speech;
+        copiedPicto.image = picto.image;
+        copiedPicto.userId = user.id;
+        copiedPicto.color=picto.color;
+        const collectionIds=parseNumberArray(fatherCollectionId);
+        copiedPicto.collections = collectionIds.map(collectionId => ({ id: collectionId } as any));
+        try {
+            await copiedPicto.save();
+        } catch (error) {
+            throw new InternalServerErrorException(error);
+        }
+        //delete picto.user;
+        return copiedPicto;
+    }
 }
