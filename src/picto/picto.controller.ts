@@ -16,6 +16,7 @@ import { ApiOperation } from '@nestjs/swagger';
 import { multipleSharePictoDto, sharePictoDto } from './dto/picto.share.dto';
 import { deletePictoDto } from './dto/picto.delete.dto';
 import { copyPictoDto } from './dto/picto.copy.dto';
+import { Collection } from 'src/entities/collection.entity';
 
 @Controller('picto')
 export class PictoController {
@@ -149,7 +150,9 @@ export class PictoController {
   }
   @UseGuards(AuthGuard())
   @Post('copy')
-  async copyPicto(@Body() copyPictoDto: copyPictoDto, @GetUser() user: User): Promise<Picto>{
-    return this.pictoService.copyPicto(copyPictoDto.fatherCollectionId, copyPictoDto.pictoId, user);
+  async copyPicto(@Body() copyPictoDto: copyPictoDto, @GetUser() user: User): Promise<Collection>{
+    this.logger.verbose(`User "${user.username}" copying Picto with id ${copyPictoDto.pictoId}`);
+    await this.pictoService.copyPicto(copyPictoDto.fatherCollectionId, copyPictoDto.pictoId, user);
+    return this.collectionService.getCollectionById(copyPictoDto.fatherCollectionId, user)
   }
 }

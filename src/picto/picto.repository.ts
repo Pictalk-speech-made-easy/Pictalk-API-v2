@@ -128,7 +128,7 @@ export class PictoRepository extends Repository<Picto> {
         copiedPicto.image = picto.image;
         copiedPicto.userId = user.id;
         copiedPicto.color=picto.color;
-        const collectionIds=parseNumberArray(fatherCollectionId);
+        const collectionIds= [+fatherCollectionId];
         copiedPicto.collections = collectionIds.map(collectionId => ({ id: collectionId } as any));
         try {
             await copiedPicto.save();
