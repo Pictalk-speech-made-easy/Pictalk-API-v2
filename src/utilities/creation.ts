@@ -61,8 +61,8 @@ export const validLanguage = (language : string) => {
                 let pitch = languageDict[`${langKey}`][`${deviceKey}`]['pitch'];
                 let rate = languageDict[`${langKey}`][`${deviceKey}`]['rate'];
                 const URI = languageDict[`${langKey}`][`${deviceKey}`]['voiceURI'];
-                pitch = pitch && !isNaN(pitch) ? pitch: 0
-                rate = rate && !isNaN(rate) ? rate: 0
+                pitch = pitch && !isNaN(pitch) ? pitch: 1
+                rate = rate && !isNaN(rate) ? rate: 1
                 const voiceURI = new VoiceURI(URI, pitch, rate);
                 const voice = new Voice(deviceKey, voiceURI);
                 languages.add(langKey, voice);
