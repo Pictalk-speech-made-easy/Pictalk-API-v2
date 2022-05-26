@@ -178,7 +178,6 @@ export class UserRepository extends Repository<User> {
         delete user.resetPasswordToken;
         delete user.resetPasswordExpires;
         delete user.pictos;
-        delete user.admin;
         return user;
       }
 

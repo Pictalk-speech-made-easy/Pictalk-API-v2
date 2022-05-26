@@ -76,7 +76,7 @@ export class CollectionRepository extends Repository<Collection>{
     }
 
     async publishCollection(collection: Collection, publish: number, user: User): Promise<Collection>{
-        if(publish && collection.userId === user.id){
+        if(+publish && collection.userId === user.id){
             collection.public=true;
         } else {
             collection.public=false;
@@ -292,7 +292,7 @@ export class CollectionRepository extends Repository<Collection>{
     async getPublicCollections(filterDto: SearchCollectionDto): Promise<Collection[]> {
         let collections: Collection[];
         const page = filterDto.page ? filterDto.page-1 : 0;
-        const per_page = filterDto.per_page ? filterDto.per_page: 40;
+        const per_page = filterDto.per_page ? filterDto.per_page: 20;
         const toSkip = page*per_page;
         const toTake = per_page;
         const query = this.createQueryBuilder('collection');
