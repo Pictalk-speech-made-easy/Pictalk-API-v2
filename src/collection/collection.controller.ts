@@ -16,12 +16,13 @@ import { publicCollectionDto } from './dto/collection.public.dto';
 import { deleteCollectionDto } from './dto/collection.delete.dto';
 import { copyCollectionDto } from './dto/collection.copy.dto';
 import { SearchCollectionDto } from './dto/collection.search.public.dto';
+import { OptionnalAuth } from 'src/auth/optionnal_auth.guard';
 
 @Controller('collection')
 export class CollectionController {
   private logger = new Logger('CollectionController');
   constructor(private collectionService: CollectionService){}
-  @UseGuards(AuthGuard())
+  @UseGuards(OptionnalAuth)
   @Get('find/:id')
   @ApiOperation({summary : 'get a collection that has the provided id'})
   getCollectionById(@Param('id', ParseIntPipe) id : number, @GetUser() user: User): Promise<Collection>{
