@@ -17,6 +17,7 @@ import { multipleSharePictoDto, sharePictoDto } from './dto/picto.share.dto';
 import { deletePictoDto } from './dto/picto.delete.dto';
 import { copyPictoDto } from './dto/picto.copy.dto';
 import { Collection } from 'src/entities/collection.entity';
+import { OptionnalAuth } from 'src/auth/optionnal_auth.guard';
 
 @Controller('picto')
 export class PictoController {
@@ -27,7 +28,7 @@ export class PictoController {
   private collectionService: CollectionService
   ){}
 
-  @UseGuards(AuthGuard())
+  @UseGuards(OptionnalAuth)
   @Get('/:id')
   getPictoById(@Param('id', ParseIntPipe) id : number, @GetUser() user: User): Promise<Picto>{
     this.logger.verbose(`User "${user.username}" getting Picto with id ${id}`);
