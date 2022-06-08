@@ -259,7 +259,7 @@ export class CollectionService {
     async copyPicto(fatherId: number, picto: Picto, user: User): Promise<number>{
         const editor = picto.editors.indexOf(user.username);
         const viewer = picto.viewers.indexOf(user.username);
-        if(picto.userId===user.id || editor!=-1 || viewer!=-1){
+        if(picto.userId===user.id || editor!=-1 || viewer!=-1 || picto.public){
             const createPictoDto : createPictoDto = {
                 meaning : picto.meaning,
                 speech : picto.speech,
