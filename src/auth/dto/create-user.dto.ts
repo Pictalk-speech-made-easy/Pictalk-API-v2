@@ -6,6 +6,7 @@ import {
   Matches,
   IsNotEmpty,
   IsOptional,
+  IsNumberString,
 } from 'class-validator';
 import { usernameRegexp } from 'src/utilities/creation';
 import { languagesRegex } from 'src/utilities/supported.languages';
@@ -53,4 +54,8 @@ export class CreateUserDto {
   })
   displayLanguage: string;
 
+  @ApiProperty()
+  @IsOptional()
+  @IsNumberString()
+  publicBundleId: number;
 }

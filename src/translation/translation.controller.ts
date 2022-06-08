@@ -30,6 +30,30 @@ export class TranslationController {
   @UseGuards(AuthGuard())
   @Post()
   async getTraduction(@Body() TranslateDto: TranslateDto): Promise<TranslationResponse> {
+    console.log(TranslateDto);
+    if(TranslateDto.targetService){
+      if(TranslateDto.targetService == "deepl"){
+        return this.deepl(TranslateDto);
+      }
+      else{
+        return this.libretranslate(TranslateDto);
+      }
+    } else {
+      try {
+        return this.deepl(TranslateDto);
+      } catch (error) {
+        try {
+          return this.libretranslate(TranslateDto);
+        } catch (error) {
+          console.log(error);
+          throw new InternalServerErrorException(
+            `couldn't get Translation from Deepl and Libre Translate`,
+          );
+        }
+      }
+    }
+  }
+  async deepl(TranslateDto: TranslateDto): Promise<TranslationResponse>{
     try {
       let request = encodeURI(`https://api-free.deepl.com/v2/translate?auth_key=${this.deeplApiDeepL}&text=${TranslateDto.text}&target_lang=${TranslateDto.targetLang}`);
         const response = await lastValueFrom(
@@ -38,11 +62,15 @@ export class TranslationController {
           ),
         );
         return new TranslationResponse(response.data.translations[0].text);
-
-      
-    } catch (error) {
-      try {
-        let request = `http://libretranslate.home.asidiras.dev/translate`;
+    } catch(error) {
+      throw new InternalServerErrorException(
+        `couldn't get Translation from Deepl`,
+      );
+    }
+  }
+  async libretranslate(TranslateDto: TranslateDto): Promise<TranslationResponse>{
+    try {
+      let request = `http://libretranslate.home.asidiras.dev/translate`;
       const body = {
         q : TranslateDto.text,
         source : TranslateDto.sourceLang,
@@ -50,17 +78,11 @@ export class TranslationController {
       };
       const response = await lastValueFrom(this.httpService.post(request, body));
       return new TranslationResponse(response.data.translatedText);;
-      } catch (error) {
-        console.log(error);
-        throw new InternalServerErrorException(
-          `couldn't get Translation from Deepl and Libre Translate`,
-        );
-      }
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException(
+        `couldn't get Translation from Libre Translate`,
+      );
     }
-    
-    
-    
-    
-    
   }
 }

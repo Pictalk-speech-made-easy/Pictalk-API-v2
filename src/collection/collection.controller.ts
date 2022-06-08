@@ -17,6 +17,7 @@ import { deleteCollectionDto } from './dto/collection.delete.dto';
 import { copyCollectionDto } from './dto/collection.copy.dto';
 import { SearchCollectionDto } from './dto/collection.search.public.dto';
 import { OptionnalAuth } from 'src/auth/optionnal_auth.guard';
+import { levelCollectionDto } from './dto/collection.level.dto';
 
 @Controller('collection')
 export class CollectionController {
@@ -28,6 +29,23 @@ export class CollectionController {
   getCollectionById(@Param('id', ParseIntPipe) id : number, @GetUser() user: User): Promise<Collection>{
     this.logger.verbose(`User "${user.username}" getting Collection with id ${id}`);
       return this.collectionService.getCollectionById(id, user);
+  }
+
+  @Get('/levels')
+  @ApiOperation({summary : 'get all the levels collections'})
+  async getLevelCollections(): Promise<levelCollectionDto> {
+    const collectionArray: levelCollectionDto = new levelCollectionDto();
+    if (parseInt(process.env.LEVEL_A_COLLECTION_ID)) {
+      collectionArray.levelA = (await this.collectionService.getCollectionById(parseInt(process.env.LEVEL_A_COLLECTION_ID), new User()));
+    }
+    if (parseInt(process.env.LEVEL_B_COLLECTION_ID)) {
+      collectionArray.levelB = (await this.collectionService.getCollectionById(parseInt(process.env.LEVEL_B_COLLECTION_ID), new User()));
+    }
+    if (parseInt(process.env.LEVEL_C_COLLECTION_ID)) {
+      collectionArray.levelC = (await this.collectionService.getCollectionById(parseInt(process.env.LEVEL_C_COLLECTION_ID), new User()));
+    }
+    // Envoyer plutot un array d'objet avec le 'niveau' en propriété et la collection en value
+    return collectionArray;
   }
 
   @Get('public')

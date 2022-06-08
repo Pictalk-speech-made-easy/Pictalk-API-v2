@@ -12,6 +12,7 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { EditUserDto } from './dto/edit-user.dto';
 import { Notif } from 'src/entities/notification.entity';
 import { usernameRegexp } from 'src/utilities/creation';
+import { modifyCollectionDto } from 'src/collection/dto/collection.modify.dto';
 @Controller('')
 export class AuthController {
     private logger = new Logger('AuthController');
@@ -23,9 +24,24 @@ export class AuthController {
     async signUp(@Body(ValidationPipe) createUserDto: CreateUserDto): Promise<void> {
         this.logger.verbose(`User signin up`);
         const user = await this.authService.signUp(createUserDto);
-        await this.collectionService.createRoot(user);
+        const rootId: number = await this.collectionService.createRoot(user);
         await this.collectionService.createShared(user);
         await this.collectionService.createSider(user);
+        if (createUserDto.publicBundleId) {
+          const publicBundleCollection: Collection = await this.collectionService.getCollectionById(createUserDto.publicBundleId, user);
+          const pictoIdsFromBundle: number[] = await Promise.all(publicBundleCollection?.pictos.map(async (picto) => await this.collectionService.copyPicto(rootId, picto, user)));
+          const collectionIdsFromBundle: number[] = await Promise.all(publicBundleCollection?.collections.map(async (collection) => await this.collectionService.copyCollection(rootId, collection.id, user)))
+          const modifyCollectionDto : modifyCollectionDto = {
+            meaning : null,
+            speech : null,
+            starred : null,
+            color : null,
+            collectionIds : collectionIdsFromBundle,
+          pictoIds: pictoIdsFromBundle
+        }
+          await this.collectionService.modifyCollection(rootId, user, modifyCollectionDto, null);
+        }
+        console.log(await this.collectionService.getCollectionById(rootId, user))
         return;
     }
 
