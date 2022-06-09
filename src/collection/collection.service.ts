@@ -181,7 +181,6 @@ export class CollectionService {
                 throw new NotFoundException(`Collection with ID '${id}' not found`);
             }
         } else {
-            throw new NotFoundException(`user with name '${shareCollectionDto.username}' not found`);
         }
     }
 

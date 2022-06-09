@@ -65,7 +65,6 @@ export class PictoService {
                 throw new NotFoundException(`Picto with ID '${id}' not found`);
             }
         } else {
-            throw new NotFoundException(`user with name '${sharePictoDto.username}' not found`);
         }
     }
 
