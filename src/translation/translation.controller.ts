@@ -12,6 +12,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { encode } from 'querystring';
 import { lastValueFrom } from 'rxjs';
+import { languageMapping } from 'src/utilities/supported.languages';
 import { text } from 'stream/consumers';
 import { TranslateDto } from './dto/translation.dto';
 
@@ -30,28 +31,32 @@ export class TranslationController {
   @UseGuards(AuthGuard())
   @Post()
   async getTraduction(@Body() TranslateDto: TranslateDto): Promise<TranslationResponse> {
-    console.log(TranslateDto);
-    if(TranslateDto.targetService){
-      if(TranslateDto.targetService == "deepl"){
-        return this.deepl(TranslateDto);
-      }
-      else{
-        return this.libretranslate(TranslateDto);
-      }
-    } else {
-      try {
-        return this.deepl(TranslateDto);
-      } catch (error) {
-        try {
+    if(languageMapping[TranslateDto.targetLang] !== undefined){
+      if(TranslateDto.targetService){
+        if(TranslateDto.targetService == "deepl"){
+          return this.deepl(TranslateDto);
+        }
+        else{
           return this.libretranslate(TranslateDto);
+        }
+      } else {
+        try {
+          return this.deepl(TranslateDto);
         } catch (error) {
-          console.log(error);
-          throw new InternalServerErrorException(
-            `couldn't get Translation from Deepl and Libre Translate`,
-          );
+          try {
+            return this.libretranslate(TranslateDto);
+          } catch (error) {
+            console.log(error);
+            throw new InternalServerErrorException(
+              `couldn't get Translation from Deepl and Libre Translate`,
+            );
+          }
         }
       }
+    } else {
+      return {translation : TranslateDto.text};
     }
+    
   }
   async deepl(TranslateDto: TranslateDto): Promise<TranslationResponse>{
     try {
