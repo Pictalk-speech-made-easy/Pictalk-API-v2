@@ -10,6 +10,7 @@ import { ImageController } from './image/image.controller';
 import { HttpModule } from '@nestjs/axios';
 import { TranslationController } from './translation/translation.controller';
 import { ConfigModule } from '@nestjs/config';
+import { FeedbackModule } from './feedback/feedback.module';
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -19,6 +20,7 @@ import { ConfigModule } from '@nestjs/config';
     AuthModule,
     HttpModule,
     CacheModule.register({ttl: 2592000}), // 1 month
+    FeedbackModule
   ],
   controllers: [AppController, ImageController, TranslationController],
   providers: [AppService],
