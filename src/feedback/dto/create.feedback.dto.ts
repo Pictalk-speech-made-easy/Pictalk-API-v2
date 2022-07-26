@@ -1,11 +1,25 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsString } from "class-validator";
+import { IsBooleanString, IsNotEmpty, IsString } from "class-validator";
 
 export class CreateFeedbackDto{
     @ApiProperty()
     @IsNotEmpty()
     @IsString()
     title : string;
+
+    @ApiProperty()
+    @IsNotEmpty()
+    @IsString()
+    action: string;
+
+    @ApiProperty()
+    @IsString()
+    evolution: string;
+
+    @ApiProperty()
+    @IsNotEmpty()
+    @IsBooleanString()
+    blocking: boolean;
 
     @ApiProperty()
     @IsNotEmpty()

@@ -7,8 +7,12 @@ import { Feedback } from "./entities/feedback.entity";
 @EntityRepository(Feedback)
 export class FeedbackRepository extends Repository<Feedback>{
     async createFeedback(createFeedbackDto: CreateFeedbackDto) {
-        let { title, description, contact, deviceInfos, voices, vuex } = createFeedbackDto;
+        let { title, description, contact, deviceInfos, voices, vuex, action, blocking, evolution } = createFeedbackDto;
         const feedback = new Feedback();
+        feedback.action = action;
+        feedback.evolution = evolution;
+        feedback.date = new Date();
+        feedback.blocking = blocking;
         feedback.title = title;
         feedback.description = description;
         feedback.contact = contact;

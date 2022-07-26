@@ -9,10 +9,22 @@ export class Feedback extends BaseEntity{
     title : string;
 
     @Column({nullable: false})
+    date: Date;
+
+    @Column({nullable: false})
+    blocking: boolean;
+
+    @Column({nullable: false})
     contact : string;
 
     @Column({nullable: false})
+    action : string;
+
+    @Column({nullable: false})
     description : string;
+
+    @Column({nullable: true})
+    evolution : string;
 
     @Column({nullable: false})
     vuex : string;
