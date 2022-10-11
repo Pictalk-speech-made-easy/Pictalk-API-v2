@@ -299,7 +299,7 @@ export class CollectionRepository extends Repository<Collection>{
         try {
             query.where('collection.public = :bool', { bool: true });
             if(filterDto.search){
-                query.where('LOWER(collection.meaning) like LOWER(:search)', {search: `%${filterDto.search}%`});
+                query.andWhere('LOWER(collection.meaning) like LOWER(:search)', {search: `%${filterDto.search}%`});
                 collections = await query.skip(toSkip).take(toTake).getMany();
             } else if (filterDto.page) {
                 collections = await query.skip(toSkip).take(toTake).getMany();
