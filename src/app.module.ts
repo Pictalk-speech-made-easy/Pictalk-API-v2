@@ -11,6 +11,7 @@ import { HttpModule } from '@nestjs/axios';
 import { TranslationController } from './translation/translation.controller';
 import { ConfigModule } from '@nestjs/config';
 import { FeedbackModule } from './feedback/feedback.module';
+import { ExtrasController } from './extras/extras.controller';
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -22,7 +23,7 @@ import { FeedbackModule } from './feedback/feedback.module';
     CacheModule.register({ttl: 2592000}), // 1 month
     FeedbackModule
   ],
-  controllers: [AppController, ImageController, TranslationController],
+  controllers: [AppController, ImageController, TranslationController, ExtrasController],
   providers: [AppService],
 })
 export class AppModule {}
