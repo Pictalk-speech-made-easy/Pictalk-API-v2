@@ -1,4 +1,5 @@
-import { Entity, BaseEntity, PrimaryGeneratedColumn, Column } from "typeorm";
+import { Entity, BaseEntity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import { FeedbackState } from "./feedbackstate.enum";
 
 @Entity()
 export class Feedback extends BaseEntity{
@@ -34,4 +35,13 @@ export class Feedback extends BaseEntity{
 
     @Column({nullable: false})
     deviceInfos : string;
+
+    @Column({nullable: false})
+    state : FeedbackState;
+
+    @CreateDateColumn()
+    createdDate: Date;
+    
+    @UpdateDateColumn()
+    updatedDate: Date;
 }
