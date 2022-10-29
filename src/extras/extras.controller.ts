@@ -1,6 +1,19 @@
 
-import { Get, InternalServerErrorException } from "@nestjs/common";
+import { Get, InternalServerErrorException, UnauthorizedException, UseGuards } from "@nestjs/common";
 import { Controller } from "@nestjs/common/decorators/core/controller.decorator";
+import { AuthGuard } from "@nestjs/passport";
+import { AuthService } from "src/auth/auth.service";
+import { GetUser } from "src/auth/get-user.decorator";
+import { CollectionService } from "src/collection/collection.service";
+import { User } from "src/entities/user.entity";
+import { PictoService } from "src/picto/picto.service";
+
+class DBReport {
+  userNb: number;
+  pictogramNb: number;
+  collectionNb: number;
+  imageSize: number;
+}
 
 class Report {
   amount: string;
@@ -46,7 +59,7 @@ export class ExtrasController {
   private report_url = process.env.ASSO_REPORT_URL;
   private pwd = process.env.ASSO_PWD;
   private log = process.env.ASSO_LOG;
-  constructor(){
+  constructor(private collectionService: CollectionService, private authService: AuthService, private pictoService: PictoService){
     refreshToken({url: this.auth_url, pwd: this.pwd, log: this.log});
   }
   @Get('/amounts')
@@ -64,5 +77,19 @@ export class ExtrasController {
       }
     }
     return report;
+  }
+
+  @Get('/dbsummary')
+  @UseGuards(AuthGuard())
+  async dbSummary(@GetUser() user: User): Promise<DBReport> {
+    if (!user.admin) {
+      throw new UnauthorizedException(`User ${user.username} is not admin, only admins can get feedbacks`);
+    }
+    const dbReport: DBReport = new DBReport();
+    dbReport.collectionNb = await this.collectionService.getCollectionCount();
+    dbReport.pictogramNb = await this.pictoService.getPictoCount();
+    dbReport.userNb = await this.authService.getUserCount();
+    dbReport.imageSize = 0;
+    return dbReport;
   }
 }

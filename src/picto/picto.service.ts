@@ -45,6 +45,10 @@ export class PictoService {
         return this.pictoRepository.autoShare(picto, fatherCollection);
     }
 
+    async getPictoCount(): Promise<number>{
+        return await this.pictoRepository.createQueryBuilder('picto').getCount()
+    }
+
     async sharePictoById(id: number, user: User, sharePictoDto: sharePictoDto): Promise<Picto>{
         const sharer = await this.authService.findWithUsername(sharePictoDto.username);
         const exists = await this.authService.verifyExistence(sharer);

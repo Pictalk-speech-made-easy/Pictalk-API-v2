@@ -27,6 +27,10 @@ export class CollectionService {
 
     ) { }
 
+    async getCollectionCount(): Promise<number>{
+        return await this.collectionRepository.createQueryBuilder('collection').getCount()
+    }
+
     async getCollectionById(id: number, user : User): Promise<Collection>{
         const collection = await this.collectionRepository.findOne({relations: ["pictos", "collections"],where : {id}});
         

@@ -17,7 +17,7 @@ export class FeedbackService {
         return this.feedbackRepository.createFeedback(createFeedbackDto);
     }
 
-    async getFeedback(searchFeedbackDto: SearchFeedbackDto): Promise<Feedback[]>{
+    async getFeedback(searchFeedbackDto: SearchFeedbackDto): Promise<{feedbacks: Feedback[], total_count: number}>{
         return this.feedbackRepository.getFeedback(searchFeedbackDto);
     }
     async editFeedback(id:number, editFeedbackDto:EditFeedbackDto): Promise<Feedback>{

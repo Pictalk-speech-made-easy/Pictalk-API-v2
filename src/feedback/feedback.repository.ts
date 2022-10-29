@@ -31,20 +31,26 @@ export class FeedbackRepository extends Repository<Feedback>{
         }
     }
 
-    async getFeedback(searchFeedbackDto:SearchFeedbackDto):Promise<Feedback[]>{
+    async getFeedback(searchFeedbackDto:SearchFeedbackDto):Promise<{feedbacks: Feedback[], total_count: number}>{
         let feedbacks: Feedback[];
         const page = searchFeedbackDto.page ? searchFeedbackDto.page-1 : 0;
         const per_page = searchFeedbackDto.per_page ? searchFeedbackDto.per_page: 20;
         const toSkip = page*per_page;
         const toTake = per_page;
         const query = this.createQueryBuilder('feedback');
+        const total_count = await query.getCount();
+        console.log(searchFeedbackDto);
+        if (searchFeedbackDto.sortField && searchFeedbackDto.sortOrder) {
+            query.orderBy(`feedback.${searchFeedbackDto.sortField}`, searchFeedbackDto.sortOrder)
+        }
         try {
             if (searchFeedbackDto.page) {
-                feedbacks = await query.skip(toSkip).take(toTake).getMany();
+                query.skip(toSkip).take(toTake);
+                feedbacks = await query.getMany();
             } else {
                 feedbacks = await query.getMany();
             }
-            return feedbacks;
+            return {feedbacks, total_count};
         } catch(err){
             throw new InternalServerErrorException(`could not get feedbacks ${err}`);
         }

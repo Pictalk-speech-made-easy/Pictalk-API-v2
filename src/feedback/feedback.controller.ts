@@ -1,6 +1,7 @@
-import { Body, Get, Logger, Param, ParseIntPipe, Post, Put, UnauthorizedException, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common";
+import { Body, Get, Logger, Param, ParseIntPipe, Post, Put, Query, UnauthorizedException, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common";
 import { Controller } from "@nestjs/common/decorators/core/controller.decorator";
 import { AuthGuard } from "@nestjs/passport";
+import { cp } from "fs";
 import { GetUser } from "src/auth/get-user.decorator";
 import { User } from "src/entities/user.entity";
 import { CreateFeedbackDto } from "./dto/create.feedback.dto";
@@ -24,11 +25,12 @@ export class FeedbackController {
   @UseGuards(AuthGuard())
   @Get()
   @UsePipes(ValidationPipe)
-  async getFeedback(@GetUser() user: User, @Body() searchFeedbackDto: SearchFeedbackDto): Promise<Feedback[]>{
+  async getFeedback(@GetUser() user: User, @Query() searchFeedbackDto: SearchFeedbackDto): Promise<{feedbacks: Feedback[], total_count: number}>{
     if (!user.admin) {
       throw new UnauthorizedException(`User ${user.username} is not admin, only admins can get feedbacks`);
     }
-    this.logger.verbose(`Searching for feedbacks: ${searchFeedbackDto}`);
+    this.logger.verbose(`Searching for feedbacks`);
+    console.log()
     return this.feedbackService.getFeedback(searchFeedbackDto);
   }
 
