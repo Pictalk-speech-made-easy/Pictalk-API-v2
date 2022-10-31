@@ -15,14 +15,36 @@ class DBReport {
   imageSize: number;
 }
 
+function getDaysInMonth(year: number, month: number) {
+  return new Date(year, month, 0).getDate();
+}
+function getDate(){
+  const date = new Date();
+  const year = date.getFullYear();
+  const month = date.getMonth()+1
+  const days = getDaysInMonth(year, month);
+  const column = encodeURIComponent(':')
+  const plus = encodeURIComponent('+')
+  return `&from=${year}-${month}-01T00${column}00${column}00${plus}02${column}00&to=${year}-${month}-${days}T23${column}59${column}59${plus}01${column}00`;
+}
 class Report {
   amount: string;
-  debitAmount : string;
-  protectedAmount : string;
+  donators: string[];
   fill(response: any){
-    this.amount = response.availableAmount;
-    this.debitAmount = response.debitAmount;
-    this.protectedAmount = response.protectedAmount;
+    this.amount = ((response.availableAmount - response.debitAmount)/100).toString();
+  }
+  fillDonators(donations: object[]){
+    var names: string[]=[]
+    donations.sort(function(a: object, b: object) {
+      const amoutA: number = a['items'][0]['amount']
+      const amoutB: number = b['items'][0]['amount']
+      if (amoutA < amoutB) return 1;
+      if (amoutA > amoutB) return -1;
+    })
+    for(let donation of donations){
+      names.push(donation['payer']['firstName']);
+    }
+    this.donators = names;
   }
 }
 const report: Report = new Report();
@@ -57,6 +79,7 @@ setInterval(function(){renew = true;}, 15*1000);
 export class ExtrasController {
   private auth_url = process.env.ASSO_AUTH_URL;
   private report_url = process.env.ASSO_REPORT_URL;
+  private donators_url = process.env.ASSO_DONATORS_URL;
   private pwd = process.env.ASSO_PWD;
   private log = process.env.ASSO_LOG;
   constructor(private collectionService: CollectionService, private authService: AuthService, private pictoService: PictoService){
@@ -67,13 +90,23 @@ export class ExtrasController {
     if(renew){
       const myHeaders = new Headers();
       myHeaders.append('Authorization', 'Bearer '+token);
-      const response = await fetch(this.report_url, {method: 'GET', headers: myHeaders})
-      if(response.status == 200){
-        const data = await response.json();
+      const response_amount = await fetch(this.report_url, {method: 'GET', headers: myHeaders})
+      if(response_amount.status == 200){
+        const data = await response_amount.json();
         report.fill(data);
-        renew = false;
       } else {
         throw new InternalServerErrorException('external server did not serve amount');
+      }
+      const date = getDate();
+      const response_donators = await fetch(this.donators_url+"&pageSize=40"+date, {method: 'GET', headers: myHeaders})
+      if(response_donators.status == 200){
+        const data: object[] = (await response_donators.json()).data;
+        report.fillDonators(data);
+      } else {
+        throw new InternalServerErrorException('external server did not serve donators');
+      }
+      if(response_amount.status == 200 && response_donators.status == 200){
+        renew = false;
       }
     }
     return report;
