@@ -44,6 +44,10 @@ export class AuthService {
         return this.userRepository.find({where: {admin: true}});
     }
 
+    async getUserCount(): Promise<number>{
+        return await this.userRepository.createQueryBuilder('user').getCount()
+    }
+
     async signIn(
         authCredentialsDto: AuthCredentialsDto,
         ): Promise<{ accessToken: string; expiresIn: string }> {
