@@ -15,26 +15,28 @@ class DBReport {
   imageSize: number;
 }
 
-function getDaysInMonth(year: number, month: number) {
-  return new Date(year, month, 0).getDate();
-}
 function getDate(){
   const date = new Date();
   const year = date.getFullYear();
   const month = date.getMonth()+1
-  const days = getDaysInMonth(year, month);
+  const nextMonth = month+1>12? 1 : month+1;
+  const prevMonth = month-1<1? 12 : month-1;
   const column = encodeURIComponent(':')
   const plus = encodeURIComponent('+')
-  return `&from=${year}-${month}-01T00${column}00${column}00${plus}02${column}00&to=${year}-${month}-${days}T23${column}59${column}59${plus}01${column}00`;
+  return {
+    now : `&from=${year}-${month}-10T00${column}00${column}00${plus}02${column}00&to=${year}-${nextMonth}-10T23${column}59${column}59${plus}01${column}00`,
+    past : `&from=${year}-${prevMonth}-10T00${column}00${column}00${plus}02${column}00&to=${year}-${month}-10T23${column}59${column}59${plus}01${column}00`
+  }
 }
 class Report {
   amount: string;
+  pastAmount: string;
   donators: string[];
-  fill(response: any){
-    this.amount = ((response.availableAmount - response.debitAmount)/100).toString();
-  }
-  fillDonators(donations: object[]){
+  pastDonators: string[];
+  
+  fillDonatorsAmount(donations: object[], current: boolean){
     var names: string[]=[]
+    let amount: number = 0;
     donations.sort(function(a: object, b: object) {
       const amoutA: number = a['items'][0]['amount']
       const amoutB: number = b['items'][0]['amount']
@@ -43,8 +45,16 @@ class Report {
     })
     for(let donation of donations){
       names.push(donation['payer']['firstName']);
+      amount = amount + donation['amount'];
     }
-    this.donators = names;
+    amount = amount/100;
+    if(current){
+      this.donators = names;
+      this.amount = amount.toString();
+    } else {
+      this.pastDonators = names;
+      this.pastAmount = amount.toString();
+    }
   }
 }
 const report: Report = new Report();
@@ -90,22 +100,23 @@ export class ExtrasController {
     if(renew){
       const myHeaders = new Headers();
       myHeaders.append('Authorization', 'Bearer '+token);
-      const response_amount = await fetch(this.report_url, {method: 'GET', headers: myHeaders})
-      if(response_amount.status == 200){
-        const data = await response_amount.json();
-        report.fill(data);
-      } else {
-        throw new InternalServerErrorException('external server did not serve amount');
-      }
-      const date = getDate();
+      const date = getDate().now;
       const response_donators = await fetch(this.donators_url+"&pageSize=40"+date, {method: 'GET', headers: myHeaders})
       if(response_donators.status == 200){
         const data: object[] = (await response_donators.json()).data;
-        report.fillDonators(data);
+        report.fillDonatorsAmount(data, true);
       } else {
         throw new InternalServerErrorException('external server did not serve donators');
       }
-      if(response_amount.status == 200 && response_donators.status == 200){
+      const pastdate = getDate().past;
+      const response_past_amount = await fetch(this.donators_url+"&pageSize=40"+pastdate, {method: 'GET', headers: myHeaders})
+      if(response_past_amount.status == 200){
+        const data: object[] = (await response_past_amount.json()).data;
+        report.fillDonatorsAmount(data, false);
+      } else {
+        throw new InternalServerErrorException('external server did not serve last months donators');
+      }
+      if(response_past_amount.status == 200 && response_donators.status == 200){
         renew = false;
       }
     }
