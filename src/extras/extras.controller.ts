@@ -106,7 +106,7 @@ export class ExtrasController {
         const data: object[] = (await response_donators.json()).data;
         report.fillDonatorsAmount(data, true);
       } else {
-        throw new InternalServerErrorException('external server did not serve donators');
+        console.log('external server did not serve donators');
       }
       const pastdate = getDate().past;
       const response_past_amount = await fetch(this.donators_url+"&pageSize=40"+pastdate, {method: 'GET', headers: myHeaders})
@@ -114,7 +114,7 @@ export class ExtrasController {
         const data: object[] = (await response_past_amount.json()).data;
         report.fillDonatorsAmount(data, false);
       } else {
-        throw new InternalServerErrorException('external server did not serve last months donators');
+        console.log('external server did not serve last months donators');
       }
       if(response_past_amount.status == 200 && response_donators.status == 200){
         renew = false;
