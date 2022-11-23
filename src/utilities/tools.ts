@@ -1,4 +1,5 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { response } from 'express';
 import { copyFile, unlink, constants } from 'fs';
 import { imageHash } from 'image-hash';
 import { extname } from 'path';
@@ -77,3 +78,9 @@ export async function hashImage(file: Express.Multer.File) {
   });
   return hashedname;
 } 
+
+export async function fetchWithoutError(url: string, options: any):Promise<void | Response> {
+  return fetch(url, options)
+  .then((response)=>{return response;})
+  .catch((error)=>{console.log(error);});
+}

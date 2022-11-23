@@ -77,8 +77,11 @@ async function refreshToken(urlBody: any): Promise<void>{
       setTimeout(function(){
         refreshToken(urlBody);
       } ,(data.expires_in - 10)*1000);
+    } else {
+      setTimeout(function(){refreshToken(urlBody);} , 10000);
     }
-  });
+  })
+  .catch(error => {setTimeout(function(){refreshToken(urlBody);} , 10000); console.log(error)});
   return;
 }
 
@@ -101,24 +104,29 @@ export class ExtrasController {
       const myHeaders = new Headers();
       myHeaders.append('Authorization', 'Bearer '+token);
       const date = getDate().now;
-      const response_donators = await fetch(this.donators_url+"&pageSize=40"+date, {method: 'GET', headers: myHeaders})
-      if(response_donators.status == 200){
-        const data: object[] = (await response_donators.json()).data;
-        report.fillDonatorsAmount(data, true);
-      } else {
-        console.log('external server did not serve donators');
-      }
       const pastdate = getDate().past;
-      const response_past_amount = await fetch(this.donators_url+"&pageSize=40"+pastdate, {method: 'GET', headers: myHeaders})
-      if(response_past_amount.status == 200){
-        const data: object[] = (await response_past_amount.json()).data;
-        report.fillDonatorsAmount(data, false);
-      } else {
-        console.log('external server did not serve last months donators');
-      }
-      if(response_past_amount.status == 200 && response_donators.status == 200){
-        renew = false;
-      }
+      let neterrors = 0;
+      fetch(this.donators_url+"&pageSize=40"+date, {method: 'GET', headers: myHeaders})
+      .then(async (response_donators)=>{
+        if(response_donators.status == 200){
+          const data: object[] = (await response_donators.json()).data;
+          report.fillDonatorsAmount(data, true);
+        } else {
+          neterrors++;
+          console.log('external server did not serve donators');
+        }
+      }).catch(error=>{neterrors++;});
+      fetch(this.donators_url+"&pageSize=40"+pastdate, {method: 'GET', headers: myHeaders})
+      .then(async (response_past_amount)=>{
+        if(response_past_amount.status == 200){
+          const data: object[] = (await response_past_amount.json()).data;
+          report.fillDonatorsAmount(data, false);
+        } else {
+          neterrors++;
+          console.log('external server did not serve last months donators');
+        }
+      }).catch(error=>{neterrors++;});
+      neterrors > 0 ? renew = true : renew = false;
     }
     return report;
   }
