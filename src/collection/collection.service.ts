@@ -1,4 +1,4 @@
-import { BadRequestException, forwardRef, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, forwardRef, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthService } from 'src/auth/auth.service';
 import { Collection } from 'src/entities/collection.entity';
@@ -13,7 +13,7 @@ import { deleteCollectionDto } from './dto/collection.delete.dto';
 import { modifyCollectionDto } from './dto/collection.modify.dto';
 import { publicCollectionDto } from './dto/collection.public.dto';
 import { SearchCollectionDto } from './dto/collection.search.public.dto';
-import { shareCollectionDto } from './dto/collection.share.dto';
+import { shareCollectionDto, multipleShareCollectionDto } from './dto/collection.share.dto';
 
 @Injectable()
 export class CollectionService {
@@ -148,43 +148,53 @@ export class CollectionService {
        
     }
 
-    async shareCollectionVerification(id: number, user: User, shareCollectionDto: shareCollectionDto): Promise<Collection>{
-        const sharer = await this.authService.findWithUsername(shareCollectionDto.username);
-        const exists = await this.authService.verifyExistence(sharer);
-        if(exists){
-            if(sharer.username === user.username){
-                throw new BadRequestException(`cannot share collection to yourself`);
+    async shareCollectionVerification(id: number, user: User, multipleShareCollectionDto: multipleShareCollectionDto): Promise<Collection>{
+        //filter all the users that don't exist and remove them from the operation
+        let sharers = await Promise.all(multipleShareCollectionDto.usernames.map(async username => {
+            const sharer = await this.authService.findWithUsername(username);
+            const exists = this.authService.verifyExistence(sharer)
+            if(exists && (sharer.username !== user.username)){
+                return sharer;
             }
+        }));
+        sharers = sharers.filter(Boolean);
+        multipleShareCollectionDto.usernames = sharers.map(sharer => {return sharer.username});
+        console.log(sharers);
+        if(sharers.length>0){
             const collection=await this.getCollectionById(id, user);
             if(collection){
                 const editor = collection.editors.indexOf(user.username);
-                if(shareCollectionDto.role==="editor" && !(collection.userId === user.id || editor!=-1)){
-                    throw new UnauthorizedException(`${user.username} cannot share to ${sharer.username} as editor being a viewer youself`);
+                if(multipleShareCollectionDto.role==="editor" && !(collection.userId === user.id || editor!=-1)){
+                    throw new UnauthorizedException(`${user.username} cannot share to ${sharers} as editor being a viewer youself`);
                 }
-                const sharedWithMe = await this.getCollectionById(sharer.shared, sharer);
-                this.collectionRepository.pushCollection(sharedWithMe, collection);
-                const directSharer = sharer.directSharers.indexOf(user.username);
-                if(directSharer!=-1){
-                    const sharerRoot = await this.getCollectionById(sharer.root, sharer);
-                    this.collectionRepository.pushCollection(sharerRoot, collection);
+                // here we add the shared collection in the 'hared with me' collection of each sharer and send notifications if necessary
+                for(let sharer of sharers){
+                    const sharedWithMe = await this.getCollectionById(sharer.shared, sharer);
+                    this.collectionRepository.pushCollection(sharedWithMe, collection);
+                    const directSharer = sharer.directSharers.indexOf(user.username);
+                    if(directSharer!=-1){
+                        const sharerRoot = await this.getCollectionById(sharer.root, sharer);
+                        this.collectionRepository.pushCollection(sharerRoot, collection);
+                    }
+                    if(multipleShareCollectionDto.access==1){
+                        if((collection.editors.indexOf(sharer.username)==-1) && (collection.viewers.indexOf(sharer.username)==-1)){
+                            const notification = await this.createNotif(collection, user, "collection", "share");
+                            this.authService.pushNotification(sharer, notification);
+                        }
+                    }
+                    if (multipleShareCollectionDto.access == 0){
+                        if((collection.editors.indexOf(sharer.username)!==-1) || (collection.viewers.indexOf(sharer.username)!==-1)){
+                            const notification = await this.createNotif(collection, user, "collection", "unshare");
+                            this.authService.pushNotification(sharer, notification);  
+                        }
+                    }
                 }
-                if(shareCollectionDto.access==1){
-                    if((collection.editors.indexOf(sharer.username)==-1) && (collection.viewers.indexOf(sharer.username)==-1)){
-                        const notification = await this.createNotif(collection, user, "collection", "share");
-                        this.authService.pushNotification(sharer, notification);
-                    }   
-                    return this.shareCollectionById(id, shareCollectionDto, user);
-                } else if (shareCollectionDto.access == 0){
-                    if((collection.editors.indexOf(sharer.username)!==-1) || (collection.viewers.indexOf(sharer.username)!==-1)){
-                        const notification = await this.createNotif(collection, user, "collection", "unshare");
-                        this.authService.pushNotification(sharer, notification);
-                        return this.shareCollectionById(id, shareCollectionDto, user);
-                    } 
-                }
+                return this.shareCollectionById(id, multipleShareCollectionDto, user);  
             } else {
                 throw new NotFoundException(`Collection with ID '${id}' not found`);
             }
-        } else {
+        } else {// does nothing because no one to share to, unvalid usernames
+            throw new ForbiddenException(`sharers is empty or does not exist`);
         }
     }
 
@@ -197,16 +207,16 @@ export class CollectionService {
         }
     } 
 
-    async shareCollectionById(collectionId : number, shareCollectionDto: shareCollectionDto, user: User): Promise<Collection>{
+    async shareCollectionById(collectionId : number, multipleShareCollectionDto: multipleShareCollectionDto, user: User): Promise<Collection>{
         let collection = await this.getCollectionById(collectionId, user);
         try{
-            collection.collections.map(collection => this.shareCollectionById(collection.id, shareCollectionDto, user));
+            collection.collections.map(collection => this.shareCollectionById(collection.id, multipleShareCollectionDto, user));
         } catch(error){}
         try{
-            collection.pictos.map(picto => this.collectionRepository.sharePictoFromDto(picto, shareCollectionDto));
+            collection.pictos.map(picto => this.collectionRepository.sharePictoFromDto(picto, multipleShareCollectionDto));
         } catch(error){}
         try{
-            collection=await this.collectionRepository.shareCollectionFromDto(collection, shareCollectionDto);
+            collection=await this.collectionRepository.shareCollectionFromDto(collection, multipleShareCollectionDto);
         } catch(error){}
         return collection;
     }

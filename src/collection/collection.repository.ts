@@ -7,7 +7,7 @@ import { EntityRepository, Repository } from "typeorm";
 import { createCollectionDto } from "./dto/collection.create.dto";
 import { modifyCollectionDto } from "./dto/collection.modify.dto";
 import { SearchCollectionDto } from "./dto/collection.search.public.dto";
-import { shareCollectionDto } from "./dto/collection.share.dto";
+import { multipleShareCollectionDto, shareCollectionDto } from "./dto/collection.share.dto";
 
 @EntityRepository(Collection)
 export class CollectionRepository extends Repository<Collection>{
@@ -173,39 +173,41 @@ export class CollectionRepository extends Repository<Collection>{
         return user.sider;
     }
 
-    async shareCollectionFromDto(collection: Collection, shareCollectionDto: shareCollectionDto): Promise<Collection>{
-        const {access, username, role} = shareCollectionDto;
-        let index: number;
-        if(access==1){
-            if(role==='editor'){
+    async shareCollectionFromDto(collection: Collection, multipleShareCollectionDto: multipleShareCollectionDto): Promise<Collection>{
+        const {access, usernames, role} = multipleShareCollectionDto;
+        for(let username of usernames){
+            let index: number;
+            if(access==1){
+                if(role==='editor'){
+                    index = collection.viewers.indexOf(username);
+                    if(index!=-1){
+                        collection.viewers.splice(index);
+                    }
+                    index = collection.editors.indexOf(username);
+                    if(!(index!=-1)){
+                        collection.editors.push(username);
+                    }
+                } else if(role==='viewer'){
+                    index = collection.editors.indexOf(username);
+                    if(index!=-1){
+                        collection.editors.splice(index);
+                    }
+                    index = collection.viewers.indexOf(username);
+                    if((index==-1)){
+                        collection.viewers.push(username);
+                    } 
+                } else {
+                   throw new BadRequestException(`role must be 'viewer or 'editor'`); 
+                }
+            } else {
                 index = collection.viewers.indexOf(username);
                 if(index!=-1){
                     collection.viewers.splice(index);
                 }
                 index = collection.editors.indexOf(username);
-                if(!(index!=-1)){
-                    collection.editors.push(username);
-                }
-            } else if(role==='viewer'){
-                index = collection.editors.indexOf(username);
                 if(index!=-1){
                     collection.editors.splice(index);
                 }
-                index = collection.viewers.indexOf(username);
-                if((index==-1)){
-                    collection.viewers.push(username);
-                } 
-            } else {
-               throw new BadRequestException(`role must be 'viewer or 'editor'`); 
-            }
-        } else {
-            index = collection.viewers.indexOf(username);
-            if(index!=-1){
-                collection.viewers.splice(index);
-            }
-            index = collection.editors.indexOf(username);
-            if(index!=-1){
-                collection.editors.splice(index);
             }
         }
         try {
@@ -216,39 +218,41 @@ export class CollectionRepository extends Repository<Collection>{
         return collection;
     }
 
-    async sharePictoFromDto(picto: Picto, shareCollectionDto: shareCollectionDto): Promise<Picto>{
-        const {access, username, role} = shareCollectionDto;
-        let index: number;
-        if(access==1){
-            if(role==='editor'){
+    async sharePictoFromDto(picto: Picto, multipleShareCollectionDto: multipleShareCollectionDto): Promise<Picto>{
+        const {access, usernames, role} = multipleShareCollectionDto;
+        for(let username of usernames){
+            let index: number;
+            if(access==1){
+                if(role==='editor'){
+                    index = picto.viewers.indexOf(username);
+                    if(index!=-1){
+                        picto.viewers.splice(index);
+                    }
+                    index = picto.editors.indexOf(username);
+                    if(!(index!=-1)){
+                        picto.editors.push(username);
+                    }
+                } else if(role==='viewer'){
+                    index = picto.editors.indexOf(username);
+                    if(index!=-1){
+                        picto.editors.splice(index);
+                    }
+                    index = picto.editors.indexOf(username);
+                    if(!(index!=-1)){
+                        picto.editors.push(username);
+                    } 
+                } else {
+                throw new BadRequestException(`role must be 'viewer or 'editor'`); 
+                }
+            } else {
                 index = picto.viewers.indexOf(username);
                 if(index!=-1){
                     picto.viewers.splice(index);
                 }
                 index = picto.editors.indexOf(username);
-                if(!(index!=-1)){
-                    picto.editors.push(username);
-                }
-            } else if(role==='viewer'){
-                index = picto.editors.indexOf(username);
                 if(index!=-1){
                     picto.editors.splice(index);
                 }
-                index = picto.editors.indexOf(username);
-                if(!(index!=-1)){
-                    picto.editors.push(username);
-                } 
-            } else {
-               throw new BadRequestException(`role must be 'viewer or 'editor'`); 
-            }
-        } else {
-            index = picto.viewers.indexOf(username);
-            if(index!=-1){
-                picto.viewers.splice(index);
-            }
-            index = picto.editors.indexOf(username);
-            if(index!=-1){
-                picto.editors.splice(index);
             }
         }
         try {

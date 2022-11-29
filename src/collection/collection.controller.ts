@@ -105,16 +105,14 @@ export class CollectionController {
     if(!multipleShareCollectionDto.role){
       multipleShareCollectionDto.role='viewer';
     }
-      for(let username of multipleShareCollectionDto.usernames){
-        multipleShareCollectionDto.access= +multipleShareCollectionDto.access;
-        if(multipleShareCollectionDto.access){
-          this.logger.verbose(`User "${user.username}" sharing Collection with id ${id} to User ${username} as ${multipleShareCollectionDto.role}`);
-        } else {
-          this.logger.verbose(`User "${user.username}" revoking access to Collection with id ${id} for User ${username}`);
-        }
-        collection = await this.collectionService.shareCollectionVerification(id, user, new shareCollectionDto(multipleShareCollectionDto.access, username, multipleShareCollectionDto.role));
-      }
-      return collection;
+    multipleShareCollectionDto.access= +multipleShareCollectionDto.access;
+    if(multipleShareCollectionDto.access){
+      this.logger.verbose(`User "${user.username}" sharing Collection with id ${id} to Users ${multipleShareCollectionDto.usernames} as ${multipleShareCollectionDto.role}`);
+    } else {
+      this.logger.verbose(`User "${user.username}" revoking access to Collection with id ${id} for Users ${multipleShareCollectionDto.usernames}`);
+    }
+    collection = await this.collectionService.shareCollectionVerification(id, user, multipleShareCollectionDto);
+    return collection;
   }
 
   @UseGuards(AuthGuard())

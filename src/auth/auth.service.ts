@@ -85,7 +85,7 @@ export class AuthService {
     async getUserDetails(user: User): Promise<User> {
     return this.userRepository.getUserDetails(user);
     }
-    async verifyExistence(user: User): Promise<boolean> {
+    verifyExistence(user: User): boolean {
         if(typeof(user) === 'undefined'){
             return false;
         } else {
