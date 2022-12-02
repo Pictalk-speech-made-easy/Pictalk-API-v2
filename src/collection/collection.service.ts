@@ -7,6 +7,7 @@ import { Picto } from 'src/entities/picto.entity';
 import { User } from 'src/entities/user.entity';
 import { createPictoDto  } from 'src/picto/dto/picto.create.dto';
 import { PictoService } from 'src/picto/picto.service';
+import { In } from 'typeorm';
 import { CollectionRepository } from './collection.repository';
 import { createCollectionDto } from './dto/collection.create.dto';
 import { deleteCollectionDto } from './dto/collection.delete.dto';
@@ -313,4 +314,17 @@ export class CollectionService {
             }
         }
     }
+
+    async testquery(){
+        const collectionIds = [10, 11, 12, 13];
+        const users = ['adri', 'alex', 'pablo']
+        const viewers = await this.collectionRepository
+        .createQueryBuilder('collection')
+        .where({ id: In(collectionIds) })
+        .select('collection.viewers')
+        .update()
+        .set({ viewers: () => `array_append("viewers", :"adri")`})
+        .execute()
+        console.log(viewers);
+    } 
 }

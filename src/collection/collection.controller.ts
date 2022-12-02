@@ -18,6 +18,7 @@ import { copyCollectionDto } from './dto/collection.copy.dto';
 import { SearchCollectionDto } from './dto/collection.search.public.dto';
 import { OptionnalAuth } from 'src/auth/optionnal_auth.guard';
 import { levelCollectionDto } from './dto/collection.level.dto';
+import {getConnection, In} from "typeorm";
 
 @Controller('collection')
 export class CollectionController {
@@ -100,7 +101,10 @@ export class CollectionController {
   @Put('share/:id')
   @UsePipes(ValidationPipe)
   @ApiOperation({summary : 'share a collection with another user, with readonly or editor role'})
-  async shareCollectionById(@Param('id', ParseIntPipe) id : number, @Body() multipleShareCollectionDto: multipleShareCollectionDto, @GetUser() user: User): Promise<Collection>{
+  async shareCollectionById(@Param('id', ParseIntPipe) id : number, @Body() multipleShareCollectionDto: multipleShareCollectionDto, @GetUser() user: User): Promise<void>{
+    
+  return this.collectionService.testquery()
+  /*
     let collection: Collection;
     if(!multipleShareCollectionDto.role){
       multipleShareCollectionDto.role='viewer';
@@ -113,6 +117,7 @@ export class CollectionController {
     }
     collection = await this.collectionService.shareCollectionVerification(id, user, multipleShareCollectionDto);
     return collection;
+  */
   }
 
   @UseGuards(AuthGuard())
