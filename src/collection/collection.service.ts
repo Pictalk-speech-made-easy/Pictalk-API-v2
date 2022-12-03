@@ -318,13 +318,15 @@ export class CollectionService {
     async testquery(){
         const collectionIds = [10, 11, 12, 13];
         const users = ['adri', 'alex', 'pablo']
-        const viewers = await this.collectionRepository
+        const result = await this.collectionRepository
+        //.query(`UPDATE collection SET viewers = {adri, alex} WHERE id IN (${collectionIds})`)
+        // UPDATE viewers SET viewers = array_append(viewers,"adri") WHERE id IN (${collectionIds})
         .createQueryBuilder('collection')
-        .where({ id: In(collectionIds) })
-        .select('collection.viewers')
         .update()
-        .set({ viewers: () => `array_append("viewers", :"adri")`})
+        .where({ id: In(collectionIds) })
+        //.set({ viewers:  users})
+        .set({ viewers: () => `array_cat("viewers", ARRAY['adri', 'bibi'])`})
         .execute()
-        console.log(viewers);
+        console.log(result);
     } 
 }
