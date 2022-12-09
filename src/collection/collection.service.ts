@@ -1,3 +1,4 @@
+import { deletePictoDto } from './../picto/dto/picto.delete.dto';
 import { BadRequestException, ForbiddenException, forwardRef, Inject, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthService } from 'src/auth/auth.service';
@@ -11,6 +12,7 @@ import { CollectionRepository } from './collection.repository';
 import { createCollectionDto } from './dto/collection.create.dto';
 import { deleteCollectionDto } from './dto/collection.delete.dto';
 import { modifyCollectionDto } from './dto/collection.modify.dto';
+import { MoveToCollectionDto } from './dto/collection.move.dto';
 import { publicCollectionDto } from './dto/collection.public.dto';
 import { SearchCollectionDto } from './dto/collection.search.public.dto';
 import { shareCollectionDto, multipleShareCollectionDto } from './dto/collection.share.dto';
@@ -311,6 +313,34 @@ export class CollectionService {
                 console.log(error);
                 throw new InternalServerErrorException(`couldn't copy Collection`);
             }
+        }
+    }
+
+    async moveToCollection(user: User, moveToCollectionDto: MoveToCollectionDto, fatherCollectionId: number): Promise<Collection> {
+        try {
+            const targetCollection = await this.getCollectionById(moveToCollectionDto.targetCollecionId, user);
+            if (moveToCollectionDto.sourceCollecionId) {
+                const modifyCollection = new modifyCollectionDto()
+                modifyCollection.collectionIds = targetCollection.collections.map(collection => collection.id);
+                modifyCollection.collectionIds.push(moveToCollectionDto.sourceCollecionId)
+                const deleteCollection = new deleteCollectionDto()
+                deleteCollection.collectionId = Number(moveToCollectionDto.sourceCollecionId);
+                deleteCollection.fatherId = fatherCollectionId;
+                await this.collectionRepository.modifyCollection(targetCollection, modifyCollection, user, null)
+                await this.deleteCollection(deleteCollection, user)
+            } else if (moveToCollectionDto.sourcePictoId) {
+                const modifyCollection = new modifyCollectionDto();
+                modifyCollection.pictoIds = targetCollection.pictos.map(collection => collection.id);
+                modifyCollection.pictoIds.push(moveToCollectionDto.sourcePictoId);
+                const deletePicto = new deletePictoDto();
+                deletePicto.fatherId = fatherCollectionId;
+                deletePicto.pictoId = Number(moveToCollectionDto.sourcePictoId);
+                await this.collectionRepository.modifyCollection(targetCollection, modifyCollection, user, null)
+                await this.pictoService.deletePicto(deletePicto, user)
+            }
+            return await this.getCollectionById(fatherCollectionId, user);
+        } catch (err) {
+            console.log(err);
         }
     }
 }
