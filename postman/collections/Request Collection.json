@@ -1004,7 +1004,7 @@
 								{
 									"key": "image",
 									"type": "file",
-									"src": "/Users/alex/Downloads/Screenshot 2022-12-14 at 11.17.39.png"
+									"src": "./postman/logo.png"
 								},
 								{
 									"key": "collectionIds",
