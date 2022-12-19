@@ -1,0 +1,1958 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/": {
+      "get": {
+        "operationId": "AppController_getHello",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/image/pictalk/{imgpath}": {
+      "get": {
+        "operationId": "ImageController_seeUploadedFile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/image/web": {
+      "get": {
+        "operationId": "ImageController_searchImages",
+        "parameters": [
+          {
+            "name": "search",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "language",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "perPage",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WebImage"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/translation": {
+      "post": {
+        "operationId": "TranslationController_getTraduction",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TranslateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranslationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/extras/amounts": {
+      "get": {
+        "operationId": "ExtrasController_money",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Report"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/extras/dbsummary": {
+      "get": {
+        "operationId": "ExtrasController_dbSummary",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DBReport"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/picto/{id}": {
+      "get": {
+        "operationId": "PictoController_getPictoById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Picto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "PictoController_modifyPicto",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/modifyPictoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Picto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/picto": {
+      "get": {
+        "operationId": "PictoController_getAllUserPictos",
+        "summary": "get all your pictos",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Picto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "PictoController_createPicto",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/createPictoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Picto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "PictoController_deletePicto",
+        "parameters": [
+          {
+            "name": "pictoId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "fatherId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/picto/share/{id}": {
+      "put": {
+        "operationId": "PictoController_sharePictoById",
+        "summary": "share a picto with another user, with readonly or editor role",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/multipleSharePictoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Picto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/picto/copy": {
+      "post": {
+        "operationId": "PictoController_copyPicto",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/copyPictoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Collection"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/signup": {
+      "post": {
+        "operationId": "AuthController_signUp",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/auth/validation/{validationToken}": {
+      "get": {
+        "operationId": "AuthController_validateUser",
+        "parameters": [
+          {
+            "name": "validationToken",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/auth/validation/{username}": {
+      "post": {
+        "operationId": "AuthController_sendMail",
+        "parameters": [
+          {
+            "name": "username",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/auth/signin": {
+      "post": {
+        "operationId": "AuthController_signIn",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthCredentialsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/user/resetPassword": {
+      "post": {
+        "operationId": "AuthController_resetPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/user/changePassword/{token}": {
+      "post": {
+        "operationId": "AuthController_changePassword",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/user/details": {
+      "get": {
+        "operationId": "AuthController_getUserDetails",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "AuthController_editUser",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/root": {
+      "get": {
+        "operationId": "AuthController_getRoot",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Collection"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/sider": {
+      "get": {
+        "operationId": "AuthController_getSider",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Collection"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/shared": {
+      "get": {
+        "operationId": "AuthController_getShared",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Collection"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/notification": {
+      "get": {
+        "operationId": "AuthController_getNotifications",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Notif"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "AuthController_clearNotifications",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Notif"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/collection/find/{id}": {
+      "get": {
+        "operationId": "CollectionController_getCollectionById",
+        "summary": "get a collection that has the provided id",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Collection"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/collection/levels": {
+      "get": {
+        "operationId": "CollectionController_getLevelCollections",
+        "summary": "get all the levels collections",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/levelCollectionDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/collection/public": {
+      "get": {
+        "operationId": "CollectionController_getPublicCollections",
+        "parameters": [
+          {
+            "name": "search",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "maxLength": 144,
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "per_page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Collection"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/collection": {
+      "get": {
+        "operationId": "CollectionController_getAllUserCollections",
+        "summary": "get all your collection",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Collection"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "CollectionController_createCollection",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/createCollectionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Collection"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "CollectionController_deleteCollection",
+        "parameters": [
+          {
+            "name": "collectionId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "fatherId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/collection/copy": {
+      "post": {
+        "operationId": "CollectionController_copyCollection",
+        "summary": "copy a collection with its ID",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/copyCollectionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Collection"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/collection/share/{id}": {
+      "put": {
+        "operationId": "CollectionController_shareCollectionById",
+        "summary": "share a collection with another user, with readonly or editor role",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/multipleShareCollectionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Collection"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/collection/publish/{id}": {
+      "put": {
+        "operationId": "CollectionController_publishCollectionById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/publicCollectionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Collection"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/collection/root": {
+      "post": {
+        "operationId": "CollectionController_createRoot",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/collection/{id}": {
+      "put": {
+        "operationId": "CollectionController_modifyCollection",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/modifyCollectionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Collection"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/feedback": {
+      "post": {
+        "operationId": "FeedbackController_createFeedback",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFeedbackDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        }
+      },
+      "get": {
+        "operationId": "FeedbackController_getFeedback",
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "per_page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "sortField",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/feedback/{id}": {
+      "put": {
+        "operationId": "FeedbackController_editFeedback",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditFeedbackDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Feedback"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "Pictalk",
+    "description": "Pictalk API description",
+    "version": "2.0",
+    "contact": {}
+  },
+  "tags": [
+    {
+      "name": "Pictalk API",
+      "description": ""
+    }
+  ],
+  "servers": [],
+  "components": {
+    "schemas": {
+      "WebImage": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "author": {
+            "type": "string"
+          },
+          "thumbnail": {
+            "type": "string"
+          },
+          "download": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "source",
+          "title",
+          "author",
+          "thumbnail",
+          "download"
+        ]
+      },
+      "TranslateDto": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "targetLang": {
+            "type": "string"
+          },
+          "sourceLang": {
+            "type": "string"
+          },
+          "targetService": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "targetLang",
+          "sourceLang",
+          "targetService"
+        ]
+      },
+      "TranslationResponse": {
+        "type": "object",
+        "properties": {}
+      },
+      "Report": {
+        "type": "object",
+        "properties": {}
+      },
+      "DBReport": {
+        "type": "object",
+        "properties": {}
+      },
+      "Notif": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "operation": {
+            "type": "string"
+          },
+          "affected": {
+            "type": "string"
+          },
+          "meaning": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "operation",
+          "affected",
+          "meaning",
+          "username"
+        ]
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "username": {
+            "type": "string"
+          },
+          "displayLanguage": {
+            "type": "string"
+          },
+          "language": {
+            "type": "string"
+          },
+          "languages": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "salt": {
+            "type": "string"
+          },
+          "collections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Collection"
+            }
+          },
+          "pictos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Picto"
+            }
+          },
+          "root": {
+            "type": "number"
+          },
+          "sider": {
+            "type": "number"
+          },
+          "shared": {
+            "type": "number"
+          },
+          "resetPasswordToken": {
+            "type": "string"
+          },
+          "validationToken": {
+            "type": "string"
+          },
+          "resetPasswordExpires": {
+            "type": "string"
+          },
+          "directSharers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "notifications": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Notif"
+            }
+          },
+          "settings": {
+            "type": "string"
+          },
+          "mailingList": {
+            "type": "string"
+          },
+          "admin": {
+            "type": "boolean"
+          },
+          "createdDate": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedDate": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "displayLanguage",
+          "language",
+          "languages",
+          "password",
+          "salt",
+          "collections",
+          "pictos",
+          "root",
+          "sider",
+          "shared",
+          "resetPasswordToken",
+          "validationToken",
+          "resetPasswordExpires",
+          "directSharers",
+          "notifications",
+          "settings",
+          "mailingList",
+          "admin",
+          "createdDate",
+          "updatedDate"
+        ]
+      },
+      "Picto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "meaning": {
+            "type": "string"
+          },
+          "speech": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string"
+          },
+          "starred": {
+            "type": "boolean"
+          },
+          "color": {
+            "type": "string"
+          },
+          "collections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Collection"
+            }
+          },
+          "userId": {
+            "type": "number"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
+          },
+          "editors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "viewers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "public": {
+            "type": "boolean"
+          },
+          "createdDate": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedDate": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "meaning",
+          "speech",
+          "image",
+          "starred",
+          "color",
+          "collections",
+          "userId",
+          "user",
+          "editors",
+          "viewers",
+          "public",
+          "createdDate",
+          "updatedDate"
+        ]
+      },
+      "Collection": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "meaning": {
+            "type": "string"
+          },
+          "speech": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string"
+          },
+          "starred": {
+            "type": "boolean"
+          },
+          "color": {
+            "type": "string"
+          },
+          "pictos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Picto"
+            }
+          },
+          "collections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Collection"
+            }
+          },
+          "userId": {
+            "type": "number"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
+          },
+          "editors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "viewers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "public": {
+            "type": "boolean"
+          },
+          "createdDate": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedDate": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "meaning",
+          "speech",
+          "image",
+          "starred",
+          "color",
+          "pictos",
+          "collections",
+          "userId",
+          "user",
+          "editors",
+          "viewers",
+          "public",
+          "createdDate",
+          "updatedDate"
+        ]
+      },
+      "multipleSharePictoDto": {
+        "type": "object",
+        "properties": {
+          "access": {
+            "type": "number"
+          },
+          "usernames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "access",
+          "usernames",
+          "role"
+        ]
+      },
+      "createPictoDto": {
+        "type": "object",
+        "properties": {
+          "meaning": {
+            "type": "string"
+          },
+          "speech": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          },
+          "collectionIds": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "fatherCollectionId": {
+            "type": "number"
+          },
+          "share": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "meaning",
+          "speech",
+          "color",
+          "collectionIds",
+          "fatherCollectionId",
+          "share"
+        ]
+      },
+      "modifyPictoDto": {
+        "type": "object",
+        "properties": {
+          "meaning": {
+            "type": "string"
+          },
+          "speech": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          },
+          "collectionIds": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "starred": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "meaning",
+          "speech",
+          "color",
+          "collectionIds",
+          "starred"
+        ]
+      },
+      "copyPictoDto": {
+        "type": "object",
+        "properties": {
+          "pictoId": {
+            "type": "number"
+          },
+          "fatherCollectionId": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "pictoId",
+          "fatherCollectionId"
+        ]
+      },
+      "CreateUserDto": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 254
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 32
+          },
+          "language": {
+            "type": "string"
+          },
+          "languages": {
+            "type": "string"
+          },
+          "directSharers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "displayLanguage": {
+            "type": "string"
+          },
+          "publicBundleId": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "username",
+          "password",
+          "language",
+          "languages",
+          "directSharers",
+          "displayLanguage",
+          "publicBundleId"
+        ]
+      },
+      "AuthCredentialsDto": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 254
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 20
+          }
+        },
+        "required": [
+          "username",
+          "password"
+        ]
+      },
+      "ResetPasswordDto": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 254
+          }
+        },
+        "required": [
+          "username"
+        ]
+      },
+      "ChangePasswordDto": {
+        "type": "object",
+        "properties": {
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 20
+          }
+        },
+        "required": [
+          "password"
+        ]
+      },
+      "EditUserDto": {
+        "type": "object",
+        "properties": {
+          "language": {
+            "type": "string"
+          },
+          "displayLanguage": {
+            "type": "string"
+          },
+          "languages": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 32
+          },
+          "directSharers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "settings": {
+            "type": "string",
+            "maxLength": 16384
+          },
+          "mailingList": {
+            "type": "string",
+            "maxLength": 16384
+          }
+        },
+        "required": [
+          "language",
+          "displayLanguage",
+          "languages",
+          "password",
+          "directSharers",
+          "settings",
+          "mailingList"
+        ]
+      },
+      "levelCollectionDto": {
+        "type": "object",
+        "properties": {
+          "levelA": {
+            "$ref": "#/components/schemas/Collection"
+          },
+          "levelB": {
+            "$ref": "#/components/schemas/Collection"
+          },
+          "levelC": {
+            "$ref": "#/components/schemas/Collection"
+          }
+        },
+        "required": [
+          "levelA",
+          "levelB",
+          "levelC"
+        ]
+      },
+      "copyCollectionDto": {
+        "type": "object",
+        "properties": {
+          "collectionId": {
+            "type": "number"
+          },
+          "fatherCollectionId": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "collectionId",
+          "fatherCollectionId"
+        ]
+      },
+      "multipleShareCollectionDto": {
+        "type": "object",
+        "properties": {
+          "access": {
+            "type": "number"
+          },
+          "usernames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "access",
+          "usernames",
+          "role"
+        ]
+      },
+      "publicCollectionDto": {
+        "type": "object",
+        "properties": {
+          "publish": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "publish"
+        ]
+      },
+      "createCollectionDto": {
+        "type": "object",
+        "properties": {
+          "meaning": {
+            "type": "string"
+          },
+          "speech": {
+            "type": "string"
+          },
+          "pictoIds": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "collectionIds": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "color": {
+            "type": "string"
+          },
+          "fatherCollectionId": {
+            "type": "number"
+          },
+          "share": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "meaning",
+          "speech",
+          "pictoIds",
+          "collectionIds",
+          "color",
+          "fatherCollectionId",
+          "share"
+        ]
+      },
+      "modifyCollectionDto": {
+        "type": "object",
+        "properties": {
+          "meaning": {
+            "type": "string"
+          },
+          "speech": {
+            "type": "string"
+          },
+          "pictoIds": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "collectionIds": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "starred": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "meaning",
+          "speech",
+          "pictoIds",
+          "collectionIds",
+          "starred",
+          "color"
+        ]
+      },
+      "CreateFeedbackDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "evolution": {
+            "type": "string"
+          },
+          "blocking": {
+            "type": "boolean"
+          },
+          "contact": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "vuex": {
+            "type": "string"
+          },
+          "voices": {
+            "type": "string"
+          },
+          "deviceInfos": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "action",
+          "evolution",
+          "blocking",
+          "contact",
+          "description",
+          "vuex",
+          "voices",
+          "deviceInfos"
+        ]
+      },
+      "EditFeedbackDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "evolution": {
+            "type": "string"
+          },
+          "blocking": {
+            "type": "boolean"
+          },
+          "contact": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "OPENED",
+              "INPROGRESS",
+              "ONHOLD",
+              "COMPLETE"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "action",
+          "evolution",
+          "blocking",
+          "contact",
+          "description",
+          "state"
+        ]
+      },
+      "Feedback": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "title": {
+            "type": "string"
+          },
+          "date": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "blocking": {
+            "type": "boolean"
+          },
+          "contact": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "evolution": {
+            "type": "string"
+          },
+          "vuex": {
+            "type": "string"
+          },
+          "voices": {
+            "type": "string"
+          },
+          "deviceInfos": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "OPENED",
+              "INPROGRESS",
+              "ONHOLD",
+              "COMPLETE"
+            ]
+          },
+          "createdDate": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedDate": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "date",
+          "blocking",
+          "contact",
+          "action",
+          "description",
+          "evolution",
+          "vuex",
+          "voices",
+          "deviceInfos",
+          "state",
+          "createdDate",
+          "updatedDate"
+        ]
+      }
+    }
+  }
+}
