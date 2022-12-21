@@ -1,5 +1,4 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from 'src/auth/auth.module';
 import { PictoModule } from 'src/picto/picto.module';
 import { TypeOrmExModule } from 'src/utilities/typeorm-ex.module';

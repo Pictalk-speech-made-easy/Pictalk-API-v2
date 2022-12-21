@@ -1,7 +1,6 @@
 import { InternalServerErrorException } from "@nestjs/common";
-import { User } from "src/entities/user.entity";
 import { CustomRepository } from "src/utilities/typeorm-ex.decorator";
-import { EntityRepository, Repository } from "typeorm";
+import { Repository } from "typeorm";
 import { CreateFeedbackDto } from "./dto/create.feedback.dto";
 import { EditFeedbackDto } from "./dto/edit.feedback.dto";
 import { SearchFeedbackDto } from "./dto/search.feedback.dto";
