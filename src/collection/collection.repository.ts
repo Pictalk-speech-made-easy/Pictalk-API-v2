@@ -3,13 +3,14 @@ import { Collection } from "src/entities/collection.entity";
 import { Picto } from "src/entities/picto.entity";
 import { User } from "src/entities/user.entity";
 import { parseNumberArray } from "src/utilities/tools";
+import { CustomRepository } from "src/utilities/typeorm-ex.decorator";
 import { EntityRepository, Repository } from "typeorm";
 import { createCollectionDto } from "./dto/collection.create.dto";
 import { modifyCollectionDto } from "./dto/collection.modify.dto";
 import { SearchCollectionDto } from "./dto/collection.search.public.dto";
 import { multipleShareCollectionDto, shareCollectionDto } from "./dto/collection.share.dto";
 
-@EntityRepository(Collection)
+@CustomRepository(Collection)
 export class CollectionRepository extends Repository<Collection>{
     async createCollection(createCollectionDto: createCollectionDto, user: User, filename: string): Promise<Collection> {
         let { meaning, speech, pictoIds, collectionIds, color } = createCollectionDto;

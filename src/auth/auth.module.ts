@@ -8,10 +8,11 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './jwt.strategy';
 import { CollectionModule } from 'src/collection/collection.module';
 import * as config from 'config';
+import { TypeOrmExModule } from 'src/utilities/typeorm-ex.module';
 const jwtConfig = config.get('jwt');
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserRepository]),
+    TypeOrmExModule.forCustomRepository([UserRepository]),
     PassportModule.register({ defaultStrategy: 'jwt'}),
     JwtModule.register({
       secret: process.env.JWT_SECRET || jwtConfig.secret,

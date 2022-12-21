@@ -14,14 +14,12 @@ import sgMail = require('@sendgrid/mail');
 import { randomBytes } from "crypto";
 import { Validation } from "./dto/user-validation.dto";
 import { resetPassword, welcome } from "src/utilities/emails";
-
-@Injectable()
+import { CustomRepository } from "src/utilities/typeorm-ex.decorator";
+sgMail.setApiKey(process.env.SENDGRID_KEY);
+@CustomRepository(User)
 export class UserRepository extends Repository<User> {
     private logger = new Logger('AuthService');
-    constructor(private dataSource: DataSource) {
-      super(User, dataSource.createEntityManager());
-      sgMail.setApiKey(process.env.SENDGRID_KEY);
-    }
+    
     async signUp(createUserDto: CreateUserDto): Promise<User> {
         const { username, password, language, directSharers, languages, displayLanguage } = createUserDto;
         const validationToken = randomBytes(20).toString('hex');

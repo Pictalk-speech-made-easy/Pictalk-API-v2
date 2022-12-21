@@ -1,5 +1,6 @@
 import { InternalServerErrorException } from "@nestjs/common";
 import { User } from "src/entities/user.entity";
+import { CustomRepository } from "src/utilities/typeorm-ex.decorator";
 import { EntityRepository, Repository } from "typeorm";
 import { CreateFeedbackDto } from "./dto/create.feedback.dto";
 import { EditFeedbackDto } from "./dto/edit.feedback.dto";
@@ -7,7 +8,7 @@ import { SearchFeedbackDto } from "./dto/search.feedback.dto";
 import { Feedback } from "./entities/feedback.entity";
 import { FeedbackState } from "./entities/feedbackstate.enum";
 
-@EntityRepository(Feedback)
+@CustomRepository(Feedback)
 export class FeedbackRepository extends Repository<Feedback>{
     async createFeedback(createFeedbackDto: CreateFeedbackDto) {
         let { title, description, contact, deviceInfos, voices, vuex, action, blocking, evolution } = createFeedbackDto;
