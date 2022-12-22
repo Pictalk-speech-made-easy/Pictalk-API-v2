@@ -317,30 +317,26 @@ export class CollectionService {
     }
 
     async moveToCollection(user: User, moveToCollectionDto: MoveToCollectionDto, fatherCollectionId: number): Promise<Collection> {
-        try {
-            const targetCollection = await this.getCollectionById(moveToCollectionDto.targetCollecionId, user);
-            if (moveToCollectionDto.sourceCollecionId) {
-                const modifyCollection = new modifyCollectionDto()
-                modifyCollection.collectionIds = targetCollection.collections.map(collection => collection.id);
-                modifyCollection.collectionIds.push(moveToCollectionDto.sourceCollecionId)
-                const deleteCollection = new deleteCollectionDto()
-                deleteCollection.collectionId = Number(moveToCollectionDto.sourceCollecionId);
-                deleteCollection.fatherId = fatherCollectionId;
-                await this.collectionRepository.modifyCollection(targetCollection, modifyCollection, user, null)
-                await this.deleteCollection(deleteCollection, user)
-            } else if (moveToCollectionDto.sourcePictoId) {
-                const modifyCollection = new modifyCollectionDto();
-                modifyCollection.pictoIds = targetCollection.pictos.map(collection => collection.id);
-                modifyCollection.pictoIds.push(moveToCollectionDto.sourcePictoId);
-                const deletePicto = new deletePictoDto();
-                deletePicto.fatherId = fatherCollectionId;
-                deletePicto.pictoId = Number(moveToCollectionDto.sourcePictoId);
-                await this.collectionRepository.modifyCollection(targetCollection, modifyCollection, user, null)
-                await this.pictoService.deletePicto(deletePicto, user)
-            }
-            return await this.getCollectionById(fatherCollectionId, user);
-        } catch (err) {
-            console.log(err);
+        const targetCollection = await this.getCollectionById(moveToCollectionDto.targetCollectionId, user);
+        if (moveToCollectionDto.sourceCollectionId) {
+            const modifyCollection = new modifyCollectionDto()
+            modifyCollection.collectionIds = targetCollection.collections.map(collection => collection.id);
+            modifyCollection.collectionIds.push(moveToCollectionDto.sourceCollectionId)
+            const deleteCollection = new deleteCollectionDto()
+            deleteCollection.collectionId = Number(moveToCollectionDto.sourceCollectionId);
+            deleteCollection.fatherId = fatherCollectionId;
+            await this.collectionRepository.modifyCollection(targetCollection, modifyCollection, user, null)
+            await this.deleteCollection(deleteCollection, user)
+        } else if (moveToCollectionDto.sourcePictoId) {
+            const modifyCollection = new modifyCollectionDto();
+            modifyCollection.pictoIds = targetCollection.pictos.map(collection => collection.id);
+            modifyCollection.pictoIds.push(moveToCollectionDto.sourcePictoId);
+            const deletePicto = new deletePictoDto();
+            deletePicto.fatherId = fatherCollectionId;
+            deletePicto.pictoId = Number(moveToCollectionDto.sourcePictoId);
+            await this.collectionRepository.modifyCollection(targetCollection, modifyCollection, user, null)
+            await this.pictoService.deletePicto(deletePicto, user)
         }
+        return await this.getCollectionById(fatherCollectionId, user);
     }
 }

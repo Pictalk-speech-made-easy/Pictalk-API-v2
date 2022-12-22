@@ -226,7 +226,7 @@ export class CollectionController {
   @Put('/move/:id')
   @UsePipes(ValidationPipe)
   async moveToCollection(@Param('id', ParseIntPipe) fatherCollectionId: number, @GetUser() user: User, @Body() moveToCollectionDto: MoveToCollectionDto): Promise<Collection>{
-    this.logger.verbose(`User "${user.username}" Moving Collection ${moveToCollectionDto.sourceCollecionId} or Picto ${moveToCollectionDto.sourcePictoId} to ${moveToCollectionDto.targetCollecionId}`);
+    this.logger.verbose(`User "${user.username}" Moving Collection ${moveToCollectionDto.sourceCollectionId} or Picto ${moveToCollectionDto.sourcePictoId} to ${moveToCollectionDto.targetCollectionId}`);
     return this.collectionService.moveToCollection(user, moveToCollectionDto, fatherCollectionId);
   }
 }

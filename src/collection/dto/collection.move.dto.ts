@@ -10,9 +10,9 @@ export class MoveToCollectionDto {
     @ApiProperty()
     @IsOptional()
     @IsNumberString()
-    sourceCollecionId: number;
+    sourceCollectionId: number;
 
     @ApiProperty()
     @IsNumberString()
-    targetCollecionId: number;
+    targetCollectionId: number;
 }
