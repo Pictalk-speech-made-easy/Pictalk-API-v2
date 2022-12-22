@@ -108,7 +108,7 @@ export class CollectionRepository extends Repository<Collection>{
 
     async createRoot(user: User): Promise<number>{
         if(user.root===null){
-            const name = user.username.split('@')[0];
+            const name = user.username.split('@')[0]?.replace(/[^a-zA-Z]/gi, '');
             const root = new Collection();
             root.meaning = JSON.stringify({
                 en: name + meaningRoot.en, 
