@@ -161,7 +161,6 @@ export class CollectionService {
         }));
         sharers = sharers.filter(Boolean);
         multipleShareCollectionDto.usernames = sharers.map(sharer => {return sharer.username});
-        console.log(sharers);
         if(sharers.length>0){
             const collection=await this.getCollectionById(id, user);
             if(collection){

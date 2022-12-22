@@ -42,7 +42,7 @@ export class AuthController {
         }
           await this.collectionService.modifyCollection(rootId, user, modifyCollectionDto, null);
         }
-        if (user.directSharers) {
+        if (user.directSharers.length != 0) {
           const multipleShareCollectionDto: multipleShareCollectionDto = { access: 1, usernames: user.directSharers, role: 'editor'}
           await this.collectionService.shareCollectionVerification(rootId, user, multipleShareCollectionDto);
         }

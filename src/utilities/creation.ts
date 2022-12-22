@@ -92,3 +92,34 @@ export const stringifyMap = (myMap) => {
 }
 
 export const defaultSettings = JSON.stringify({pronounceClick: true, securityMode: true, returnWithoutRemove: false, travelMode: false});
+
+export function generateAvatar(text, foregroundColor, backgroundColor) {
+    const { createCanvas } = require('canvas');
+    const canvas = createCanvas(200, 200);
+    const context = canvas.getContext("2d");
+
+    canvas.width = 200;
+    canvas.height = 200;
+
+    // Draw background
+    context.fillStyle = backgroundColor;
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw text
+    context.font = "bold 100px Assistant";
+    context.fillStyle = foregroundColor;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillText(text, canvas.width / 2, canvas.height / 2);
+
+    return canvas.toBuffer('image/png');
+}
+
+export function generateRandomColor(){
+    let maxVal: any = 0xFFFFFF; // 16777215
+    let randomNumber: any = Math.random() * maxVal; 
+    randomNumber = Math.floor(randomNumber);
+    randomNumber = randomNumber.toString(16);
+    let randColor = randomNumber.padStart(6, 0);   
+    return `#${randColor.toUpperCase()}`
+}

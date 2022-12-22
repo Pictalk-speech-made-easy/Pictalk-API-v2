@@ -1,3 +1,4 @@
+import { meaningRoot } from './../utilities/meaning';
 import { BadRequestException, ForbiddenException, InternalServerErrorException, NotFoundException } from "@nestjs/common";
 import { Collection } from "src/entities/collection.entity";
 import { Picto } from "src/entities/picto.entity";
@@ -8,7 +9,8 @@ import { createCollectionDto } from "./dto/collection.create.dto";
 import { modifyCollectionDto } from "./dto/collection.modify.dto";
 import { SearchCollectionDto } from "./dto/collection.search.public.dto";
 import { multipleShareCollectionDto, shareCollectionDto } from "./dto/collection.share.dto";
-
+import { generateAvatar, generateRandomColor } from 'src/utilities/creation';
+import { writeFileSync } from "fs";
 @EntityRepository(Collection)
 export class CollectionRepository extends Repository<Collection>{
     async createCollection(createCollectionDto: createCollectionDto, user: User, filename: string): Promise<Collection> {
@@ -106,10 +108,32 @@ export class CollectionRepository extends Repository<Collection>{
 
     async createRoot(user: User): Promise<number>{
         if(user.root===null){
+            const name = user.username.split('@')[0];
             const root = new Collection();
-            root.meaning = "";
-            root.speech = "";
+            root.meaning = JSON.stringify({
+                en: name + meaningRoot.en, 
+                fr: meaningRoot.fr+ name, 
+                es: meaningRoot.es + name,
+                it: meaningRoot.it + name,
+                de: name + meaningRoot.de,
+                ro: meaningRoot.ro + name,
+                po: meaningRoot.po + name,
+                el: meaningRoot.el + name,
+            });
+            root.speech = JSON.stringify({
+                en: name + meaningRoot.en, 
+                fr: meaningRoot.fr+ name, 
+                es: meaningRoot.es + name,
+                it: meaningRoot.it + name,
+                de: name + meaningRoot.de,
+                ro: meaningRoot.ro + name,
+                po: meaningRoot.po + name,
+                el: meaningRoot.el + name,
+            });
             root.userId = user.id;
+            const avatarPng = generateAvatar(name.slice(0, 2), generateRandomColor(), "#FFFFFF");
+            writeFileSync(`./files/${user.username}.png`, avatarPng);
+            root.image = `${user.username}.png`;
             try {
                 await root.save();
             } catch (error) {
