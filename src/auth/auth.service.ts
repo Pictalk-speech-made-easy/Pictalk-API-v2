@@ -28,7 +28,7 @@ export class AuthService {
                 const user = await this.findWithUsername(createUserDto.directSharers[i]);
                 const exists = await this.verifyExistence(user);
                 if(!exists){
-                    createUserDto.directSharers.splice(i);
+                    createUserDto.directSharers.splice(i, 1);
                 }
             }
         }

@@ -181,7 +181,7 @@ export class CollectionRepository extends Repository<Collection>{
                 if(role==='editor'){
                     index = collection.viewers.indexOf(username);
                     if(index!=-1){
-                        collection.viewers.splice(index);
+                        collection.viewers.splice(index, 1);
                     }
                     index = collection.editors.indexOf(username);
                     if(!(index!=-1)){
@@ -190,7 +190,7 @@ export class CollectionRepository extends Repository<Collection>{
                 } else if(role==='viewer'){
                     index = collection.editors.indexOf(username);
                     if(index!=-1){
-                        collection.editors.splice(index);
+                        collection.editors.splice(index, 1);
                     }
                     index = collection.viewers.indexOf(username);
                     if((index==-1)){
@@ -202,11 +202,11 @@ export class CollectionRepository extends Repository<Collection>{
             } else {
                 index = collection.viewers.indexOf(username);
                 if(index!=-1){
-                    collection.viewers.splice(index);
+                    collection.viewers.splice(index, 1);
                 }
                 index = collection.editors.indexOf(username);
                 if(index!=-1){
-                    collection.editors.splice(index);
+                    collection.editors.splice(index, 1);
                 }
             }
         }
@@ -226,7 +226,7 @@ export class CollectionRepository extends Repository<Collection>{
                 if(role==='editor'){
                     index = picto.viewers.indexOf(username);
                     if(index!=-1){
-                        picto.viewers.splice(index);
+                        picto.viewers.splice(index, 1);
                     }
                     index = picto.editors.indexOf(username);
                     if(!(index!=-1)){
@@ -235,7 +235,7 @@ export class CollectionRepository extends Repository<Collection>{
                 } else if(role==='viewer'){
                     index = picto.editors.indexOf(username);
                     if(index!=-1){
-                        picto.editors.splice(index);
+                        picto.editors.splice(index, 1);
                     }
                     index = picto.editors.indexOf(username);
                     if(!(index!=-1)){
@@ -247,11 +247,11 @@ export class CollectionRepository extends Repository<Collection>{
             } else {
                 index = picto.viewers.indexOf(username);
                 if(index!=-1){
-                    picto.viewers.splice(index);
+                    picto.viewers.splice(index, 1);
                 }
                 index = picto.editors.indexOf(username);
                 if(index!=-1){
-                    picto.editors.splice(index);
+                    picto.editors.splice(index, 1);
                 }
             }
         }

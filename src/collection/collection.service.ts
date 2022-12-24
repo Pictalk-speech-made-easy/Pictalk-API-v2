@@ -56,14 +56,14 @@ export class CollectionService {
             viewer = collection.collections[index].viewers.indexOf(user.username);
             editor = collection.collections[index].editors.indexOf(user.username);
             if(collection.collections[index].public === false && viewer ===-1 && editor ===-1 && collection.collections[index].userId != user.id){
-                collection.collections.splice(index);
+                collection.collections.splice(index, 1);
             }   
         }
         for(let index = 0; index < collection.pictos.length; index++){
             viewer = collection.pictos[index].viewers.indexOf(user.username);
             editor = collection.pictos[index].editors.indexOf(user.username);
             if(collection.pictos[index].public === false && viewer ===-1 && editor ===-1 && collection.pictos[index].userId != user.id){
-                collection.pictos.splice(index);
+                collection.pictos.splice(index, 1);
             }   
         }
         return collection;

@@ -80,7 +80,7 @@ export class PictoRepository extends Repository<Picto> {
             if(role==='editor'){
                 index = picto.viewers.indexOf(username);
                 if(index!=-1){
-                    picto.viewers.splice(index);
+                    picto.viewers.splice(index, 1);
                 }
                 index = picto.editors.indexOf(username);
                 if(!(index!=-1)){
@@ -89,7 +89,7 @@ export class PictoRepository extends Repository<Picto> {
             } else if(role==='viewer'){
                 index = picto.editors.indexOf(username);
                 if(index!=-1){
-                    picto.editors.splice(index);
+                    picto.editors.splice(index, 1);
                 }
                 index = picto.viewers.indexOf(username);
                 if(!(index!=-1)){
@@ -101,11 +101,11 @@ export class PictoRepository extends Repository<Picto> {
         } else {
             index = picto.viewers.indexOf(username);
             if(index!=-1){
-                picto.viewers.splice(index);
+                picto.viewers.splice(index, 1);
             }
             index = picto.editors.indexOf(username);
             if(index!=-1){
-                picto.editors.splice(index);
+                picto.editors.splice(index, 1);
             }
         }
         return picto;
