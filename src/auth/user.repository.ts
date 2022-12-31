@@ -1,5 +1,5 @@
 import { Repository } from "typeorm";
-import { ConflictException, ForbiddenException, Injectable, IntrnalServerErrorException, Logger, UnauthorizedException } from "@nestjs/common";
+import { ConflictException, ForbiddenException, Injectable, InternalServerErrorException, Logger, UnauthorizedException } from "@nestjs/common";
 import * as bcrypt from 'bcrypt';
 import { AuthCredentialsDto } from "./dto/auth-credentials.dto";
 import { User } from "src/entities/user.entity";
