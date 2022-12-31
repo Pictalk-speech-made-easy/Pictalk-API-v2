@@ -21,7 +21,6 @@ import { languageMapping } from 'src/utilities/supported.languages';
 const client = createClient('563492ad6f9170000100000141844035a31b4fe8acba00dfd6436b14');
 
 @Controller('image')
-@UseInterceptors(CacheInterceptor)
 export class ImageController {
   constructor(private httpService: HttpService) {}
   private flickrAPIKey = process.env.FLICKR_API_KEY;
@@ -38,6 +37,7 @@ export class ImageController {
   }
 
   @Get('/web/')
+  @UseInterceptors(CacheInterceptor)
   @UseGuards(AuthGuard())
   async searchImages(@Query(ValidationPipe) filterDto: FilterDto): Promise<WebImage[]> {
     let webImages : WebImage[]= [];
