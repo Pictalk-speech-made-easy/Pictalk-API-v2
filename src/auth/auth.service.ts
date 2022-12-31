@@ -28,7 +28,7 @@ export class AuthService {
                 const user = await this.findWithUsername(createUserDto.directSharers[i]);
                 const exists = await this.verifyExistence(user);
                 if(!exists){
-                    createUserDto.directSharers.splice(i);
+                    createUserDto.directSharers.splice(i, 1);
                 }
             }
         }
@@ -80,6 +80,15 @@ export class AuthService {
     }
 
     async editUser(user: User, editUserDto: EditUserDto): Promise<User> {
+        if(editUserDto.directSharers){
+            for(let i=0; i<editUserDto.directSharers.length; i++){
+                const user = await this.findWithUsername(editUserDto.directSharers[i]);
+                const exists = await this.verifyExistence(user);
+                if(!exists){
+                    editUserDto.directSharers.splice(i);
+                }
+            }
+        }
     return this.userRepository.editUser(user, editUserDto);
     }
     async getUserDetails(user: User): Promise<User> {

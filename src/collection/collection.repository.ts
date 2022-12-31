@@ -1,3 +1,4 @@
+import { meaningRoot } from './../utilities/meaning';
 import { BadRequestException, ForbiddenException, InternalServerErrorException, NotFoundException } from "@nestjs/common";
 import { Collection } from "src/entities/collection.entity";
 import { Picto } from "src/entities/picto.entity";
@@ -8,9 +9,11 @@ import { Repository } from "typeorm";
 import { createCollectionDto } from "./dto/collection.create.dto";
 import { modifyCollectionDto } from "./dto/collection.modify.dto";
 import { SearchCollectionDto } from "./dto/collection.search.public.dto";
-import { multipleShareCollectionDto } from "./dto/collection.share.dto";
-
+import { multipleShareCollectionDto, shareCollectionDto } from "./dto/collection.share.dto";
+import { generateAvatar, generateRandomColor } from 'src/utilities/creation';
+import { writeFileSync } from "fs";
 @CustomRepository(Collection)
+
 export class CollectionRepository extends Repository<Collection>{
     async createCollection(createCollectionDto: createCollectionDto, user: User, filename: string): Promise<Collection> {
         let { meaning, speech, pictoIds, collectionIds, color } = createCollectionDto;
@@ -107,10 +110,32 @@ export class CollectionRepository extends Repository<Collection>{
 
     async createRoot(user: User): Promise<number>{
         if(user.root===null){
+            const name = user.username.split('@')[0]?.replace(/[^a-zA-Z]/gi, '');
             const root = new Collection();
-            root.meaning = "";
-            root.speech = "";
+            root.meaning = JSON.stringify({
+                en: name + meaningRoot.en, 
+                fr: meaningRoot.fr+ name, 
+                es: meaningRoot.es + name,
+                it: meaningRoot.it + name,
+                de: name + meaningRoot.de,
+                ro: meaningRoot.ro + name,
+                po: meaningRoot.po + name,
+                el: meaningRoot.el + name,
+            });
+            root.speech = JSON.stringify({
+                en: name + meaningRoot.en, 
+                fr: meaningRoot.fr+ name, 
+                es: meaningRoot.es + name,
+                it: meaningRoot.it + name,
+                de: name + meaningRoot.de,
+                ro: meaningRoot.ro + name,
+                po: meaningRoot.po + name,
+                el: meaningRoot.el + name,
+            });
             root.userId = user.id;
+            const avatarPng = generateAvatar(name.slice(0, 2), generateRandomColor(), "#FFFFFF");
+            writeFileSync(`./files/${user.username}.png`, avatarPng);
+            root.image = `${user.username}.png`;
             try {
                 await root.save();
             } catch (error) {
@@ -182,7 +207,7 @@ export class CollectionRepository extends Repository<Collection>{
                 if(role==='editor'){
                     index = collection.viewers.indexOf(username);
                     if(index!=-1){
-                        collection.viewers.splice(index);
+                        collection.viewers.splice(index, 1);
                     }
                     index = collection.editors.indexOf(username);
                     if(!(index!=-1)){
@@ -191,7 +216,7 @@ export class CollectionRepository extends Repository<Collection>{
                 } else if(role==='viewer'){
                     index = collection.editors.indexOf(username);
                     if(index!=-1){
-                        collection.editors.splice(index);
+                        collection.editors.splice(index, 1);
                     }
                     index = collection.viewers.indexOf(username);
                     if((index==-1)){
@@ -203,11 +228,11 @@ export class CollectionRepository extends Repository<Collection>{
             } else {
                 index = collection.viewers.indexOf(username);
                 if(index!=-1){
-                    collection.viewers.splice(index);
+                    collection.viewers.splice(index, 1);
                 }
                 index = collection.editors.indexOf(username);
                 if(index!=-1){
-                    collection.editors.splice(index);
+                    collection.editors.splice(index, 1);
                 }
             }
         }
@@ -227,7 +252,7 @@ export class CollectionRepository extends Repository<Collection>{
                 if(role==='editor'){
                     index = picto.viewers.indexOf(username);
                     if(index!=-1){
-                        picto.viewers.splice(index);
+                        picto.viewers.splice(index, 1);
                     }
                     index = picto.editors.indexOf(username);
                     if(!(index!=-1)){
@@ -236,7 +261,7 @@ export class CollectionRepository extends Repository<Collection>{
                 } else if(role==='viewer'){
                     index = picto.editors.indexOf(username);
                     if(index!=-1){
-                        picto.editors.splice(index);
+                        picto.editors.splice(index, 1);
                     }
                     index = picto.editors.indexOf(username);
                     if(!(index!=-1)){
@@ -248,11 +273,11 @@ export class CollectionRepository extends Repository<Collection>{
             } else {
                 index = picto.viewers.indexOf(username);
                 if(index!=-1){
-                    picto.viewers.splice(index);
+                    picto.viewers.splice(index, 1);
                 }
                 index = picto.editors.indexOf(username);
                 if(index!=-1){
-                    picto.editors.splice(index);
+                    picto.editors.splice(index, 1);
                 }
             }
         }

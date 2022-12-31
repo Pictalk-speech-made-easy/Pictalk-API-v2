@@ -13,7 +13,7 @@ export const getArrayIfNeeded = function(input) {
 export const parseNumberArray = function(input) {
   let index = input.indexOf(null);
   while(index!=-1){
-    input.splice(index)
+    input.splice(index, 1);
     index = input.indexOf(null);
   }
   return input.map(inputString => {return +inputString;})

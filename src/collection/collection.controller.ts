@@ -18,6 +18,7 @@ import { copyCollectionDto } from './dto/collection.copy.dto';
 import { SearchCollectionDto } from './dto/collection.search.public.dto';
 import { OptionnalAuth } from 'src/auth/optionnal_auth.guard';
 import { levelCollectionDto } from './dto/collection.level.dto';
+import { MoveToCollectionDto } from './dto/collection.move.dto';
 
 @Controller('collection')
 export class CollectionController {
@@ -219,5 +220,13 @@ export class CollectionController {
       this.logger.verbose(`User "${user.username}"Made a bad request where Object has either invalid attributes or "meaning" and "speech" don't have the same length`);
       throw new BadRequestException(`Object is invalid, should be "{language <xx-XX> : text <string>} and both should have same length`);
     }
+  }
+
+  @UseGuards(AuthGuard())
+  @Put('/move/:id')
+  @UsePipes(ValidationPipe)
+  async moveToCollection(@Param('id', ParseIntPipe) fatherCollectionId: number, @GetUser() user: User, @Body() moveToCollectionDto: MoveToCollectionDto): Promise<Collection>{
+    this.logger.verbose(`User "${user.username}" Moving Collection ${moveToCollectionDto.sourceCollectionId} or Picto ${moveToCollectionDto.sourcePictoId} to ${moveToCollectionDto.targetCollectionId}`);
+    return this.collectionService.moveToCollection(user, moveToCollectionDto, fatherCollectionId);
   }
 }

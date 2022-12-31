@@ -1,3 +1,4 @@
+import { multipleShareCollectionDto } from './../collection/dto/collection.share.dto';
 import { BadRequestException, Body, Controller, Delete, forwardRef, Get, Inject, Logger, NotFoundException, Param, Post, Put, UseGuards, ValidationPipe } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
@@ -40,6 +41,10 @@ export class AuthController {
           pictoIds: pictoIdsFromBundle
         }
           await this.collectionService.modifyCollection(rootId, user, modifyCollectionDto, null);
+        }
+        if (user.directSharers.length != 0) {
+          const multipleShareCollectionDto: multipleShareCollectionDto = { access: 1, usernames: user.directSharers, role: 'editor'}
+          await this.collectionService.shareCollectionVerification(rootId, user, multipleShareCollectionDto);
         }
         console.log(await this.collectionService.getCollectionById(rootId, user))
         return;
@@ -120,7 +125,7 @@ export class AuthController {
   
     @Put('user/details')
     @UseGuards(AuthGuard())
-    editUser(
+    async editUser(
       @GetUser() user: User,
       @Body(ValidationPipe) editUserDto: EditUserDto,
     ): Promise<User> {
@@ -139,7 +144,12 @@ export class AuthController {
         }
       }
       this.logger.verbose(`User "${user.username}" is trying to modify Details`);
-      return this.authService.editUser(user, editUserDto);
+      const editedUser = await this.authService.editUser(user, editUserDto);
+      if (editedUser.directSharers.length != 0) {
+        const multipleShareCollectionDto: multipleShareCollectionDto = { access: 1, usernames: user.directSharers, role: 'editor'}
+        await this.collectionService.shareCollectionVerification(editedUser.root, editedUser, multipleShareCollectionDto);
+      }
+      return editedUser;
     }
 
     @UseGuards(AuthGuard())
