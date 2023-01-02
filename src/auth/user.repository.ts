@@ -1,5 +1,5 @@
-import { EntityRepository, Repository } from "typeorm";
-import { ConflictException, ForbiddenException, InternalServerErrorException, Logger, UnauthorizedException } from "@nestjs/common";
+import { Repository } from "typeorm";
+import { ConflictException, ForbiddenException, Injectable, InternalServerErrorException, Logger, UnauthorizedException } from "@nestjs/common";
 import * as bcrypt from 'bcrypt';
 import { AuthCredentialsDto } from "./dto/auth-credentials.dto";
 import { User } from "src/entities/user.entity";
@@ -14,14 +14,12 @@ import sgMail = require('@sendgrid/mail');
 import { randomBytes } from "crypto";
 import { Validation } from "./dto/user-validation.dto";
 import { resetPassword, welcome } from "src/utilities/emails";
+import { CustomRepository } from "src/utilities/typeorm-ex.decorator";
 
-@EntityRepository(User)
+@CustomRepository(User)
 export class UserRepository extends Repository<User> {
     private logger = new Logger('AuthService');
-    constructor() {
-      super();
-      sgMail.setApiKey(process.env.SENDGRID_KEY);
-    }
+    private sgmail = sgMail.setApiKey(process.env.SENDGRID_KEY);
     async signUp(createUserDto: CreateUserDto): Promise<User> {
         const { username, password, language, directSharers, languages, displayLanguage } = createUserDto;
         const validationToken = randomBytes(20).toString('hex');
@@ -109,7 +107,9 @@ export class UserRepository extends Repository<User> {
 
     async validateUserPassword(authCredentialsDto: AuthCredentialsDto): Promise<Validation> {
         const {username, password} = authCredentialsDto;
-        const user = await this.findOne({ username });
+        const user = await this.findOne({ where: {
+          username,
+        }, });
         if(user && await user.validatePassword(password)){
             return new Validation(user.username, user.validationToken);
         } else{
@@ -141,7 +141,9 @@ export class UserRepository extends Repository<User> {
         resetTokenExpiration: string,
       ): Promise<void> {
         const { username } = resetPasswordDto;
-        const user = await this.findOne({ username });
+        const user = await this.findOne({ where: {
+          username,
+        }, });
         if (!user) {
           return;
         }
