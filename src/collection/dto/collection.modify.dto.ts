@@ -26,8 +26,8 @@ export class modifyCollectionDto {
 
     @ApiProperty()
     @IsOptional()
-    @IsBooleanString()
-    starred : string;
+    @IsNumberString()
+    priority : number;
 
     @ApiProperty()
     @IsOptional()

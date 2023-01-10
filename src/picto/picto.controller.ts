@@ -94,7 +94,7 @@ export class PictoController {
               meaning : null,
               speech : null,
               collectionIds : null,
-              starred : null,
+              priority : 10,
               color : null,
               pictoIds : fatherPictosIds}
             this.collectionService.modifyCollection(createPictoDto.fatherCollectionId, user, modifyCollectionDto, null);

@@ -92,7 +92,7 @@ export class PictoService {
                 meaning : null,
                 speech : null,
                 collectionIds : null,
-                starred : null,
+                priority : 10,
                 color : null,
                 pictoIds : fatherPictosIds
             }

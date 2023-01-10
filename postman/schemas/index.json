@@ -1282,8 +1282,8 @@
           "image": {
             "type": "string"
           },
-          "starred": {
-            "type": "boolean"
+          "priority": {
+            "type": "number"
           },
           "color": {
             "type": "string"
@@ -1329,7 +1329,7 @@
           "meaning",
           "speech",
           "image",
-          "starred",
+          "priority",
           "color",
           "collections",
           "userId",
@@ -1356,8 +1356,8 @@
           "image": {
             "type": "string"
           },
-          "starred": {
-            "type": "boolean"
+          "priority": {
+            "type": "number"
           },
           "color": {
             "type": "string"
@@ -1409,7 +1409,7 @@
           "meaning",
           "speech",
           "image",
-          "starred",
+          "priority",
           "color",
           "pictos",
           "collections",
@@ -1496,8 +1496,8 @@
               "type": "number"
             }
           },
-          "starred": {
-            "type": "string"
+          "priority": {
+            "type": "number"
           }
         },
         "required": [
@@ -1505,7 +1505,7 @@
           "speech",
           "color",
           "collectionIds",
-          "starred"
+          "priority"
         ]
       },
       "copyPictoDto": {
@@ -1781,8 +1781,8 @@
               "type": "number"
             }
           },
-          "starred": {
-            "type": "string"
+          "priority": {
+            "type": "number"
           },
           "color": {
             "type": "string"
@@ -1793,7 +1793,7 @@
           "speech",
           "pictoIds",
           "collectionIds",
-          "starred",
+          "priority",
           "color"
         ]
       },

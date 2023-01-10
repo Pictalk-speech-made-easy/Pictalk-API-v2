@@ -46,7 +46,7 @@ export class CollectionRepository extends Repository<Collection>{
     }
 
     async modifyCollection(collection: Collection, modifyCollectionDto: modifyCollectionDto, user: User, filename: string): Promise<Collection>{
-        let {meaning, speech, starred, pictoIds, collectionIds, color}= modifyCollectionDto;
+        let {meaning, speech, priority, pictoIds, collectionIds, color}= modifyCollectionDto;
         if(meaning){
             collection.meaning = meaning;
         }
@@ -56,8 +56,8 @@ export class CollectionRepository extends Repository<Collection>{
         if(filename){
             collection.image = filename;
         }  
-        if(starred){
-            collection.starred = (starred=="true");
+        if(priority){
+            collection.priority = priority;
         }
         if(pictoIds){
             pictoIds=parseNumberArray(pictoIds);

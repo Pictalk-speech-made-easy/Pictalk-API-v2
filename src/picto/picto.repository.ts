@@ -35,7 +35,7 @@ export class PictoRepository extends Repository<Picto> {
     }
 
     async modifyPicto(picto: Picto, modifyPictoDto: modifyPictoDto, user: User, filename: string): Promise<Picto> {
-        let { meaning, speech, collectionIds, starred, color} = modifyPictoDto;
+        let { meaning, speech, collectionIds, priority, color} = modifyPictoDto;
         if(meaning){
             picto.meaning = meaning;
         }
@@ -52,8 +52,8 @@ export class PictoRepository extends Repository<Picto> {
             collectionIds=parseNumberArray(collectionIds);
             picto.collections = collectionIds.map(collectionIds => ({ id: collectionIds } as any));
         }
-        if(starred){
-            picto.starred = (starred=="true");
+        if(priority){
+            picto.priority = priority;
         }
         await picto.save();
         //delete picto.user;

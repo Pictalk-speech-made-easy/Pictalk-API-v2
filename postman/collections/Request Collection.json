@@ -585,7 +585,7 @@
 									"    pm.environment.set(\"collectionId\", jsonData.id);",
 									"    pm.expect(JSON.parse(jsonData.meaning)).to.eql(JSON.parse(pm.environment.get(\"collectionMeaningModified\")));",
 									"    pm.expect(JSON.parse(jsonData.speech)).to.eql(JSON.parse(pm.environment.get(\"collectionMeaningModified\")));",
-									"    pm.expect(jsonData.starred).to.eql(true);",
+									"    pm.expect(jsonData.priority).to.eql(1);",
 									"});"
 								],
 								"type": "text/javascript"
@@ -629,8 +629,8 @@
 									"disabled": true
 								},
 								{
-									"key": "starred",
-									"value": "true",
+									"key": "priority",
+									"value": "1",
 									"type": "text"
 								},
 								{
@@ -1134,7 +1134,7 @@
 									"    pm.environment.set(\"collectionId\", jsonData.id);",
 									"    pm.expect(JSON.parse(jsonData.meaning)).to.eql(JSON.parse(pm.environment.get(\"collectionMeaningModified\")));",
 									"    pm.expect(JSON.parse(jsonData.speech)).to.eql(JSON.parse(pm.environment.get(\"collectionMeaningModified\")));",
-									"    pm.expect(jsonData.starred).to.eql(true);",
+									"    pm.expect(jsonData.priority).to.eql(1);",
 									"});"
 								],
 								"type": "text/javascript"
@@ -1178,7 +1178,7 @@
 									"disabled": true
 								},
 								{
-									"key": "starred",
+									"key": "priority",
 									"value": "true",
 									"type": "text"
 								},
