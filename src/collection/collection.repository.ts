@@ -57,7 +57,7 @@ export class CollectionRepository extends Repository<Collection>{
             collection.image = filename;
         }  
         if(priority){
-            collection.priority = priority;
+            collection.priority = Number(priority);
         }
         if(pictoIds){
             pictoIds=parseNumberArray(pictoIds);

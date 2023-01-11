@@ -53,7 +53,7 @@ export class PictoRepository extends Repository<Picto> {
             picto.collections = collectionIds.map(collectionIds => ({ id: collectionIds } as any));
         }
         if(priority){
-            picto.priority = priority;
+            picto.priority = Number(priority);
         }
         await picto.save();
         //delete picto.user;
