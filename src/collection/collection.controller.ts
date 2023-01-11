@@ -90,7 +90,7 @@ export class CollectionController {
       meaning : null,
       speech : null,
       pictoIds : null,
-      starred : null,
+      priority : 10,
       color : null,
       collectionIds : fatherCollectionsIds}
     await this.collectionService.modifyCollection(copyCollectionDto.fatherCollectionId, user, modifyCollectionDto, null);
@@ -159,7 +159,7 @@ export class CollectionController {
               meaning : null,
               speech : null,
               pictoIds : null,
-              starred : null,
+              priority : 10,
               color : null,
               collectionIds : fatherCollectionsIds}
             this.collectionService.modifyCollection(createCollectionDto.fatherCollectionId, user, modifyCollectionDto, null);

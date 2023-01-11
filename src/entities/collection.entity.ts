@@ -16,8 +16,8 @@ export class Collection extends BaseEntity{
     @Column({nullable: true})
     image: string;
 
-    @Column({default: false})
-    starred: boolean;
+    @Column({default: 10, nullable: false})
+    priority: number;
 
     @Column({nullable: true})
     color: string;

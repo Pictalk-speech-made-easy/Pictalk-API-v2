@@ -105,7 +105,7 @@ export class CollectionService {
                     meaning : null,
                     speech : null,
                     pictoIds : null,
-                    starred : null,
+                    priority : 10,
                     color : null,
                     collectionIds : fatherCollectionsIds
                 }

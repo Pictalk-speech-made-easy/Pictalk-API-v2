@@ -16,8 +16,8 @@ export class Picto extends BaseEntity{
     @Column()
     image: string;
 
-    @Column({default: false})
-    starred: boolean;
+    @Column({default: 10, nullable: false})
+    priority: number;
 
     @Column({nullable: true})
     color: string;

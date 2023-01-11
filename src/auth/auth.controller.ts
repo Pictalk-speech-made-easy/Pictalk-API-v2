@@ -35,7 +35,7 @@ export class AuthController {
           const modifyCollectionDto : modifyCollectionDto = {
             meaning : null,
             speech : null,
-            starred : null,
+            priority : 10,
             color : null,
             collectionIds : collectionIdsFromBundle,
           pictoIds: pictoIdsFromBundle

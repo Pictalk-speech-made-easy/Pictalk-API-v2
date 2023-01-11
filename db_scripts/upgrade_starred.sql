@@ -1,0 +1,20 @@
+ALTER TABLE collection ALTER starred SET DEFAULT null;
+ALTER TABLE collection
+ALTER starred TYPE SMALLINT
+USING
+CASE
+WHEN starred THEN 1 ELSE 10
+END;
+ALTER TABLE collection RENAME starred TO priority;
+ALTER TABLE collection ALTER priority SET DEFAULT 10;
+
+
+ALTER TABLE picto ALTER starred SET DEFAULT null;
+ALTER TABLE picto
+ALTER starred TYPE SMALLINT
+USING
+CASE
+WHEN starred THEN 1 ELSE 10
+END;
+ALTER TABLE picto RENAME starred TO priority;
+ALTER TABLE picto ALTER priority SET DEFAULT 10;
