@@ -94,6 +94,7 @@ export class PictoService {
                 collectionIds : null,
                 priority : 10,
                 color : null,
+                pictohubId: null,
                 pictoIds : fatherPictosIds
             }
             await this.collectionService.modifyCollection(deletePictoDto.fatherId, user, modifyCollectionDto, null);

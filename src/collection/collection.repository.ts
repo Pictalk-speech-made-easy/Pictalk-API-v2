@@ -16,7 +16,7 @@ import { writeFileSync } from "fs";
 
 export class CollectionRepository extends Repository<Collection>{
     async createCollection(createCollectionDto: createCollectionDto, user: User, filename: string): Promise<Collection> {
-        let { meaning, speech, pictoIds, collectionIds, color } = createCollectionDto;
+        let { meaning, speech, pictoIds, collectionIds, color, pictohubId } = createCollectionDto;
         const collection = new Collection();
         collection.meaning = meaning;
         collection.speech = speech;
@@ -32,6 +32,9 @@ export class CollectionRepository extends Repository<Collection>{
         if(color){
             collection.color = color;
         }
+        if(pictohubId){
+            collection.pictohubId = Number(pictohubId);
+        }
         if(filename){
             collection.image=filename;
         } else {
@@ -46,7 +49,7 @@ export class CollectionRepository extends Repository<Collection>{
     }
 
     async modifyCollection(collection: Collection, modifyCollectionDto: modifyCollectionDto, user: User, filename: string): Promise<Collection>{
-        let {meaning, speech, priority, pictoIds, collectionIds, color}= modifyCollectionDto;
+        let {meaning, speech, priority, pictoIds, collectionIds, color, pictohubId}= modifyCollectionDto;
         if(meaning){
             collection.meaning = meaning;
         }
@@ -58,6 +61,9 @@ export class CollectionRepository extends Repository<Collection>{
         }  
         if(priority){
             collection.priority = Number(priority);
+        }
+        if(pictohubId){
+            collection.pictohubId = Number(pictohubId);
         }
         if(pictoIds){
             pictoIds=parseNumberArray(pictoIds);

@@ -33,4 +33,9 @@ export class modifyCollectionDto {
     @IsOptional()
     @IsHexColor()
     color: string;
+
+    @ApiProperty()
+    @IsOptional()
+    @IsNumberString()
+    pictohubId: number;
 }
