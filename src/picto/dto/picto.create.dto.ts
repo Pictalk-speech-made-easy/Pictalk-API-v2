@@ -34,4 +34,9 @@ export class createPictoDto {
     @IsNumberString()
     @Matches(/0|1/, { message: "Sharing should be either 1 or 0'"})
     share: number;
+
+    @ApiProperty()
+    @IsOptional()
+    @IsNumberString()
+    pictohubId: number;
 }

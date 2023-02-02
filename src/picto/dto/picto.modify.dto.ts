@@ -27,4 +27,9 @@ export class modifyPictoDto {
     @IsOptional()
     @IsNumberString()
     priority : number;
+
+    @ApiProperty()
+    @IsOptional()
+    @IsNumberString()
+    pictohubId: number;
 }

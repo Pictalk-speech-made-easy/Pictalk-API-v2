@@ -282,6 +282,7 @@ export class CollectionService {
                 collectionIds : null,
                 fatherCollectionId : fatherId,
                 share : 1,
+                pictohubId: null,
             }  
             const copiedPicto = await this.pictoService.createPicto(createPictoDto, user, picto.image);
             return copiedPicto.id;  

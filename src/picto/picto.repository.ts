@@ -12,7 +12,7 @@ import { sharePictoDto } from "./dto/picto.share.dto";
 @CustomRepository(Picto)
 export class PictoRepository extends Repository<Picto> {
     async createPicto(createPictoDto: createPictoDto, user: User, filename: string): Promise<Picto> {
-        let { meaning, speech, collectionIds, color} = createPictoDto;
+        let { meaning, speech, collectionIds, color, pictohubId} = createPictoDto;
         const picto = new Picto();
         picto.meaning = meaning;
         picto.speech = speech;
@@ -20,6 +20,9 @@ export class PictoRepository extends Repository<Picto> {
         picto.userId = user.id;
         if(color){
             picto.color=color;
+        }
+        if(pictohubId){
+            picto.pictohubId = Number(pictohubId);
         }
         if(collectionIds){
             collectionIds=parseNumberArray(collectionIds);
@@ -35,7 +38,7 @@ export class PictoRepository extends Repository<Picto> {
     }
 
     async modifyPicto(picto: Picto, modifyPictoDto: modifyPictoDto, user: User, filename: string): Promise<Picto> {
-        let { meaning, speech, collectionIds, priority, color} = modifyPictoDto;
+        let { meaning, speech, collectionIds, priority, color, pictohubId} = modifyPictoDto;
         if(meaning){
             picto.meaning = meaning;
         }
@@ -47,6 +50,9 @@ export class PictoRepository extends Repository<Picto> {
         }
         if (filename) {
             picto.image = filename;
+        }
+        if(pictohubId){
+            picto.pictohubId = Number(pictohubId);
         }
         if(collectionIds){
             collectionIds=parseNumberArray(collectionIds);
