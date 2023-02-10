@@ -96,7 +96,9 @@ export class PictoController {
               collectionIds : null,
               priority : 10,
               color : null,
-              pictoIds : fatherPictosIds}
+              pictoIds : fatherPictosIds,
+              pictohubId: null
+            }
             this.collectionService.modifyCollection(createPictoDto.fatherCollectionId, user, modifyCollectionDto, null);
             if(createPictoDto.share!=0){
               this.pictoService.autoShare(picto, fatherCollection);

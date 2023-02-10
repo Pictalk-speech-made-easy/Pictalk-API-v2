@@ -40,4 +40,9 @@ export class createCollectionDto {
     @IsNumberString()
     @Matches(/0|1/, { message: "Role must be either 'viewer' or 'editor'"})
     share: number;
+
+    @ApiProperty()
+    @IsOptional()
+    @IsNumberString()
+    pictohubId: number;
 }

@@ -92,7 +92,9 @@ export class CollectionController {
       pictoIds : null,
       priority : 10,
       color : null,
-      collectionIds : fatherCollectionsIds}
+      collectionIds : fatherCollectionsIds,
+      pictohubId: null
+    }
     await this.collectionService.modifyCollection(copyCollectionDto.fatherCollectionId, user, modifyCollectionDto, null);
     return this.getCollectionById(copyCollectionDto.fatherCollectionId, user);
   }
@@ -161,7 +163,9 @@ export class CollectionController {
               pictoIds : null,
               priority : 10,
               color : null,
-              collectionIds : fatherCollectionsIds}
+              collectionIds : fatherCollectionsIds,
+              pictohubId: null
+            }
             this.collectionService.modifyCollection(createCollectionDto.fatherCollectionId, user, modifyCollectionDto, null);
             if(createCollectionDto.share!=0){
               this.collectionService.autoShare(collection, fatherCollection);

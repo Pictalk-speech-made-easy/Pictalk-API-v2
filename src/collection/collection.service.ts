@@ -107,7 +107,8 @@ export class CollectionService {
                     pictoIds : null,
                     priority : 10,
                     color : null,
-                    collectionIds : fatherCollectionsIds
+                    collectionIds : fatherCollectionsIds,
+                    pictohubId: null
                 }
                 await this.modifyCollection(deleteCollectionDto.fatherId, user, modifyCollectionDto, null);
             }
@@ -281,6 +282,7 @@ export class CollectionService {
                 collectionIds : null,
                 fatherCollectionId : fatherId,
                 share : 1,
+                pictohubId: null,
             }  
             const copiedPicto = await this.pictoService.createPicto(createPictoDto, user, picto.image);
             return copiedPicto.id;  
@@ -297,6 +299,7 @@ export class CollectionService {
                     meaning : collection.meaning,
                     speech : collection.speech,
                     color : collection.color,
+                    pictohubId: null,
                     collectionIds : await Promise.all(collection.collections.map(child => {return this.copyCollection(collection.id, child.id, user);})),
                     pictoIds : await Promise.all(collection.pictos.map(child => {return this.copyPicto(collection.id, child, user);})),
                     fatherCollectionId : fatherId,

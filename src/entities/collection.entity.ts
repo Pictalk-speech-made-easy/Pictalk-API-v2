@@ -33,6 +33,9 @@ export class Collection extends BaseEntity{
     @Column()
     userId: number;
 
+    @Column({nullable: true})
+    pictohubId: number;
+
     @ManyToOne(
         type => User,
         user => user.pictos,

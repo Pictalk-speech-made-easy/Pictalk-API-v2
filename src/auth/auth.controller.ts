@@ -38,7 +38,9 @@ export class AuthController {
             priority : 10,
             color : null,
             collectionIds : collectionIdsFromBundle,
-          pictoIds: pictoIdsFromBundle
+          pictoIds: pictoIdsFromBundle,
+          pictohubId: null,
+
         }
           await this.collectionService.modifyCollection(rootId, user, modifyCollectionDto, null);
         }
