@@ -95,28 +95,30 @@ export class CollectionService {
 
     async deleteCollection(deleteCollectionDto: deleteCollectionDto, user: User): Promise<void>{
         if(deleteCollectionDto.collectionId!=user.root && deleteCollectionDto.collectionId!=user.shared){
-            const collection = await this.getCollectionById(deleteCollectionDto.collectionId, user);
-            if(deleteCollectionDto.fatherId){
-                deleteCollectionDto.fatherId=Number(deleteCollectionDto.fatherId);
-                const fatherCollection = await this.getCollectionById(deleteCollectionDto.fatherId, user);
-                let fatherCollectionsIds = fatherCollection.collections.map(collection => {return collection.id;})
-                fatherCollectionsIds.splice(fatherCollectionsIds.indexOf(deleteCollectionDto.collectionId),1);
-                const modifyCollectionDto : modifyCollectionDto = {
-                    meaning : null,
-                    speech : null,
-                    pictoIds : null,
-                    priority : 10,
-                    color : null,
-                    collectionIds : fatherCollectionsIds
-                }
-                await this.modifyCollection(deleteCollectionDto.fatherId, user, modifyCollectionDto, null);
-            }
+            // const collection = await this.getCollectionById(deleteCollectionDto.collectionId, user);
+            // if(deleteCollectionDto.fatherId){
+            //     deleteCollectionDto.fatherId=Number(deleteCollectionDto.fatherId);
+            //     const fatherCollection = await this.getCollectionById(deleteCollectionDto.fatherId, user);
+            //     let fatherCollectionsIds = fatherCollection.collections.map(collection => {return collection.id;})
+            //     fatherCollectionsIds.splice(fatherCollectionsIds.indexOf(deleteCollectionDto.collectionId),1);
+            //     const modifyCollectionDto : modifyCollectionDto = {
+            //         meaning : null,
+            //         speech : null,
+            //         pictoIds : null,
+            //         priority : 10,
+            //         color : null,
+            //         collectionIds : fatherCollectionsIds
+            //     }
+            //     await this.modifyCollection(deleteCollectionDto.fatherId, user, modifyCollectionDto, null);
+            // }
             try{
                 const result = await this.collectionRepository.delete({
                     id: deleteCollectionDto.collectionId,
                     userId: user.id,
                   });
+                  console.log(result);
             } catch(error){
+                console.log(error);
                 if(error.code === "23503"){
                     return;
                 } else {
@@ -337,5 +339,20 @@ export class CollectionService {
             await this.pictoService.deletePicto(deletePicto, user)
         }
         return await this.getCollectionById(fatherCollectionId, user);
+    }
+    async getAllChildren(fatherId: number): Promise<any> {
+        let children = await this.collectionRepository.query(
+            `WITH RECURSIVE c AS (
+                SELECT ${fatherId} AS id
+                UNION ALL
+                SELECT cr.child
+                FROM c_relations AS cr
+                   JOIN c ON c.id = cr. parent
+             )
+             SELECT id FROM c;`
+            //`SELECT collectionId_1 FROM collection_collections_collection`
+        )
+        console.table(children);
+        return children;
     }
 }

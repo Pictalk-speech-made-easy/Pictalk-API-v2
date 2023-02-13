@@ -5,10 +5,12 @@ import {BaseEntity,
   OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
+  Index,
+  PrimaryColumn,
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Collection } from './collection.entity';
-import { Picto } from './picto.entity';
 import { Notif } from './notification.entity';
 import { defaultSettings } from 'src/utilities/creation';
 
@@ -17,47 +19,52 @@ export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({unique: true})
+  @Index({ unique: true })
+  @Column("text")
   username: string;
 
-  @Column({default: ""})
+  @Column("text", {default: ""})
   displayLanguage: string;
 
-  @Column({default: ""})
-  language: string;
+  @Column("text", {default: ""})
+  currentLocale: string;
 
-  @Column({default: ""})
-  languages : string
+  @OneToMany(
+    () => Language,
+    language => language.user,
+    { eager: true, cascade: true },
+  )
+  languages: Language[];
 
-  @Column()
-  password: string;
-
-  @Column()
-  salt: string;
-
-  @OneToMany(() => Collection, (collection) => collection.user, {eager: false,})
+  @OneToMany(() => Collection, (collection) => collection.user, {eager: true})
   collections: Collection[];
 
-  @OneToMany(() => Picto, (picto) => picto.user, { eager: false })
-  pictos: Picto[];
 
   @Column({nullable : true, unique: true})
   root: number;
 
-  @Column({nullable : true, unique: true})
-  sider: number;
+  @Column({nullable : true})
+  tabs: Collection[];
 
   @Column({nullable : true, unique: true})
   shared: number;
 
-  @Column()
+// passwords and validation
+  @Column("text")
+  password: string;
+
+  @Column("text")
+  salt: string;
+
+  @Column("text")
   resetPasswordToken: string;
 
-  @Column()
+  @Column("text")
   validationToken: string;
 
-  @Column()
+  @Column("text")
   resetPasswordExpires: string;
+
 
   @Column("text",{default: [], array: true})
   directSharers: string[];
@@ -74,6 +81,7 @@ export class User extends BaseEntity {
   @Column({default: false})
   admin: boolean;
 
+
   @CreateDateColumn()
   createdDate: Date;
   
@@ -85,3 +93,35 @@ export class User extends BaseEntity {
     return hash === this.password;
   }
 }
+
+@Entity()
+export class Language extends BaseEntity{
+    @Column("integer", {generated: "increment" })
+    id: number;
+
+    @PrimaryColumn("text", {nullable: false})
+    device: string;
+
+    @PrimaryColumn("text", {nullable: false})
+    locale: string;
+
+    // @Index(["device", "locale"], { unique: true })
+    // compositeIndex: string;
+
+    @Column("text", {nullable: false})
+    voiceuri: string;
+
+    @Column("decimal", {nullable: true, default: 1.0, precision: 3, scale: 1})
+    picth: number;
+
+    @Column("decimal", {nullable: true, default: 1.0, precision: 3, scale: 1})
+    rate: number;
+
+    @ManyToOne(
+        () => User,
+        user => user.languages,
+        { eager: false },
+      )
+    user: User;
+}
+

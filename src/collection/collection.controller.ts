@@ -80,6 +80,7 @@ export class CollectionController {
   @Post('copy')
   @ApiOperation({summary : 'copy a collection with its ID'})
   async copyCollection(@Body() copyCollectionDto: copyCollectionDto, @GetUser() user: User): Promise<Collection>{
+    //await this.collectionService.getAllChildren(copyCollectionDto.collectionId);
     const fatherCollection = await this.collectionService.getCollectionById(copyCollectionDto.fatherCollectionId, user);
     const copiedId = await this.collectionService.copyCollection(copyCollectionDto.fatherCollectionId, copyCollectionDto.collectionId, user);
     let fatherCollectionsIds = fatherCollection.collections.map(collection => {

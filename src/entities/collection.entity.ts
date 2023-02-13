@@ -1,50 +1,68 @@
-import { BaseEntity, Column, CreateDateColumn, Entity, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { Picto } from "./picto.entity";
+import { BaseEntity, Column, CreateDateColumn, Entity, Index, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { User } from "./user.entity";
+import { Group } from "./group.entity";
 
 @Entity()
 export class Collection extends BaseEntity{
     @PrimaryGeneratedColumn()
+    @Index({ unique: true })
     id: number;
 
-    @Column({nullable: false})
-    meaning : string;
+    @OneToMany(() => Plext, (plext) => plext.collection, {eager: true, nullable: false, cascade: true})
+    @JoinColumn({ name: "meaning_id", referencedColumnName: "id" })
+    meaning: Plext[];
 
-    @Column({nullable: false})
-    speech : string;
+    @OneToMany(() => Plext, (plext) => plext.collection, {eager: true, nullable: false, cascade: true})
+    @JoinColumn({ name: "speech_id", referencedColumnName: "id" })
+    speech: Plext[];
 
-    @Column({nullable: true})
+    @Column("text",{nullable: true})
     image: string;
 
-    @Column({default: 10, nullable: false})
-    priority: number;
-
-    @Column({nullable: true})
+    @Column("text",{default:"#ffffff00", nullable: true})
     color: string;
 
-    @ManyToMany( () => Picto, picto => picto.collections)
-    @JoinTable()
-    pictos : Picto[];
+    @Column("integer",{nullable: true})
+    hub_parent: number;
 
-    @ManyToMany( () => Collection, collection => collection.collections)
-    @JoinTable()
+    @Column("jsonb",{nullable: true})
+    meta_data: any;
+    
+    @Index({ unique: true })
+    @ManyToMany( () => Collection, collection => collection.collections, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
+    @JoinTable({
+      name: "c_relations", // table name for the junction table of this relation
+      joinColumn: {
+          name: "parent",
+          referencedColumnName: "id",
+      },
+      inverseJoinColumn: {
+          name: "child",
+          referencedColumnName: "id",
+      },
+    })
     collections : Collection[]
 
-    @Column()
-    userId: number;
+    @ManyToMany( () => Group, group => group.collections, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
+    @JoinTable({
+      name: "collection_group", // table name for the junction table of this relation
+      joinColumn: {
+          name: "collection_id",
+          referencedColumnName: "id",
+      },
+      inverseJoinColumn: {
+          name: "group_id",
+          referencedColumnName: "id",
+      }, 
+    })
+    groups : Group[]
 
     @ManyToOne(
         type => User,
-        user => user.pictos,
+        user => user.collections,
         { eager: false },
       )
     user: User;
-
-    @Column("text",{default: [], array: true})
-    editors: string[];
-
-    @Column("text",{default: [], array: true})
-    viewers: string[];
 
     @Column({default: false})
     public: boolean;
@@ -54,4 +72,23 @@ export class Collection extends BaseEntity{
     
     @UpdateDateColumn()
     updatedDate: Date;
+}
+
+@Entity()
+export class Plext extends BaseEntity{
+    @PrimaryGeneratedColumn()
+    id: number;
+
+    @Column("text", {nullable: false})
+    locale : string;
+
+    @Column("text", {default: ""})
+    text : string;
+
+    @ManyToOne(
+        type => Collection,
+        collection => collection.meaning,
+        { eager: false, cascade: true, nullable: false },
+      )
+    collection: Collection;
 }
