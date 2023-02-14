@@ -1,6 +1,6 @@
 import { meaningRoot } from './../utilities/meaning';
 import { BadRequestException, ForbiddenException, InternalServerErrorException, NotFoundException } from "@nestjs/common";
-import { Collection } from "src/entities/collection.entity";
+import { Collection, Plext } from "src/entities/collection.entity";
 import { Picto } from "src/entities/picto.entity";
 import { User } from "src/entities/user.entity";
 import { parseNumberArray } from "src/utilities/tools";
@@ -11,7 +11,7 @@ import { modifyCollectionDto } from "./dto/collection.modify.dto";
 import { SearchCollectionDto } from "./dto/collection.search.public.dto";
 import { multipleShareCollectionDto, shareCollectionDto } from "./dto/collection.share.dto";
 import { generateAvatar, generateRandomColor } from 'src/utilities/creation';
-import { writeFileSync } from "fs";
+import { writeFile, writeFileSync } from "fs";
 @CustomRepository(Collection)
 
 export class CollectionRepository extends Repository<Collection>{
@@ -108,49 +108,44 @@ export class CollectionRepository extends Repository<Collection>{
         return picto;
     }
 
-    async createRoot(user: User): Promise<number>{
-        if(user.root===null){
-            const name = user.username.split('@')[0]?.replace(/[^a-zA-Z]/gi, '');
-            const root = new Collection();
-            root.meaning = JSON.stringify({
-                en: name + meaningRoot.en, 
-                fr: meaningRoot.fr+ name, 
-                es: meaningRoot.es + name,
-                it: meaningRoot.it + name,
-                de: name + meaningRoot.de,
-                ro: meaningRoot.ro + name,
-                po: meaningRoot.po + name,
-                el: meaningRoot.el + name,
-            });
-            root.speech = JSON.stringify({
-                en: name + meaningRoot.en, 
-                fr: meaningRoot.fr+ name, 
-                es: meaningRoot.es + name,
-                it: meaningRoot.it + name,
-                de: name + meaningRoot.de,
-                ro: meaningRoot.ro + name,
-                po: meaningRoot.po + name,
-                el: meaningRoot.el + name,
-            });
-            root.userId = user.id;
-            const avatarPng = generateAvatar(name.slice(0, 2), generateRandomColor(), "#FFFFFF");
-            writeFileSync(`./files/${user.username}.png`, avatarPng);
-            root.image = `${user.username}.png`;
-            try {
-                await root.save();
-            } catch (error) {
-                throw new InternalServerErrorException(error);
-            }
-            user.root=root.id;
-            try {
-                await user.save();
-            } catch (error) {
-                throw new InternalServerErrorException(error);
-            }
-        } else {
-            throw new ForbiddenException(`cannot create a new root for User ${user.username}. User already has root ${user.root}`);
-        } 
-        return user.root;
+    createPlextFromJSON(json: string): Plext[]{
+        const plexts: Plext[] = [];
+        const locale_text = JSON.parse(json);
+        for (const locale in locale_text) {
+            const plext = new Plext(locale, locale_text[locale]);
+            plexts.push(plext);
+        }
+        return plexts;
+    }
+
+    async createRoot(user: User): Promise<Collection>{
+        const name = user.username.split('@')[0]?.replace(/[^a-zA-Z]/gi, '');
+        const root = new Collection();
+        root.meaning = this.createPlextFromJSON(
+            JSON.stringify({
+            en: name + meaningRoot.en, 
+            fr: meaningRoot.fr+ name, 
+            es: meaningRoot.es + name,
+            it: meaningRoot.it + name,
+            de: name + meaningRoot.de,
+            ro: meaningRoot.ro + name,
+            po: meaningRoot.po + name,
+            el: meaningRoot.el + name,
+        }));
+        root.speech = this.createPlextFromJSON(JSON.stringify({
+            en: name + meaningRoot.en, 
+            fr: meaningRoot.fr+ name, 
+            es: meaningRoot.es + name,
+            it: meaningRoot.it + name,
+            de: name + meaningRoot.de,
+            ro: meaningRoot.ro + name,
+            po: meaningRoot.po + name,
+            el: meaningRoot.el + name,
+        }));
+        const avatarPng = generateAvatar(name.slice(0, 2), generateRandomColor(), "#FFFFFF");
+        writeFile(`./files/${user.username}.png`, avatarPng, (err) => {console.log(err)});
+        root.image = `${user.username}.png`;
+        return root;
     }
 
     async createShared(user: User): Promise<number>{

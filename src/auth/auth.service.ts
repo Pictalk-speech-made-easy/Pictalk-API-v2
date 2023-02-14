@@ -23,16 +23,6 @@ export class AuthService {
         ){}
 
     async signUp(createUserDto: CreateUserDto): Promise<User> {
-        if(createUserDto.directSharers){
-            for(let i=0; i<createUserDto.directSharers.length; i++){
-                const user = await this.findWithUsername(createUserDto.directSharers[i]);
-                const exists = await this.verifyExistence(user);
-                if(!exists){
-                    createUserDto.directSharers.splice(i, 1);
-                }
-            }
-        }
-        
         return this.userRepository.signUp(createUserDto);
     }
 

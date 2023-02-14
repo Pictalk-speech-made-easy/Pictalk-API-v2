@@ -40,6 +40,7 @@
     "class-validator": "^0.13.2",
     "config": "^3.3.8",
     "express": "^4.18.2",
+    "hsl-to-hex": "^1.0.0",
     "image-hash": "^5.3.1",
     "image-size": "^1.0.2",
     "passport": "^0.6.0",

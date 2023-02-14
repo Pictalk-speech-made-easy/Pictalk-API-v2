@@ -8,11 +8,12 @@ import {BaseEntity,
   ManyToOne,
   Index,
   PrimaryColumn,
+  JoinColumn,
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Collection } from './collection.entity';
-import { Notif } from './notification.entity';
 import { defaultSettings } from 'src/utilities/creation';
+import { Group } from './group.entity';
 
 @Entity()
 export class User extends BaseEntity {
@@ -40,37 +41,39 @@ export class User extends BaseEntity {
   collections: Collection[];
 
 
-  @Column({nullable : true, unique: true})
-  root: number;
+  @Column({nullable : true,})
+  root: Collection;
 
   @Column({nullable : true})
   tabs: Collection[];
 
-  @Column({nullable : true, unique: true})
-  shared: number;
+  @Column({nullable : true})
+  shared: Collection;
 
 // passwords and validation
-  @Column("text")
+  @Column("text", {nullable : false})
   password: string;
 
-  @Column("text")
+  @Column("text", {nullable : false})
   salt: string;
 
-  @Column("text")
+  @Column("text", {nullable : true})
   resetPasswordToken: string;
 
-  @Column("text")
-  validationToken: string;
-
-  @Column("text")
+  @Column("text", {nullable : true})
   resetPasswordExpires: string;
 
+  @Column("text", {nullable : false, generated: "uuid", unique: true })
+  validationToken: string;
 
-  @Column("text",{default: [], array: true})
-  directSharers: string[];
 
-  @Column({type: "jsonb", default: []})
-  notifications : Notif[];
+  @OneToMany(
+    () => Group,
+    group => group.user,
+    
+  )
+  @JoinColumn({ name: "group_id", referencedColumnName: "id" })
+  groups: Group[];
 
   @Column({default: defaultSettings})
   settings : string;
@@ -96,6 +99,15 @@ export class User extends BaseEntity {
 
 @Entity()
 export class Language extends BaseEntity{
+    constructor(device: string, locale: string, voiceuri: string, picth: number = 1.0, rate: number = 1.0){
+        super();
+        this.device = device;
+        this.locale = locale;
+        this.voiceuri = voiceuri;
+        this.picth = picth;
+        this.rate = rate;
+    }
+
     @Column("integer", {generated: "increment" })
     id: number;
 
@@ -120,7 +132,7 @@ export class Language extends BaseEntity{
     @ManyToOne(
         () => User,
         user => user.languages,
-        { eager: false },
+        { eager: false, onDelete: 'CASCADE', orphanedRowAction: "delete" },
       )
     user: User;
 }

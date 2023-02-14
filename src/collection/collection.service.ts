@@ -81,7 +81,7 @@ export class CollectionService {
         return this.collectionRepository.createCollection(createCollectionDto, user, filename);
     }
 
-    async createRoot(user: User): Promise<number>{
+    async createRoot(user: User): Promise<Collection>{
         return this.collectionRepository.createRoot(user);
     }
 

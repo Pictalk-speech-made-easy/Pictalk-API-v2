@@ -2,6 +2,7 @@ import { BadRequestException, InternalServerErrorException } from "@nestjs/commo
 import { Languages, Voice, VoiceURI } from "src/entities/voices.entity";
 import { languagesRegex } from "./supported.languages";
 import { getArrayIfNeeded } from "./tools";
+import { hsl } from "hsl-to-hex";
 
 export const usernameRegexp = new RegExp(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
 
@@ -116,10 +117,5 @@ export function generateAvatar(text, foregroundColor, backgroundColor) {
 }
 
 export function generateRandomColor(){
-    let maxVal: any = 0xFFFFFF; // 16777215
-    let randomNumber: any = Math.random() * maxVal; 
-    randomNumber = Math.floor(randomNumber);
-    randomNumber = randomNumber.toString(16);
-    let randColor = randomNumber.padStart(6, 0);   
-    return `#${randColor.toUpperCase()}`
+    return hsl(Math.random() * 360, Math.random() * 50 + 50, 50);
 }

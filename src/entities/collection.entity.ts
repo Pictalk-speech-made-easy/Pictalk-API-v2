@@ -72,10 +72,24 @@ export class Collection extends BaseEntity{
     
     @UpdateDateColumn()
     updatedDate: Date;
+
+    createPlextFromJSON(locale_text: object): Plext[]{
+      const plexts: Plext[] = [];
+      for (const locale in locale_text) {
+          const plext = new Plext(locale, locale_text[locale]);
+          plexts.push(plext);
+      }
+      return plexts;
+    }
 }
 
 @Entity()
 export class Plext extends BaseEntity{
+    constructor(locale: string, text: string){
+        super();
+        this.locale = locale;
+        this.text = text;
+    }
     @PrimaryGeneratedColumn()
     id: number;
 
