@@ -5,6 +5,7 @@ import {BaseEntity,
   OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
+  Index,
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Collection } from './collection.entity';
@@ -17,7 +18,8 @@ export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({unique: true})
+  @Index({ unique: true })
+  @Column()
   username: string;
 
   @Column({default: ""})
