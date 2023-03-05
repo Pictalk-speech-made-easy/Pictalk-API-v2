@@ -1,10 +1,11 @@
-import { BaseEntity, Column, CreateDateColumn, Entity, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { BaseEntity, Column, CreateDateColumn, Entity, Index, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Picto } from "./picto.entity";
 import { User } from "./user.entity";
 
 @Entity()
 export class Collection extends BaseEntity{
     @PrimaryGeneratedColumn()
+    @Index({ unique: true })
     id: number;
 
     @Column({nullable: false})
@@ -23,11 +24,31 @@ export class Collection extends BaseEntity{
     color: string;
 
     @ManyToMany( () => Picto, picto => picto.collections)
-    @JoinTable()
+    @JoinTable({
+      name: "p_relations", // table name for the junction table of this relation
+      joinColumn: {
+          name: "parent",
+          referencedColumnName: "id",
+      },
+      inverseJoinColumn: {
+          name: "child",
+          referencedColumnName: "id",
+      },
+    })
     pictos : Picto[];
 
     @ManyToMany( () => Collection, collection => collection.collections)
-    @JoinTable()
+    @JoinTable({
+      name: "c_relations", // table name for the junction table of this relation
+      joinColumn: {
+          name: "parent",
+          referencedColumnName: "id",
+      },
+      inverseJoinColumn: {
+          name: "child",
+          referencedColumnName: "id",
+      },
+    })
     collections : Collection[]
 
     @Column()
