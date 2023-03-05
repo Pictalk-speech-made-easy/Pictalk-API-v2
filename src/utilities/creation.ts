@@ -3,6 +3,7 @@ import { Languages, Voice, VoiceURI } from "src/entities/voices.entity";
 import { languagesRegex } from "./supported.languages";
 import { getArrayIfNeeded } from "./tools";
 
+
 export const usernameRegexp = new RegExp(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
 
 export const IsValid = (meaning: any, speech : any) => {
@@ -106,20 +107,15 @@ export function generateAvatar(text, foregroundColor, backgroundColor) {
     context.fillRect(0, 0, canvas.width, canvas.height);
 
     // Draw text
-    context.font = "bold 100px Assistant";
+    context.font = "bold 100px";
     context.fillStyle = foregroundColor;
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.fillText(text, canvas.width / 2, canvas.height / 2);
-
     return canvas.toBuffer('image/png');
 }
 
 export function generateRandomColor(){
-    let maxVal: any = 0xFFFFFF; // 16777215
-    let randomNumber: any = Math.random() * maxVal; 
-    randomNumber = Math.floor(randomNumber);
-    randomNumber = randomNumber.toString(16);
-    let randColor = randomNumber.padStart(6, 0);   
-    return `#${randColor.toUpperCase()}`
+    return `hsl(${Math.random() * 360, Math.random() * 50 + 50}, 50)`;
 }
+
