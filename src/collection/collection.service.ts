@@ -16,6 +16,7 @@ import { MoveToCollectionDto } from './dto/collection.move.dto';
 import { publicCollectionDto } from './dto/collection.public.dto';
 import { SearchCollectionDto } from './dto/collection.search.public.dto';
 import { shareCollectionDto, multipleShareCollectionDto } from './dto/collection.share.dto';
+import { In } from 'typeorm';
 
 @Injectable()
 export class CollectionService {
@@ -77,6 +78,7 @@ export class CollectionService {
     } 
 
     async createCollection(createCollectionDto: createCollectionDto, user: User, filename: string): Promise<Collection> {
+        this.testquery();
         createCollectionDto.collectionIds = await this.verifyOwnership(createCollectionDto.collectionIds, user);
         return this.collectionRepository.createCollection(createCollectionDto, user, filename);
     }
@@ -341,4 +343,43 @@ export class CollectionService {
         }
         return await this.getCollectionById(fatherCollectionId, user);
     }
+    async getAllChildren(fatherId: number): Promise<any> {
+        let children = await this.collectionRepository.query(
+            `WITH RECURSIVE c AS (
+                SELECT ${fatherId} AS id
+                UNION ALL
+                SELECT cr.child
+                FROM c_relations AS cr
+                   JOIN c ON c.id = cr. parent
+             )
+             SELECT id FROM c;`
+            //`SELECT collectionId_1 FROM collection_collections_collection`
+        )
+        console.table(children);
+        return children;
+    }
+
+    async testquery() { //inserts array of names into viewers and removes duplicates !
+        const collectionIds = [1];
+        const sql = "UPDATE collection SET viewers = (SELECT array_remove(array_agg(DISTINCT x), NULL)::text[] FROM unnest(viewers || ARRAY['adri', 'bibi']) x) WHERE id IN (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13);"
+        const users = ['adri', 'alex', 'pablo'];
+        const result = await this.collectionRepository.query(sql)
+        console.log(result);
+      }
+    //NEXT STEP - combine the "getallchildren" and this to do the sharing
+    //NEXT NEXT STEP - redo the copy paste
 }
+// const userRepository = getManager().getRepository(User);
+
+// const usernames = ["alice", "bob", "charlie", "bob"];
+
+// const queryBuilder = userRepository.createQueryBuilder();
+// queryBuilder
+//   .insert()
+//   .into(User)
+//   .values(usernames.map(username => ({ username })))
+//   .onConflict(`("username") DO NOTHING`)
+//   .execute()
+//   .then(result => console.log(result))
+//   .catch(error => console.error(error));
+// }
