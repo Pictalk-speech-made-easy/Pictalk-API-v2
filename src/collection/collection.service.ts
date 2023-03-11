@@ -78,7 +78,6 @@ export class CollectionService {
     } 
 
     async createCollection(createCollectionDto: createCollectionDto, user: User, filename: string): Promise<Collection> {
-        this.testquery();
         createCollectionDto.collectionIds = await this.verifyOwnership(createCollectionDto.collectionIds, user);
         return this.collectionRepository.createCollection(createCollectionDto, user, filename);
     }
@@ -212,6 +211,8 @@ export class CollectionService {
     } 
 
     async shareCollectionById(collectionId : number, multipleShareCollectionDto: multipleShareCollectionDto, user: User): Promise<Collection>{
+        this.sharingtTestquery(collectionId, multipleShareCollectionDto, user);
+        /*
         let collection = await this.getCollectionById(collectionId, user);
         try{
             collection.collections.map(collection => this.shareCollectionById(collection.id, multipleShareCollectionDto, user));
@@ -223,6 +224,8 @@ export class CollectionService {
             collection=await this.collectionRepository.shareCollectionFromDto(collection, multipleShareCollectionDto);
         } catch(error){}
         return collection;
+        */
+       return new Collection();
     }
 
     async publishCollectionById(collectionId : number, publicCollectionDto: publicCollectionDto, user: User): Promise<Collection>{
@@ -355,17 +358,21 @@ export class CollectionService {
              SELECT id FROM c;`
             //`SELECT collectionId_1 FROM collection_collections_collection`
         )
-        console.table(children);
-        return children;
+        return children.map((child)=>{return child.id});
     }
 
-    async testquery() { //inserts array of names into viewers and removes duplicates !
-        const collectionIds = [1];
-        const sql = "UPDATE collection SET viewers = (SELECT array_remove(array_agg(DISTINCT x), NULL)::text[] FROM unnest(viewers || ARRAY['adri', 'bibi']) x) WHERE id IN (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13);"
-        const users = ['adri', 'alex', 'pablo'];
+    async sharingtTestquery(collectionId : number, multipleShareCollectionDto: multipleShareCollectionDto, user: User) { //inserts array of names into viewers and removes duplicates !
+        const collectionIds = await this.getAllChildren(collectionId);
+
+        const users = multipleShareCollectionDto.usernames.map((username)=>{
+            return `'${username}'`;
+        });
+        console.log(users);
+        const sql = `UPDATE collection SET ${multipleShareCollectionDto.role}s = (SELECT array_remove(array_agg(DISTINCT x), NULL)::text[] FROM unnest(${multipleShareCollectionDto.role}s || ARRAY[${users}]) x) WHERE id IN (${collectionIds});`
+        console.log(sql);
         const result = await this.collectionRepository.query(sql)
         console.log(result);
-      }
+    }
     //NEXT STEP - combine the "getallchildren" and this to do the sharing
     //NEXT NEXT STEP - redo the copy paste
 }

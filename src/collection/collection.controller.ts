@@ -114,8 +114,9 @@ export class CollectionController {
     } else {
       this.logger.verbose(`User "${user.username}" revoking access to Collection with id ${id} for Users ${multipleShareCollectionDto.usernames}`);
     }
-    collection = await this.collectionService.shareCollectionVerification(id, user, multipleShareCollectionDto);
-    return collection;
+    await this.collectionService.sharingtTestquery(id, multipleShareCollectionDto, user);
+
+    return new Collection();
   }
 
   @UseGuards(AuthGuard())
