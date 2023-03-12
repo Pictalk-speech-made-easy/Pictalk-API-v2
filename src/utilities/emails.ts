@@ -1,6 +1,6 @@
 export const welcome = {
-    en : "Hi, welcomme to Pictalk ! Here is your validation token. Paste the code in Pictalk",
-    fr : "Bonjour, bienvenue sur Pictalk ! Voici votre jeton de validation. Collez ce jeton sur Pictalk",
+    en : "Hi, welcomme to Pictalk ! click on the link or paste the code in Pictalk",
+    fr : "Bonjour, bienvenue sur Pictalk ! Cliquez sur ce lien ou Collez ce jeton sur Pictalk",
     es : "Hola, ¡bienvenido a Pictalk! Aquí está su ficha de validación.",
     it : "Ciao, benvenuto su Pictalk! Ecco il tuo token di convalida.",
     de : "Hallo, willkommen bei Pictalk! Hier ist Ihr Validierungs-Token.",
