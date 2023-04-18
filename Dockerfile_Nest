@@ -1,7 +1,7 @@
 FROM node:16-bullseye as dev
 WORKDIR /app
 COPY ./package*.json ./
-RUN npm install --legacy-peer-deps
+RUN npm install 
 COPY ./ ./
 EXPOSE 3001
 ENTRYPOINT ["npm", "run", "start:dev"]
