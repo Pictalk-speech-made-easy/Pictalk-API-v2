@@ -1,8 +1,11 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { response } from 'express';
-import { copyFile, unlink, constants } from 'fs';
+import { copyFile, unlink, constants, promises } from 'fs';
 import { imageHash } from 'image-hash';
 import { extname } from 'path';
+import * as getColors from 'get-image-colors';
+import * as mime from 'mime-types';
+import * as sha from 'sha.js';
 
 export const maxSize = 524288;
 
@@ -46,6 +49,9 @@ export const boolString = (string) => {
   }
 }
 
+export async function getImageColors(filename: string, extension: string): Promise<any> {
+  return getColors('./tmp/'+filename, extension);
+}
 export async function hashImage(file: Express.Multer.File) {
   const filename = file.filename;
   const extension = extname(file.originalname);
@@ -56,26 +62,47 @@ export async function hashImage(file: Express.Multer.File) {
         resolve(hash1);
     }
   })));
-  const hashedname = hash+extension;
-  copyFile('./tmp/'+filename, './files/'+hashedname, constants.COPYFILE_EXCL, (err) => {
-    if(err){
-      if(err.code == 'EEXIST'){
-        unlink('./tmp/'+filename, (err)=> {
-          if(err){
-            throw new NotFoundException(`Couldn't delete file: ${filename}, Error is : ${err}`);
-          }
-        });
-      } else {
-        throw new NotFoundException(`Couldn't find file: ${filename}, Error is : ${err}`);
+  let hashedname = hash+extension;
+  try {
+    await promises.copyFile('./tmp/'+filename, './files/'+hashedname, constants.COPYFILE_EXCL);
+    unlink('./tmp/'+filename, (err)=> {
+      if(err){
+        throw new NotFoundException(`Couldn't delete file: ${filename}, Error is : ${err}`);
       }
-    } else {
+    });
+  } catch (err) {
+    console.log(err);
+    if(err.code == 'EEXIST'){
+      console.log('File already exists, checking colors')
+      const colors1 = (await getImageColors(filename, mime.lookup(extension))).map(color => {return color.hex();}).toString();
+      const colors2 = (await getImageColors('../files/'+hashedname, mime.lookup(extname(hashedname)))).map(color => {return color.hex();}).toString();
+      console.log('Colors are : '+colors1+' and '+colors2)
+      if(colors1!=colors2){
+        const hash1 = sha('sha1').update(colors1).digest('hex');
+        console.log("Colors are different");
+        try {
+          await promises.copyFile('./tmp/'+filename, './files/'+hash1+hashedname, constants.COPYFILE_EXCL);
+          hashedname = hash1+hashedname;
+          console.log('Colors are different, new file is : '+hashedname);
+        } catch (err) {
+          console.log(err);
+          if (err?.code != 'EEXIST') {
+            throw new NotFoundException(`Couldn't copy file: ${filename}, Error is : ${err}`);
+          }
+        }
+      }
+      
       unlink('./tmp/'+filename, (err)=> {
         if(err){
           throw new NotFoundException(`Couldn't delete file: ${filename}, Error is : ${err}`);
         }
       });
+    } else {
+      throw new NotFoundException(`Couldn't find file: ${filename}, Error is : ${err}`);
     }
-  });
+  }
+  
+  console.log('Returned Hashedname is : '+hashedname)
   return hashedname;
 } 
 
