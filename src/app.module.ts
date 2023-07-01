@@ -12,8 +12,17 @@ import { TranslationController } from './translation/translation.controller';
 import { ConfigModule } from '@nestjs/config';
 import { FeedbackModule } from './feedback/feedback.module';
 import { ExtrasController } from './extras/extras.controller';
+import { SentryModule } from '@ntegral/nestjs-sentry';
 @Module({
   imports: [
+    SentryModule.forRoot({
+      debug: false,
+      logLevels: ['error', 'warn'],
+      dsn:
+      "https://2ba5fc9794cf4717a95bc680e6130f85@o1135783.ingest.sentry.io/4504633864290304",
+      environment: 'production',
+      tracesSampleRate: 1.0,
+    }),
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot(typeOrmConfig),
     PictoModule,
