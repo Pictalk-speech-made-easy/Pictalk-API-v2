@@ -82,7 +82,7 @@ export async function hashImage(file: Express.Multer.File) {
         console.log("Colors are different");
         try {
           hashedname = hash1+hashedname;
-          await promises.copyFile('./tmp/'+filename, './files/'+hash1+hashedname, constants.COPYFILE_EXCL);
+          await promises.copyFile('./tmp/'+filename, './files/'+hashedname, constants.COPYFILE_EXCL);
           console.log('Colors are different, new file is : '+hashedname);
         } catch (err) {
           console.log(err);
