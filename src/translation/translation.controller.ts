@@ -1,7 +1,6 @@
 import { HttpService } from '@nestjs/axios';
 import {
   Body,
-  CacheInterceptor,
   Controller,
   InternalServerErrorException,
   Post,
@@ -15,6 +14,7 @@ import { lastValueFrom } from 'rxjs';
 import { languageMapping } from 'src/utilities/supported.languages';
 import { text } from 'stream/consumers';
 import { TranslateDto } from './dto/translation.dto';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 
 export class TranslationResponse{
   translation : string
@@ -64,12 +64,14 @@ export class TranslationController {
         const response = await lastValueFrom(
           this.httpService.get(
             request,
+            { headers: { 'Content-Type': 'application/x-www-form-urlencoded', "Accept-Encoding": "*", } },
           ),
         );
         return new TranslationResponse(response.data.translations[0].text);
     } catch(error) {
+      console.log(error);
       throw new InternalServerErrorException(
-        `couldn't get Translation from Deepl`,
+        `couldn't get Translation from Deepl {${error}}}`,
       );
     }
   }

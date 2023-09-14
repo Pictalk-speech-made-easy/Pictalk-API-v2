@@ -1,4 +1,5 @@
-import { CacheModule, Module } from '@nestjs/common';
+import {  Module } from '@nestjs/common';
+import { CacheModule } from '@nestjs/cache-manager';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PictoModule } from './picto/picto.module';
@@ -20,7 +21,7 @@ import { ExtrasController } from './extras/extras.controller';
     CollectionModule,
     AuthModule,
     HttpModule,
-    CacheModule.register({ttl: 2592000}), // 1 month
+    CacheModule.register({ttl: 2592000000}), // 1 month
     FeedbackModule
   ],
   controllers: [AppController, ImageController, TranslationController, ExtrasController],

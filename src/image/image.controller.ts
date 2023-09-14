@@ -1,6 +1,5 @@
 import { HttpService } from '@nestjs/axios';
 import {
-  CacheInterceptor,
   Controller,
   Get,
   Header,
@@ -18,6 +17,7 @@ import { createClient } from 'pexels';
 import { WebImage } from 'src/entities/webImage.entity';
 import { AuthGuard } from '@nestjs/passport';
 import { languageMapping } from 'src/utilities/supported.languages';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 const client = createClient('563492ad6f9170000100000141844035a31b4fe8acba00dfd6436b14');
 
 @Controller('image')
