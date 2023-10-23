@@ -45,6 +45,7 @@
     "image-hash": "^5.3.1",
     "image-size": "^1.0.2",
     "mime-types": "^2.1.35",
+    "nest-keycloak-connect": "^1.9.2",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.0",
     "pexels": "^1.4.0",

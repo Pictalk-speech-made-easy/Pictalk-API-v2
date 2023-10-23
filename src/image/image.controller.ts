@@ -15,10 +15,10 @@ import { lastValueFrom } from 'rxjs';
 import { FilterDto } from './dto/search.dto';
 import { createClient } from 'pexels';
 import { WebImage } from 'src/entities/webImage.entity';
-import { AuthGuard } from '@nestjs/passport';
 import { languageMapping } from 'src/utilities/supported.languages';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 const client = createClient('563492ad6f9170000100000141844035a31b4fe8acba00dfd6436b14');
+import { AuthGuard } from "nest-keycloak-connect"
 
 @Controller('image')
 export class ImageController {
@@ -38,7 +38,7 @@ export class ImageController {
 
   @Get('/web/')
   @UseInterceptors(CacheInterceptor)
-  @UseGuards(AuthGuard())
+  @UseGuards(AuthGuard)
   async searchImages(@Query(ValidationPipe) filterDto: FilterDto): Promise<WebImage[]> {
     let webImages : WebImage[]= [];
     let promises : Promise<any>[] = [];

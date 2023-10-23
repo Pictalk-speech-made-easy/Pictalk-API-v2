@@ -6,16 +6,12 @@ import {
   Post,
   UseGuards,
   UseInterceptors,
-  ValidationPipe,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
-import { encode } from 'querystring';
 import { lastValueFrom } from 'rxjs';
 import { languageMapping } from 'src/utilities/supported.languages';
-import { text } from 'stream/consumers';
 import { TranslateDto } from './dto/translation.dto';
 import { CacheInterceptor } from '@nestjs/cache-manager';
-
+import { AuthGuard } from 'nest-keycloak-connect';
 export class TranslationResponse{
   translation : string
   constructor(translation: string){
@@ -28,7 +24,7 @@ export class TranslationResponse{
 export class TranslationController {
   constructor(private httpService: HttpService) {}
   private deeplApiDeepL = process.env.DEEPL_API_KEY;
-  @UseGuards(AuthGuard())
+  @UseGuards(AuthGuard)
   @Post()
   async getTraduction(@Body() TranslateDto: TranslateDto): Promise<TranslationResponse> {
     if(languageMapping[TranslateDto.targetLang] !== undefined){

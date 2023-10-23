@@ -1,8 +1,6 @@
 import { BadRequestException, Body, Controller, Delete, ForbiddenException, forwardRef, Get, Inject, InternalServerErrorException, Logger, NotFoundException, Param, ParseIntPipe, Post, Put, Query, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { GetUser } from 'src/auth/get-user.decorator';
 import { Picto } from 'src/entities/picto.entity';
 import { User } from 'src/entities/user.entity';
 import { editFileName, hashImage, imageFileFilter, maxSize } from 'src/utilities/tools';
@@ -17,8 +15,7 @@ import { multipleSharePictoDto, sharePictoDto } from './dto/picto.share.dto';
 import { deletePictoDto } from './dto/picto.delete.dto';
 import { copyPictoDto } from './dto/picto.copy.dto';
 import { Collection } from 'src/entities/collection.entity';
-import { OptionnalAuth } from 'src/auth/optionnal_auth.guard';
-
+import { AuthenticatedUser, Public, AuthGuard } from 'nest-keycloak-connect';
 @Controller('picto')
 export class PictoController {
   private logger = new Logger('PictosController');
@@ -28,26 +25,26 @@ export class PictoController {
   private collectionService: CollectionService
   ){}
 
-  @UseGuards(OptionnalAuth)
+  @Public(true)
   @Get('/:id')
-  getPictoById(@Param('id', ParseIntPipe) id : number, @GetUser() user: User): Promise<Picto>{
+  getPictoById(@Param('id', ParseIntPipe) id : number, @AuthenticatedUser() user: User): Promise<Picto>{
     this.logger.verbose(`User "${user.username}" getting Picto with id ${id}`);
       return this.pictoService.getPictoById(id, user);
   }
 
-  @UseGuards(AuthGuard())
+  @UseGuards(AuthGuard)
   @Get()
   @ApiOperation({summary : 'get all your pictos'})
-  getAllUserPictos(@GetUser() user: User): Promise<Picto[]>{
+  getAllUserPictos(@AuthenticatedUser() user: User): Promise<Picto[]>{
     this.logger.verbose(`User "${user.username}" getting all Picto`);
     return this.pictoService.getAllUserPictos(user);
   }
 
-  @UseGuards(AuthGuard())
+  @UseGuards(AuthGuard)
   @Put('share/:id')
   @UsePipes(ValidationPipe)
   @ApiOperation({summary : 'share a picto with another user, with readonly or editor role'})
-  async sharePictoById(@Param('id', ParseIntPipe) id : number, @Body() multipleSharePictoDto: multipleSharePictoDto, @GetUser() user: User): Promise<Picto>{
+  async sharePictoById(@Param('id', ParseIntPipe) id : number, @Body() multipleSharePictoDto: multipleSharePictoDto, @AuthenticatedUser() user: User): Promise<Picto>{
       let picto: Picto;
       if(!multipleSharePictoDto.role){
         multipleSharePictoDto.role = 'viewer';
@@ -64,7 +61,7 @@ export class PictoController {
       return picto;
     }
   
-  @UseGuards(AuthGuard())
+  @UseGuards(AuthGuard)
   @Post()
   @UsePipes(ValidationPipe)
   @UseInterceptors(
@@ -77,7 +74,7 @@ export class PictoController {
       fileFilter: imageFileFilter,
     }),
   )
-  async createPicto(@Body() createPictoDto: createPictoDto, @GetUser() user: User, @UploadedFile() file: Express.Multer.File,): Promise<Picto>{
+  async createPicto(@Body() createPictoDto: createPictoDto, @AuthenticatedUser() user: User, @UploadedFile() file: Express.Multer.File,): Promise<Picto>{
       if(!file){
           this.logger.verbose(`User "${user.username}" tryed to create Picto without file or filename`);
           throw new NotFoundException(`There is no file or no filename`);
@@ -116,15 +113,15 @@ export class PictoController {
       }
   }
 
-  @UseGuards(AuthGuard())
+  @UseGuards(AuthGuard)
   @Delete()
-  deletePicto(@Query(ValidationPipe) deletePictoDto: deletePictoDto, @GetUser() user: User): Promise<void> {
+  deletePicto(@Query(ValidationPipe) deletePictoDto: deletePictoDto, @AuthenticatedUser() user: User): Promise<void> {
     deletePictoDto.pictoId=Number(deletePictoDto.pictoId);
     this.logger.verbose(`User "${user.username}" deleting Picto with id ${deletePictoDto.pictoId}`);
     return this.pictoService.deletePicto(deletePictoDto, user);
   }
 
-  @UseGuards(AuthGuard())
+  @UseGuards(AuthGuard)
   @Put('/:id')
   @UsePipes(ValidationPipe)
   @UseInterceptors(
@@ -137,7 +134,7 @@ export class PictoController {
       fileFilter: imageFileFilter,
     }),
   )
-  async modifyPicto(@Param('id', ParseIntPipe) id: number, @GetUser() user: User, @Body() modifyPictoDto: modifyPictoDto, @UploadedFile() file: Express.Multer.File): Promise<Picto>{
+  async modifyPicto(@Param('id', ParseIntPipe) id: number, @AuthenticatedUser() user: User, @Body() modifyPictoDto: modifyPictoDto, @UploadedFile() file: Express.Multer.File): Promise<Picto>{
     if(IsValid(modifyPictoDto.meaning, modifyPictoDto.speech)){
       this.logger.verbose(`User "${user.username}" Modifying Picto with id ${id}`);
       if(file){
@@ -151,9 +148,9 @@ export class PictoController {
       throw new BadRequestException(`Object is invalid, should be "{language <xx-XX> : text <string>} and both should have same length`);
     }
   }
-  @UseGuards(AuthGuard())
+  @UseGuards(AuthGuard)
   @Post('copy')
-  async copyPicto(@Body() copyPictoDto: copyPictoDto, @GetUser() user: User): Promise<Collection>{
+  async copyPicto(@Body() copyPictoDto: copyPictoDto, @AuthenticatedUser() user: User): Promise<Collection>{
     this.logger.verbose(`User "${user.username}" copying Picto with id ${copyPictoDto.pictoId}`);
     await this.pictoService.copyPicto(copyPictoDto.fatherCollectionId, copyPictoDto.pictoId, user);
     return this.collectionService.getCollectionById(copyPictoDto.fatherCollectionId, user)

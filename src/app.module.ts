@@ -13,16 +13,24 @@ import { TranslationController } from './translation/translation.controller';
 import { ConfigModule } from '@nestjs/config';
 import { FeedbackModule } from './feedback/feedback.module';
 import { ExtrasController } from './extras/extras.controller';
+import { KeycloakConnectModule } from 'nest-keycloak-connect';
 @Module({
   imports: [
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot(typeOrmConfig),
+    KeycloakConnectModule.register({
+      authServerUrl: 'https://auth.picmind.org',
+      realm: 'master',
+      clientId: 'caldav-api',
+      secret: '6lIPEisLPO6pwVFX1AgN87zLC2mnjodB',
+      // Secret key of the client taken from keycloak server
+    }),
     PictoModule,
     CollectionModule,
     AuthModule,
     HttpModule,
     CacheModule.register({ttl: 2592000000}), // 1 month
-    FeedbackModule
+    FeedbackModule,
   ],
   controllers: [AppController, ImageController, TranslationController, ExtrasController],
   providers: [AppService],

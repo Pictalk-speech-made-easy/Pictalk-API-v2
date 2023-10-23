@@ -1,13 +1,11 @@
 
 import { Get, InternalServerErrorException, UnauthorizedException, UseGuards } from "@nestjs/common";
 import { Controller } from "@nestjs/common/decorators/core/controller.decorator";
-import { AuthGuard } from "@nestjs/passport";
 import { AuthService } from "src/auth/auth.service";
-import { GetUser } from "src/auth/get-user.decorator";
 import { CollectionService } from "src/collection/collection.service";
 import { User } from "src/entities/user.entity";
 import { PictoService } from "src/picto/picto.service";
-
+import { AuthenticatedUser, AuthGuard } from 'nest-keycloak-connect';
 class DBReport {
   userNb: number;
   pictogramNb: number;
@@ -132,8 +130,8 @@ export class ExtrasController {
   }
 
   @Get('/dbsummary')
-  @UseGuards(AuthGuard())
-  async dbSummary(@GetUser() user: User): Promise<DBReport> {
+  @UseGuards(AuthGuard)
+  async dbSummary(@AuthenticatedUser() user: User): Promise<DBReport> {
     if (!user.admin) {
       throw new UnauthorizedException(`User ${user.username} is not admin, only admins can get feedbacks`);
     }

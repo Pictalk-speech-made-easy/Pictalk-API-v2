@@ -1,8 +1,6 @@
 import { BadRequestException, Body, Controller, Delete, ForbiddenException, Get, Logger, NotFoundException, Param, ParseIntPipe, Post, Put, Query, UnauthorizedException, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { GetUser } from 'src/auth/get-user.decorator';
 import { Collection } from 'src/entities/collection.entity';
 import { User } from 'src/entities/user.entity';
 import { IsValid } from 'src/utilities/creation';
@@ -16,18 +14,18 @@ import { publicCollectionDto } from './dto/collection.public.dto';
 import { deleteCollectionDto } from './dto/collection.delete.dto';
 import { copyCollectionDto } from './dto/collection.copy.dto';
 import { SearchCollectionDto } from './dto/collection.search.public.dto';
-import { OptionnalAuth } from 'src/auth/optionnal_auth.guard';
 import { levelCollectionDto } from './dto/collection.level.dto';
 import { MoveToCollectionDto } from './dto/collection.move.dto';
-
+import { AuthenticatedUser, Public, AuthGuard } from 'nest-keycloak-connect';
 @Controller('collection')
 export class CollectionController {
   private logger = new Logger('CollectionController');
   constructor(private collectionService: CollectionService){}
-  @UseGuards(OptionnalAuth)
+  
+  @Public(true)
   @Get('find/:id')
   @ApiOperation({summary : 'get a collection that has the provided id'})
-  getCollectionById(@Param('id', ParseIntPipe) id : number, @GetUser() user: User): Promise<Collection>{
+  getCollectionById(@Param('id', ParseIntPipe) id : number, @AuthenticatedUser() user: User): Promise<Collection>{
     this.logger.verbose(`User "${user.username}" getting Collection with id ${id}`);
       return this.collectionService.getCollectionById(id, user);
   }
@@ -68,18 +66,18 @@ export class CollectionController {
       return this.collectionService.getPublicCollection(SearchCollectionDto);
   }
   
-  @UseGuards(AuthGuard())
+  @UseGuards(AuthGuard)
   @Get()
   @ApiOperation({summary : 'get all your collection'})
-  getAllUserCollections(@GetUser() user: User): Promise<Collection[]>{
+  getAllUserCollections(@AuthenticatedUser() user: User): Promise<Collection[]>{
     this.logger.verbose(`User "${user.username}" getting all Collection`);
     return this.collectionService.getAllUserCollections(user);
   }
 
-  @UseGuards(AuthGuard())
+  @UseGuards(AuthGuard)
   @Post('copy')
   @ApiOperation({summary : 'copy a collection with its ID'})
-  async copyCollection(@Body() copyCollectionDto: copyCollectionDto, @GetUser() user: User): Promise<Collection>{
+  async copyCollection(@Body() copyCollectionDto: copyCollectionDto, @AuthenticatedUser() user: User): Promise<Collection>{
     const fatherCollection = await this.collectionService.getCollectionById(copyCollectionDto.fatherCollectionId, user);
     const copiedId = await this.collectionService.copyCollection(copyCollectionDto.fatherCollectionId, copyCollectionDto.collectionId, user);
     let fatherCollectionsIds = fatherCollection.collections.map(collection => {
@@ -99,11 +97,11 @@ export class CollectionController {
     return this.getCollectionById(copyCollectionDto.fatherCollectionId, user);
   }
 
-  @UseGuards(AuthGuard())
+  @UseGuards(AuthGuard)
   @Put('share/:id')
   @UsePipes(ValidationPipe)
   @ApiOperation({summary : 'share a collection with another user, with readonly or editor role'})
-  async shareCollectionById(@Param('id', ParseIntPipe) id : number, @Body() multipleShareCollectionDto: multipleShareCollectionDto, @GetUser() user: User): Promise<Collection>{
+  async shareCollectionById(@Param('id', ParseIntPipe) id : number, @Body() multipleShareCollectionDto: multipleShareCollectionDto, @AuthenticatedUser() user: User): Promise<Collection>{
     let collection: Collection;
     if(!multipleShareCollectionDto.role){
       multipleShareCollectionDto.role='viewer';
@@ -118,10 +116,10 @@ export class CollectionController {
     return collection;
   }
 
-  @UseGuards(AuthGuard())
+  @UseGuards(AuthGuard)
   @Put('publish/:id')
   @UsePipes(ValidationPipe)
-  publishCollectionById(@Param('id', ParseIntPipe) id : number, @Body() publicCollectionDto: publicCollectionDto, @GetUser() user: User): Promise<Collection>{
+  publishCollectionById(@Param('id', ParseIntPipe) id : number, @Body() publicCollectionDto: publicCollectionDto, @AuthenticatedUser() user: User): Promise<Collection>{
     if(user.admin===true){
       return this.collectionService.publishCollectionById(id, publicCollectionDto, user);
     } else {
@@ -129,7 +127,7 @@ export class CollectionController {
     }
   }
 
-  @UseGuards(AuthGuard())
+  @UseGuards(AuthGuard)
   @Post()
   @UsePipes(ValidationPipe)
   @UseInterceptors(
@@ -142,7 +140,7 @@ export class CollectionController {
       fileFilter: imageFileFilter,
     }),
   )
-  async createCollection(@Body() createCollectionDto: createCollectionDto, @GetUser() user: User, @UploadedFile() file: Express.Multer.File,): Promise<Collection>{
+  async createCollection(@Body() createCollectionDto: createCollectionDto, @AuthenticatedUser() user: User, @UploadedFile() file: Express.Multer.File,): Promise<Collection>{
       if(!file){
         this.logger.verbose(`User "${user.username}" Made a bad request that doesn't contain a file`);
         throw new NotFoundException(`There is no file or no filename`);
@@ -183,22 +181,22 @@ export class CollectionController {
       }
   }
 
-  @UseGuards(AuthGuard())
+  @UseGuards(AuthGuard)
   @Post('/root')
-  createRoot(@GetUser() user: User): Promise<number>{
+  createRoot(@AuthenticatedUser() user: User): Promise<number>{
     this.logger.verbose(`User "${user.username}" Creating 'Root' Collection if needed`);
     return this.collectionService.createRoot(user);
   }
 
-  @UseGuards(AuthGuard())
+  @UseGuards(AuthGuard)
   @Delete()
-  deleteCollection(@Query(ValidationPipe) deleteCollectionDto: deleteCollectionDto, @GetUser() user: User): Promise<void> {
+  deleteCollection(@Query(ValidationPipe) deleteCollectionDto: deleteCollectionDto, @AuthenticatedUser() user: User): Promise<void> {
     deleteCollectionDto.collectionId=Number(deleteCollectionDto.collectionId);
     this.logger.verbose(`User "${user.username}" deleting Collection with id ${deleteCollectionDto.collectionId}`);
     return this.collectionService.deleteCollection(deleteCollectionDto, user);
   }
 
-  @UseGuards(AuthGuard())
+  @UseGuards(AuthGuard)
   @Put('/:id')
   @UsePipes(ValidationPipe)
   @UseInterceptors(
@@ -211,7 +209,7 @@ export class CollectionController {
       fileFilter: imageFileFilter,
     }),
   )
-  async modifyCollection(@Param('id', ParseIntPipe) id: number, @GetUser() user: User, @Body() modifyCollectionDto: modifyCollectionDto, @UploadedFile() file: Express.Multer.File): Promise<Collection>{
+  async modifyCollection(@Param('id', ParseIntPipe) id: number, @AuthenticatedUser() user: User, @Body() modifyCollectionDto: modifyCollectionDto, @UploadedFile() file: Express.Multer.File): Promise<Collection>{
     if(IsValid(modifyCollectionDto.meaning, modifyCollectionDto.speech)){      
       this.logger.verbose(`User "${user.username}" Modifying Collection with id ${id}`);
       if(file){
@@ -226,10 +224,10 @@ export class CollectionController {
     }
   }
 
-  @UseGuards(AuthGuard())
+  @UseGuards(AuthGuard)
   @Put('/move/:id')
   @UsePipes(ValidationPipe)
-  async moveToCollection(@Param('id', ParseIntPipe) fatherCollectionId: number, @GetUser() user: User, @Body() moveToCollectionDto: MoveToCollectionDto): Promise<Collection>{
+  async moveToCollection(@Param('id', ParseIntPipe) fatherCollectionId: number, @AuthenticatedUser() user: User, @Body() moveToCollectionDto: MoveToCollectionDto): Promise<Collection>{
     this.logger.verbose(`User "${user.username}" Moving Collection ${moveToCollectionDto.sourceCollectionId} or Picto ${moveToCollectionDto.sourcePictoId} to ${moveToCollectionDto.targetCollectionId}`);
     return this.collectionService.moveToCollection(user, moveToCollectionDto, fatherCollectionId);
   }
