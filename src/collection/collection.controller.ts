@@ -228,7 +228,7 @@ export class CollectionController {
           await this.searchService.updatePictogram(editedCollection, true);
         } catch (err) {
           if (err.statusCode === 404) {
-            await this.searchService.indexPictogram(editedCollection, true);
+            this.searchService.indexPictogram(editedCollection, true);
           }
         }
         return editedCollection;
