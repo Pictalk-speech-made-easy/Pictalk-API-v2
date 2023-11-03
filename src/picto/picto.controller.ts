@@ -18,6 +18,7 @@ import { deletePictoDto } from './dto/picto.delete.dto';
 import { copyPictoDto } from './dto/picto.copy.dto';
 import { Collection } from 'src/entities/collection.entity';
 import { OptionnalAuth } from 'src/auth/optionnal_auth.guard';
+import { SearchService } from 'src/search/search.service';
 
 @Controller('picto')
 export class PictoController {
@@ -25,7 +26,9 @@ export class PictoController {
   constructor(
   private pictoService: PictoService,
   @Inject(forwardRef(() => CollectionService))
-  private collectionService: CollectionService
+  private collectionService: CollectionService,
+  @Inject(forwardRef(() => SearchService))
+  private searchService : SearchService
   ){}
 
   @UseGuards(OptionnalAuth)
@@ -104,6 +107,7 @@ export class PictoController {
               this.pictoService.autoShare(picto, fatherCollection);
               this.logger.verbose(`Auto sharing picto "${picto.id}" with viewers and editors`);
             }
+            this.searchService.indexPictogram(picto, false);
             return picto;
           } else {
             this.logger.verbose(`User "${user.username}" tried to create collection into shared collections`);
@@ -118,10 +122,12 @@ export class PictoController {
 
   @UseGuards(AuthGuard())
   @Delete()
-  deletePicto(@Query(ValidationPipe) deletePictoDto: deletePictoDto, @GetUser() user: User): Promise<void> {
+  async deletePicto(@Query(ValidationPipe) deletePictoDto: deletePictoDto, @GetUser() user: User): Promise<void> {
     deletePictoDto.pictoId=Number(deletePictoDto.pictoId);
     this.logger.verbose(`User "${user.username}" deleting Picto with id ${deletePictoDto.pictoId}`);
     return this.pictoService.deletePicto(deletePictoDto, user);
+    // TODO : delete the pictogram from the search engine if it isn't used in another collection
+    //this.searchService.removePictogram(deletePictoDto.pictoId, false);
   }
 
   @UseGuards(AuthGuard())
@@ -140,12 +146,14 @@ export class PictoController {
   async modifyPicto(@Param('id', ParseIntPipe) id: number, @GetUser() user: User, @Body() modifyPictoDto: modifyPictoDto, @UploadedFile() file: Express.Multer.File): Promise<Picto>{
     if(IsValid(modifyPictoDto.meaning, modifyPictoDto.speech)){
       this.logger.verbose(`User "${user.username}" Modifying Picto with id ${id}`);
+      let filename = null;
       if(file){
-          const filename = await hashImage(file);
-          return this.pictoService.modifyPicto(id, user, modifyPictoDto, filename);
-      } else {
-          return this.pictoService.modifyPicto(id, user, modifyPictoDto, null);
+        filename = await hashImage(file);
       }
+
+      const res = await this.pictoService.modifyPicto(id, user, modifyPictoDto, filename);
+      this.searchService.updatePictogram(res, false);
+      return res;
     } else {
       this.logger.verbose(`User "${user.username}"Made a bad request where Object has either invalid attributes or "meaning" and "speech" don't have the same length`);
       throw new BadRequestException(`Object is invalid, should be "{language <xx-XX> : text <string>} and both should have same length`);

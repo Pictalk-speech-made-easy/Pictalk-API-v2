@@ -5,11 +5,13 @@ import { TypeOrmExModule } from 'src/utilities/typeorm-ex.module';
 import { CollectionController } from './collection.controller';
 import { CollectionRepository } from './collection.repository';
 import { CollectionService } from './collection.service';
+import { SearchModule } from 'src/search/search.module';
 
 @Module({
   imports: [
     forwardRef(() => AuthModule),
     forwardRef(() => PictoModule),
+    forwardRef(() => SearchModule),
     TypeOrmExModule.forCustomRepository([CollectionRepository]),
   ],
   controllers: [CollectionController],

@@ -15,7 +15,8 @@ import { modifyCollectionDto } from './dto/collection.modify.dto';
 import { MoveToCollectionDto } from './dto/collection.move.dto';
 import { publicCollectionDto } from './dto/collection.public.dto';
 import { SearchCollectionDto } from './dto/collection.search.public.dto';
-import { shareCollectionDto, multipleShareCollectionDto } from './dto/collection.share.dto';
+import { multipleShareCollectionDto } from './dto/collection.share.dto';
+import { SearchService } from 'src/search/search.service';
 
 @Injectable()
 export class CollectionService {
@@ -26,7 +27,8 @@ export class CollectionService {
         private authService : AuthService,
         @Inject(forwardRef(() => PictoService))
         private pictoService : PictoService,
-
+        @Inject(forwardRef(() => SearchService))
+        private searchService : SearchService,
     ) { }
 
     async getCollectionCount(): Promise<number>{
@@ -74,7 +76,12 @@ export class CollectionService {
     async getAllUserCollections(user:User): Promise<Collection[]>{
         const collection = await this.collectionRepository.find({relations: ["pictos", "collections"],where : {userId: user.id}});
         return collection;
-    } 
+    }
+    
+    async getAllCollections(): Promise<Collection[]>{
+        const collection = await this.collectionRepository.find();
+        return collection;
+    }
 
     async createCollection(createCollectionDto: createCollectionDto, user: User, filename: string): Promise<Collection> {
         createCollectionDto.collectionIds = await this.verifyOwnership(createCollectionDto.collectionIds, user);
@@ -117,6 +124,7 @@ export class CollectionService {
                     id: deleteCollectionDto.collectionId,
                     userId: user.id,
                   });
+                  this.searchService.removePictogram(deleteCollectionDto.collectionId, true);
             } catch(error){
                 if(error.code === "23503"){
                     return;

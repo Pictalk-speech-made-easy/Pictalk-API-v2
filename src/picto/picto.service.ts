@@ -12,6 +12,7 @@ import { CollectionService } from 'src/collection/collection.service';
 import { deletePictoDto } from './dto/picto.delete.dto';
 import { modifyCollectionDto } from 'src/collection/dto/collection.modify.dto';
 import { Notif } from 'src/entities/notification.entity';
+import { SearchService } from 'src/search/search.service';
 
 @Injectable()
 export class PictoService {
@@ -22,6 +23,8 @@ export class PictoService {
         private authService : AuthService,
         @Inject(forwardRef(() => CollectionService))
         private collectionService : CollectionService,
+        @Inject(forwardRef(() => SearchService))
+        private searchService : SearchService,
     ) { }
 
     async getPictoById(id: number, user : User): Promise<Picto>{
@@ -77,6 +80,11 @@ export class PictoService {
         return found;
     } 
 
+    async getAllPictos(): Promise<Picto[]>{
+        const pictos = await this.pictoRepository.find();
+        return pictos;
+    }
+
     async createPicto(createPictoDto: createPictoDto, user: User, filename: string): Promise<Picto> {
         return this.pictoRepository.createPicto(createPictoDto, user, filename);
     }
@@ -104,6 +112,7 @@ export class PictoService {
                 id: deletePictoDto.pictoId,
                 userId: user.id,
               });
+              this.searchService.removePictogram(deletePictoDto.pictoId, false);
             if(result.affected===0) {
                 throw new NotFoundException(`Picto with ID "${deletePictoDto.pictoId}" not found`);
             }

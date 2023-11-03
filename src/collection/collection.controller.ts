@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, ForbiddenException, Get, Logger, NotFoundException, Param, ParseIntPipe, Post, Put, Query, UnauthorizedException, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, ForbiddenException, Get, Inject, Logger, NotFoundException, Param, ParseIntPipe, Post, Put, Query, UnauthorizedException, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe, forwardRef } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -19,11 +19,13 @@ import { SearchCollectionDto } from './dto/collection.search.public.dto';
 import { OptionnalAuth } from 'src/auth/optionnal_auth.guard';
 import { levelCollectionDto } from './dto/collection.level.dto';
 import { MoveToCollectionDto } from './dto/collection.move.dto';
+import { SearchService } from 'src/search/search.service';
 
 @Controller('collection')
 export class CollectionController {
   private logger = new Logger('CollectionController');
-  constructor(private collectionService: CollectionService){}
+  constructor(private collectionService: CollectionService, @Inject(forwardRef(() => SearchService))
+  private searchService : SearchService,){}
   @UseGuards(OptionnalAuth)
   @Get('find/:id')
   @ApiOperation({summary : 'get a collection that has the provided id'})
@@ -152,6 +154,7 @@ export class CollectionController {
             this.logger.verbose(`User "${user.username}" creating Collection`);
             const filename = await hashImage(file);
             const collection = await this.collectionService.createCollection(createCollectionDto, user, filename);
+            this.searchService.indexPictogram(collection, true);
             const fatherCollection = await this.collectionService.getCollectionById(createCollectionDto.fatherCollectionId, user);
             let fatherCollectionsIds = fatherCollection.collections.map(collection => {
               return collection.id;
@@ -166,7 +169,7 @@ export class CollectionController {
               collectionIds : fatherCollectionsIds,
               pictohubId: null
             }
-            this.collectionService.modifyCollection(createCollectionDto.fatherCollectionId, user, modifyCollectionDto, null);
+            await this.collectionService.modifyCollection(createCollectionDto.fatherCollectionId, user, modifyCollectionDto, null);
             if(createCollectionDto.share!=0){
               this.collectionService.autoShare(collection, fatherCollection);
               this.logger.verbose(`Auto sharing collection "${collection.id}" with viewers and editors`);
@@ -195,6 +198,8 @@ export class CollectionController {
   deleteCollection(@Query(ValidationPipe) deleteCollectionDto: deleteCollectionDto, @GetUser() user: User): Promise<void> {
     deleteCollectionDto.collectionId=Number(deleteCollectionDto.collectionId);
     this.logger.verbose(`User "${user.username}" deleting Collection with id ${deleteCollectionDto.collectionId}`);
+    // TODO : delete the pictogram from the search engine if it isn't used in another collection
+    //this.searchService.removePictogram(deleteCollectionDto.collectionId, true);
     return this.collectionService.deleteCollection(deleteCollectionDto, user);
   }
 
@@ -214,12 +219,19 @@ export class CollectionController {
   async modifyCollection(@Param('id', ParseIntPipe) id: number, @GetUser() user: User, @Body() modifyCollectionDto: modifyCollectionDto, @UploadedFile() file: Express.Multer.File): Promise<Collection>{
     if(IsValid(modifyCollectionDto.meaning, modifyCollectionDto.speech)){      
       this.logger.verbose(`User "${user.username}" Modifying Collection with id ${id}`);
-      if(file){
-          const filename = await hashImage(file);
-        return this.collectionService.modifyCollection(id, user, modifyCollectionDto, filename);
-      } else {
-        return this.collectionService.modifyCollection(id, user, modifyCollectionDto, null);
-      }
+        let filename = null;
+        if(file){
+          filename = await hashImage(file);
+        }
+        const editedCollection = await this.collectionService.modifyCollection(id, user, modifyCollectionDto, filename)
+        try {
+          await this.searchService.updatePictogram(editedCollection, true);
+        } catch (err) {
+          if (err.statusCode === 404) {
+            await this.searchService.indexPictogram(editedCollection, true);
+          }
+        }
+        return editedCollection;
     } else {
       this.logger.verbose(`User "${user.username}"Made a bad request where Object has either invalid attributes or "meaning" and "speech" don't have the same length`);
       throw new BadRequestException(`Object is invalid, should be "{language <xx-XX> : text <string>} and both should have same length`);

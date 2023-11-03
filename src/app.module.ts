@@ -13,6 +13,10 @@ import { TranslationController } from './translation/translation.controller';
 import { ConfigModule } from '@nestjs/config';
 import { FeedbackModule } from './feedback/feedback.module';
 import { ExtrasController } from './extras/extras.controller';
+import { SearchModule } from './search/search.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { TasksModule } from './tasks/tasks.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -22,7 +26,10 @@ import { ExtrasController } from './extras/extras.controller';
     AuthModule,
     HttpModule,
     CacheModule.register({ttl: 2592000000}), // 1 month
-    FeedbackModule
+    FeedbackModule,
+    SearchModule,
+    ScheduleModule.forRoot(),
+    TasksModule,
   ],
   controllers: [AppController, ImageController, TranslationController, ExtrasController],
   providers: [AppService],
