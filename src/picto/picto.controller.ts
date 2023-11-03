@@ -32,7 +32,7 @@ export class PictoController {
       return this.pictoService.getPictoById(id, user);
   }
 
-  @UseGuards(AuthGuard)
+  
   @Get()
   @ApiOperation({summary : 'get all your pictos'})
   getAllUserPictos(@AuthenticatedUser() user: User): Promise<Picto[]>{
@@ -40,7 +40,7 @@ export class PictoController {
     return this.pictoService.getAllUserPictos(user);
   }
 
-  @UseGuards(AuthGuard)
+  
   @Put('share/:id')
   @UsePipes(ValidationPipe)
   @ApiOperation({summary : 'share a picto with another user, with readonly or editor role'})
@@ -61,7 +61,7 @@ export class PictoController {
       return picto;
     }
   
-  @UseGuards(AuthGuard)
+  
   @Post()
   @UsePipes(ValidationPipe)
   @UseInterceptors(
@@ -113,7 +113,7 @@ export class PictoController {
       }
   }
 
-  @UseGuards(AuthGuard)
+  
   @Delete()
   deletePicto(@Query(ValidationPipe) deletePictoDto: deletePictoDto, @AuthenticatedUser() user: User): Promise<void> {
     deletePictoDto.pictoId=Number(deletePictoDto.pictoId);
@@ -121,7 +121,7 @@ export class PictoController {
     return this.pictoService.deletePicto(deletePictoDto, user);
   }
 
-  @UseGuards(AuthGuard)
+  
   @Put('/:id')
   @UsePipes(ValidationPipe)
   @UseInterceptors(
@@ -148,7 +148,7 @@ export class PictoController {
       throw new BadRequestException(`Object is invalid, should be "{language <xx-XX> : text <string>} and both should have same length`);
     }
   }
-  @UseGuards(AuthGuard)
+  
   @Post('copy')
   async copyPicto(@Body() copyPictoDto: copyPictoDto, @AuthenticatedUser() user: User): Promise<Collection>{
     this.logger.verbose(`User "${user.username}" copying Picto with id ${copyPictoDto.pictoId}`);

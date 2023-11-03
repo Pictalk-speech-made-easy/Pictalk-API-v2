@@ -12,14 +12,14 @@ export class FeedbackController {
   private logger = new Logger('CollectionController');
   constructor(private feedbackService: FeedbackService){}
 
-  @UseGuards(AuthGuard)
+  
   @Post()
   @UsePipes(ValidationPipe)
   async createFeedback(@Body() createFeedbackDto: CreateFeedbackDto): Promise<void>{
     this.logger.verbose(`Ccreating a feedback with title: ${createFeedbackDto.title}`);
     return this.feedbackService.createFeedback(createFeedbackDto);
   }
-  @UseGuards(AuthGuard)
+  
   @Get()
   @UsePipes(ValidationPipe)
   async getFeedback(@AuthenticatedUser() user: User, @Query() searchFeedbackDto: SearchFeedbackDto): Promise<{feedbacks: Feedback[], total_count: number}>{
@@ -31,7 +31,7 @@ export class FeedbackController {
     return this.feedbackService.getFeedback(searchFeedbackDto);
   }
 
-  @UseGuards(AuthGuard)
+  
   @Put('/:id')
   @UsePipes(ValidationPipe)
   async editFeedback(@AuthenticatedUser() user: User, @Param('id', ParseIntPipe) id: number, @Body() editFeedbackDto: EditFeedbackDto): Promise<Feedback>{

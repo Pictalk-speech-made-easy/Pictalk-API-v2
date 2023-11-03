@@ -38,7 +38,7 @@ export class ImageController {
 
   @Get('/web/')
   @UseInterceptors(CacheInterceptor)
-  @UseGuards(AuthGuard)
+  
   async searchImages(@Query(ValidationPipe) filterDto: FilterDto): Promise<WebImage[]> {
     let webImages : WebImage[]= [];
     let promises : Promise<any>[] = [];

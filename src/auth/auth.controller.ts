@@ -53,14 +53,14 @@ export class AuthController {
     }
   
     @Get('user/details')
-    @UseGuards(AuthGuard)
+    
     getUserDetails(@AuthenticatedUser() user: User): Promise<User> {
       this.logger.verbose(`User "${user.username}" is trying to get Details`);
       return this.authService.getUserDetails(user);
     }
   
     @Put('user/details')
-    @UseGuards(AuthGuard)
+    
     async editUser(
       @AuthenticatedUser() user: User,
       @Body(ValidationPipe) editUserDto: EditUserDto,
@@ -88,7 +88,7 @@ export class AuthController {
       return editedUser;
     }
 
-    @UseGuards(AuthGuard)
+    
     @Get('/user/root')
     async getRoot(@AuthenticatedUser() user: User): Promise<Collection>{
         this.logger.verbose(`User "${user.username}" getting his root`);
@@ -96,7 +96,7 @@ export class AuthController {
         return this.collectionService.getCollectionById(root, user);
     }
 
-    @UseGuards(AuthGuard)
+    
     @Get('/user/sider')
     async getSider(@AuthenticatedUser() user: User): Promise<Collection>{
         this.logger.verbose(`User "${user.username}" getting his root`);
@@ -104,7 +104,7 @@ export class AuthController {
         return this.collectionService.getCollectionById(sider, user);
     }
 
-    @UseGuards(AuthGuard)
+    
     @Get('/user/shared')
     async getShared(@AuthenticatedUser() user: User): Promise<Collection>{
         this.logger.verbose(`User "${user.username}" getting his shared with me Collection`);
@@ -112,13 +112,13 @@ export class AuthController {
         return this.collectionService.getCollectionById(shared, user);
     }
 
-    @UseGuards(AuthGuard)
+    
     @Get('/user/notification')
     async getNotifications(@AuthenticatedUser() user: User): Promise<Notif[]>{
         return this.authService.getNotifications(user);
     }
 
-    @UseGuards(AuthGuard)
+    
     @Delete('/user/notification')
     async clearNotifications(@AuthenticatedUser() user: User): Promise<Notif[]>{
         this.logger.verbose(`User "${user.username}" clearing his notifications`);

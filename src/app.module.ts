@@ -13,7 +13,8 @@ import { TranslationController } from './translation/translation.controller';
 import { ConfigModule } from '@nestjs/config';
 import { FeedbackModule } from './feedback/feedback.module';
 import { ExtrasController } from './extras/extras.controller';
-import { KeycloakConnectModule } from 'nest-keycloak-connect';
+import { AuthGuard, KeycloakConnectModule, ResourceGuard, RoleGuard } from 'nest-keycloak-connect';
+import { APP_GUARD } from '@nestjs/core';
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -21,8 +22,8 @@ import { KeycloakConnectModule } from 'nest-keycloak-connect';
     KeycloakConnectModule.register({
       authServerUrl: 'https://auth.picmind.org',
       realm: 'master',
-      clientId: 'caldav-api',
-      secret: '6lIPEisLPO6pwVFX1AgN87zLC2mnjodB',
+      clientId: 'pictalk-api',
+      secret: 'CWLSdXiTtaRfaVmg1DIDHAfqK67E3HGd',
       // Secret key of the client taken from keycloak server
     }),
     PictoModule,
@@ -33,6 +34,27 @@ import { KeycloakConnectModule } from 'nest-keycloak-connect';
     FeedbackModule,
   ],
   controllers: [AppController, ImageController, TranslationController, ExtrasController],
-  providers: [AppService],
+  providers: [AppService, 
+    {
+    provide: APP_GUARD,
+    useClass: AuthGuard,
+  },
+  // This adds a global level resource guard, which is permissive.
+  // Only controllers annotated with (http://twitter.com/Resource) and
+  // methods with @Scopes
+  // are handled by this guard.
+  {
+    provide: APP_GUARD,
+    useClass: ResourceGuard,
+  },
+  // New in 1.1.0
+  // This adds a global level role guard, which is permissive.
+  // Used by @Roles decorator with the
+  // optional @AllowAnyRole decorator for allowing any
+  // specified role passed.
+  {
+    provide: APP_GUARD,
+    useClass: RoleGuard,
+  }],
 })
 export class AppModule {}

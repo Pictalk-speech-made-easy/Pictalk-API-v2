@@ -66,7 +66,7 @@ export class CollectionController {
       return this.collectionService.getPublicCollection(SearchCollectionDto);
   }
   
-  @UseGuards(AuthGuard)
+  
   @Get()
   @ApiOperation({summary : 'get all your collection'})
   getAllUserCollections(@AuthenticatedUser() user: User): Promise<Collection[]>{
@@ -74,7 +74,7 @@ export class CollectionController {
     return this.collectionService.getAllUserCollections(user);
   }
 
-  @UseGuards(AuthGuard)
+  
   @Post('copy')
   @ApiOperation({summary : 'copy a collection with its ID'})
   async copyCollection(@Body() copyCollectionDto: copyCollectionDto, @AuthenticatedUser() user: User): Promise<Collection>{
@@ -97,7 +97,7 @@ export class CollectionController {
     return this.getCollectionById(copyCollectionDto.fatherCollectionId, user);
   }
 
-  @UseGuards(AuthGuard)
+  
   @Put('share/:id')
   @UsePipes(ValidationPipe)
   @ApiOperation({summary : 'share a collection with another user, with readonly or editor role'})
@@ -116,7 +116,7 @@ export class CollectionController {
     return collection;
   }
 
-  @UseGuards(AuthGuard)
+  
   @Put('publish/:id')
   @UsePipes(ValidationPipe)
   publishCollectionById(@Param('id', ParseIntPipe) id : number, @Body() publicCollectionDto: publicCollectionDto, @AuthenticatedUser() user: User): Promise<Collection>{
@@ -127,7 +127,7 @@ export class CollectionController {
     }
   }
 
-  @UseGuards(AuthGuard)
+  
   @Post()
   @UsePipes(ValidationPipe)
   @UseInterceptors(
@@ -181,14 +181,14 @@ export class CollectionController {
       }
   }
 
-  @UseGuards(AuthGuard)
+  
   @Post('/root')
   createRoot(@AuthenticatedUser() user: User): Promise<number>{
     this.logger.verbose(`User "${user.username}" Creating 'Root' Collection if needed`);
     return this.collectionService.createRoot(user);
   }
 
-  @UseGuards(AuthGuard)
+  
   @Delete()
   deleteCollection(@Query(ValidationPipe) deleteCollectionDto: deleteCollectionDto, @AuthenticatedUser() user: User): Promise<void> {
     deleteCollectionDto.collectionId=Number(deleteCollectionDto.collectionId);
@@ -196,7 +196,7 @@ export class CollectionController {
     return this.collectionService.deleteCollection(deleteCollectionDto, user);
   }
 
-  @UseGuards(AuthGuard)
+  
   @Put('/:id')
   @UsePipes(ValidationPipe)
   @UseInterceptors(
@@ -224,7 +224,7 @@ export class CollectionController {
     }
   }
 
-  @UseGuards(AuthGuard)
+  
   @Put('/move/:id')
   @UsePipes(ValidationPipe)
   async moveToCollection(@Param('id', ParseIntPipe) fatherCollectionId: number, @AuthenticatedUser() user: User, @Body() moveToCollectionDto: MoveToCollectionDto): Promise<Collection>{

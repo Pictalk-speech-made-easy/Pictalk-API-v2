@@ -24,7 +24,7 @@ export class TranslationResponse{
 export class TranslationController {
   constructor(private httpService: HttpService) {}
   private deeplApiDeepL = process.env.DEEPL_API_KEY;
-  @UseGuards(AuthGuard)
+  
   @Post()
   async getTraduction(@Body() TranslateDto: TranslateDto): Promise<TranslationResponse> {
     if(languageMapping[TranslateDto.targetLang] !== undefined){

@@ -130,7 +130,7 @@ export class ExtrasController {
   }
 
   @Get('/dbsummary')
-  @UseGuards(AuthGuard)
+  
   async dbSummary(@AuthenticatedUser() user: User): Promise<DBReport> {
     if (!user.admin) {
       throw new UnauthorizedException(`User ${user.username} is not admin, only admins can get feedbacks`);
