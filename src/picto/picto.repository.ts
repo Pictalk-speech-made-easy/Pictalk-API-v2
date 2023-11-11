@@ -18,8 +18,16 @@ export class PictoRepository extends Repository<Picto> {
   ): Promise<Picto> {
     let { meaning, speech, collectionIds, color, pictohubId } = createPictoDto;
     const picto = new Picto();
-    picto.meaning = JSON.parse(meaning);
-    picto.speech = JSON.parse(speech);
+    try {
+      picto.speech = JSON.parse(speech);
+    } catch (error) {
+      picto.speech = {};
+    }
+    try {
+      picto.speech = JSON.parse(speech);
+    } catch (error) {
+      picto.speech = {};
+    }
     picto.image = filename;
     picto.userId = user.id;
     if (color) {
@@ -52,10 +60,18 @@ export class PictoRepository extends Repository<Picto> {
     let { meaning, speech, collectionIds, priority, color, pictohubId } =
       modifyPictoDto;
     if (meaning) {
-      picto.meaning = JSON.parse(meaning);
+      try {
+        picto.meaning = JSON.parse(meaning);
+      } catch (error) {
+        picto.meaning = {};
+      }
     }
     if (speech) {
-      picto.speech = JSON.parse(speech);
+      try {
+        picto.speech = JSON.parse(speech);
+      } catch (error) {
+        picto.speech = {};
+      }
     }
     if (color) {
       picto.color = color;

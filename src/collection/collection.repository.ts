@@ -30,8 +30,18 @@ export class CollectionRepository extends Repository<Collection> {
     let { meaning, speech, pictoIds, collectionIds, color, pictohubId } =
       createCollectionDto;
     const collection = new Collection();
-    collection.meaning = JSON.parse(meaning);
-    collection.speech = JSON.parse(speech);
+    try {
+      collection.meaning = JSON.parse(meaning);
+    } catch (error) {
+      collection.meaning = {};
+    }
+
+    try {
+      collection.speech = JSON.parse(speech);
+    } catch (error) {
+      collection.speech = {};
+    }
+
     collection.userId = user.id;
     if (pictoIds) {
       pictoIds = parseNumberArray(pictoIds);
@@ -78,10 +88,18 @@ export class CollectionRepository extends Repository<Collection> {
       pictohubId,
     } = modifyCollectionDto;
     if (meaning) {
-      collection.meaning = JSON.parse(meaning);
+      try {
+        collection.meaning = JSON.parse(meaning);
+      } catch (error) {
+        collection.meaning = {};
+      }
     }
     if (speech) {
-      collection.speech = JSON.parse(speech);
+      try {
+        collection.speech = JSON.parse(speech);
+      } catch (error) {
+        collection.speech = {};
+      }
     }
     if (filename) {
       collection.image = filename;
