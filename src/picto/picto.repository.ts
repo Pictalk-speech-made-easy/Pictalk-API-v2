@@ -173,8 +173,16 @@ export class PictoRepository extends Repository<Picto> {
     user: User,
   ): Promise<Picto> {
     const copiedPicto = new Picto();
-    copiedPicto.meaning = picto.meaning;
-    copiedPicto.speech = picto.speech;
+    try {
+      copiedPicto.meaning = JSON.parse(picto.meaning);
+    } catch (error) {
+      copiedPicto.meaning = picto.meaning;
+    }
+    try {
+      copiedPicto.speech = JSON.parse(picto.speech);
+    } catch (error) {
+      copiedPicto.speech = picto.speech;
+    }
     copiedPicto.image = picto.image;
     copiedPicto.userId = user.id;
     copiedPicto.color = picto.color;
