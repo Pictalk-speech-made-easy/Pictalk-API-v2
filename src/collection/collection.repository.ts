@@ -30,8 +30,8 @@ export class CollectionRepository extends Repository<Collection> {
     let { meaning, speech, pictoIds, collectionIds, color, pictohubId } =
       createCollectionDto;
     const collection = new Collection();
-    collection.meaning = meaning;
-    collection.speech = speech;
+    collection.meaning = JSON.parse(meaning);
+    collection.speech = JSON.parse(speech);
     collection.userId = user.id;
     if (pictoIds) {
       pictoIds = parseNumberArray(pictoIds);
@@ -78,10 +78,10 @@ export class CollectionRepository extends Repository<Collection> {
       pictohubId,
     } = modifyCollectionDto;
     if (meaning) {
-      collection.meaning = meaning;
+      collection.meaning = JSON.parse(meaning);
     }
     if (speech) {
-      collection.speech = speech;
+      collection.speech = JSON.parse(speech);
     }
     if (filename) {
       collection.image = filename;
@@ -232,8 +232,8 @@ export class CollectionRepository extends Repository<Collection> {
   async createSider(user: User): Promise<number> {
     if (user.sider === null) {
       const sider = new Collection();
-      sider.meaning = '';
-      sider.speech = '';
+      sider.meaning = {};
+      sider.speech = {};
       sider.userId = user.id;
       try {
         await sider.save();
