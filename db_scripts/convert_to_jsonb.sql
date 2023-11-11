@@ -1,3 +1,6 @@
+-- Script to convert the 'meaning' column from TEXT to JSONB
+-- Use it for 'speech' for both pictos and collections
+
 -- Add a new temporary JSONB column to the 'collection' table
 ALTER TABLE picto ADD COLUMN speech_jsonb JSONB;
 

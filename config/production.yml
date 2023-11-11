@@ -1,2 +1,2 @@
 db:
-  synchronize: true
+  synchronize: false
