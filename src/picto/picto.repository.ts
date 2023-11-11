@@ -19,14 +19,14 @@ export class PictoRepository extends Repository<Picto> {
     let { meaning, speech, collectionIds, color, pictohubId } = createPictoDto;
     const picto = new Picto();
     try {
-      picto.speech = JSON.parse(speech);
+      picto.meaning = JSON.parse(meaning);
     } catch (error) {
-      picto.speech = {};
+      picto.meaning = meaning;
     }
     try {
       picto.speech = JSON.parse(speech);
     } catch (error) {
-      picto.speech = {};
+      picto.speech = speech;
     }
     picto.image = filename;
     picto.userId = user.id;
