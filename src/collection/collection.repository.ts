@@ -33,13 +33,13 @@ export class CollectionRepository extends Repository<Collection> {
     try {
       collection.meaning = JSON.parse(meaning);
     } catch (error) {
-      collection.meaning = {};
+      collection.meaning = meaning;
     }
 
     try {
       collection.speech = JSON.parse(speech);
     } catch (error) {
-      collection.speech = {};
+      collection.speech = speech;
     }
 
     collection.userId = user.id;
@@ -91,14 +91,14 @@ export class CollectionRepository extends Repository<Collection> {
       try {
         collection.meaning = JSON.parse(meaning);
       } catch (error) {
-        collection.meaning = {};
+        collection.meaning = meaning;
       }
     }
     if (speech) {
       try {
         collection.speech = JSON.parse(speech);
       } catch (error) {
-        collection.speech = {};
+        collection.speech = speech;
       }
     }
     if (filename) {

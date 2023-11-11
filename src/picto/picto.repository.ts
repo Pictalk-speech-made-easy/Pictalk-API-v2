@@ -63,14 +63,14 @@ export class PictoRepository extends Repository<Picto> {
       try {
         picto.meaning = JSON.parse(meaning);
       } catch (error) {
-        picto.meaning = {};
+        picto.meaning = meaning;
       }
     }
     if (speech) {
       try {
         picto.speech = JSON.parse(speech);
       } catch (error) {
-        picto.speech = {};
+        picto.speech = speech;
       }
     }
     if (color) {
