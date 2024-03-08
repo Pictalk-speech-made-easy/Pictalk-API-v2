@@ -338,11 +338,18 @@ export class CollectionService {
         return await this.getCollectionById(fatherCollectionId, user);
     }
     
-    async deleteAllCollections(user: User): Promise<void[]>{
+    async deleteAllCollections(user: User): Promise<void>{
         const collections = await this.getAllUserCollections(user);
         console.log(`User ${user.username} has ${collections.length} collections`);
-        return Promise.all(collections.map(async collection => 
-            this.deleteCollection({ collectionId: collection.id, fatherId: undefined}, user)
-        ));
+        try{
+            await Promise.all(collections.map(collection => 
+                this.modifyCollection(collection.id, user, {meaning: null, speech: null, priority: null, color: null, pictohubId: null, collectionIds: [], pictoIds: []}, null)
+            ));
+            await Promise.all(collections.map(collection =>
+                this.deleteCollection({collectionId: collection.id, fatherId: null}, user)
+            ));
+        } catch(error){
+            throw new InternalServerErrorException(`couldn't delete all collections`);
+        }
     }
 }

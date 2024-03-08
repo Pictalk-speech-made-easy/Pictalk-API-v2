@@ -213,10 +213,8 @@ export class AuthController {
         }
         try {
           // Delete all user pictograms
-          const pictoDeletions = await this.pictoService.deleteAllPictos(user);
-          console.log(pictoDeletions);
-          const collectionDeletions = await this.collectionService.deleteAllCollections(user);
-          console.log(collectionDeletions);
+          await this.collectionService.deleteAllCollections(user);
+          await this.pictoService.deleteAllPictos(user);
         } catch (error) {
           console.log(`Pictograms of user ${user.username} could not be deleted: ${error}`);
         }

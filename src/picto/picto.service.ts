@@ -149,8 +149,12 @@ export class PictoService {
         const pictos = await this.getAllUserPictos(user);
         console.log(`User ${user.username} has ${pictos.length} pictos`);
         await Promise.all(pictos.map(async picto => 
-            this.deletePicto({ pictoId: picto.id, fatherId: undefined}, user)
+            this.modifyPicto(picto.id, user, {meaning: null, speech: null, color: null, collectionIds: [], priority: null, pictohubId: null}, null)
+            
         ));
+        await Promise.all(pictos.map(async picto =>
+            this.deletePicto({ pictoId: picto.id, fatherId: undefined}, user)
+            ));
         }
         catch(error){
             throw new InternalServerErrorException(`couldn't delete all pictos of user ${user.username}`);
