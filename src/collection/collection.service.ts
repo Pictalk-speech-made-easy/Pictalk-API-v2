@@ -94,7 +94,6 @@ export class CollectionService {
     }
 
     async deleteCollection(deleteCollectionDto: deleteCollectionDto, user: User): Promise<void>{
-        if(deleteCollectionDto.collectionId!=user.root && deleteCollectionDto.collectionId!=user.shared){
             const collection = await this.getCollectionById(deleteCollectionDto.collectionId, user);
             if(deleteCollectionDto.fatherId){
                 deleteCollectionDto.fatherId=Number(deleteCollectionDto.fatherId);
@@ -124,9 +123,6 @@ export class CollectionService {
                     throw new InternalServerErrorException(`couldn't delete collection with id ${deleteCollectionDto.collectionId}`);
                 }
             }
-        } else {
-            throw new UnauthorizedException(`Cannot delete "root" or "shared with me" Collections of User ${user.username}`);
-        }
     }
     async autoShare(collection : Collection, fatherCollection: Collection): Promise<Collection>{
         return this.collectionRepository.autoShare(collection, fatherCollection);
@@ -340,5 +336,13 @@ export class CollectionService {
             await this.pictoService.deletePicto(deletePicto, user)
         }
         return await this.getCollectionById(fatherCollectionId, user);
+    }
+    
+    async deleteAllCollections(user: User): Promise<void[]>{
+        const collections = await this.getAllUserCollections(user);
+        console.log(`User ${user.username} has ${collections.length} collections`);
+        return Promise.all(collections.map(async collection => 
+            this.deleteCollection({ collectionId: collection.id, fatherId: undefined}, user)
+        ));
     }
 }

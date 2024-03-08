@@ -14,12 +14,16 @@ import { EditUserDto } from './dto/edit-user.dto';
 import { Notif } from 'src/entities/notification.entity';
 import { usernameRegexp } from 'src/utilities/creation';
 import { modifyCollectionDto } from 'src/collection/dto/collection.modify.dto';
+import { PictoService } from 'src/picto/picto.service';
 @Controller('')
 export class AuthController {
     private logger = new Logger('AuthController');
     constructor(private authService: AuthService,
         @Inject(forwardRef(() => CollectionService))
-        private collectionService: CollectionService){}
+        private collectionService: CollectionService,
+        @Inject(forwardRef(() => PictoService))
+        private pictoService: PictoService)
+        {}
 
     @Post('auth/signup')
     async signUp(@Body(ValidationPipe) createUserDto: CreateUserDto): Promise<void> {
@@ -189,5 +193,49 @@ export class AuthController {
     async clearNotifications(@GetUser() user: User): Promise<Notif[]>{
         this.logger.verbose(`User "${user.username}" clearing his notifications`);
         return this.authService.clearNotifications(user);
+    }
+
+    @UseGuards(AuthGuard())
+    @Delete('/user/:id')
+    async deleteUser(@GetUser() user: User, @Param('id') userId: number): Promise<void>{
+        
+        if (user.admin === false && user.id !== userId) {
+          return;
+        }
+        if (user.admin) { 
+          user = await this.authService.findWithId(userId);
+          if (!user) {
+            return;
+          }
+          this.logger.verbose(`Admin deleting user "${user.username}"`);
+        } else {
+          this.logger.verbose(`User "${user.username}" deleting his account`);
+        }
+        try {
+          // Delete all user pictograms
+          const pictoDeletions = await this.pictoService.deleteAllPictos(user);
+          console.log(pictoDeletions);
+          const collectionDeletions = await this.collectionService.deleteAllCollections(user);
+          console.log(collectionDeletions);
+        } catch (error) {
+          console.log(`Pictograms of user ${user.username} could not be deleted: ${error}`);
+        }
+        try {
+          await this.collectionService.deleteCollection({collectionId: user.root, fatherId: undefined}, user);
+        } catch (error) {
+          console.log(`Root collection of user ${user.username} could not be deleted: ${error}`);
+        }
+        try {
+          await this.collectionService.deleteCollection({collectionId: user.sider, fatherId: undefined}, user);
+        } catch (error) {
+          console.log(`Sider collection of user ${user.username} could not be deleted: ${error}`);
+        }
+        try {
+          await this.collectionService.deleteCollection({collectionId: user.shared, fatherId: undefined}, user);
+        } catch (error) {
+          console.log(`Shared collection of user ${user.username} could not be deleted: ${error}`);
+        }
+        
+        return this.authService.deleteUser(user);
     }
 }

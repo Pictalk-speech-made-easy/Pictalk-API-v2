@@ -139,6 +139,11 @@ export class AuthService {
         return user;
     }
 
+    async findWithId(userId: number): Promise<User>{
+        const user = await this.userRepository.findOne({where : {id: userId}});
+        return user;
+    }
+
     async sendMail(user: User): Promise<void>{
         return this.userRepository.sendMail(user);
     }
@@ -146,5 +151,9 @@ export class AuthService {
     async isSiderToCreate(username): Promise<User> {
         const user:User = await this.findWithUsername(username);
         return user.sider ? null : user;
+    }
+
+    async deleteUser(user: User): Promise<void>{
+        return this.userRepository.deleteUser(user);
     }
 }
