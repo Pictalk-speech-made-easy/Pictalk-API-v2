@@ -1,5 +1,5 @@
 import { multipleShareCollectionDto } from './../collection/dto/collection.share.dto';
-import { BadRequestException, Body, Controller, Delete, forwardRef, Get, Inject, Logger, NotFoundException, Param, Post, Put, UseGuards, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, forwardRef, Get, Inject, Logger, NotFoundException, Param, ParseIntPipe, Post, Put, UseGuards, ValidationPipe } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { AuthGuard } from '@nestjs/passport';
@@ -197,12 +197,12 @@ export class AuthController {
 
     @UseGuards(AuthGuard())
     @Delete('/user/:id')
-    async deleteUser(@GetUser() user: User, @Param('id') userId: number): Promise<void>{
-        
+    async deleteUser(@GetUser() user: User, @Param('id', ParseIntPipe) userId: number): Promise<void>{
         if (user.admin === false && user.id !== userId) {
+          console.log(`User ${user.username} is not an admin and is trying to delete user ${userId}`)
           return;
         }
-        if (user.admin) { 
+        if (user.admin) {
           user = await this.authService.findWithId(userId);
           if (!user) {
             return;
