@@ -14,6 +14,6 @@ import { CollectionService } from './collection.service';
   ],
   controllers: [CollectionController],
   providers: [CollectionService],
-  exports: [CollectionService]
+  exports: [CollectionService],
 })
 export class CollectionModule {}

@@ -1,9 +1,9 @@
-import { Module } from "@nestjs/common/decorators/modules/module.decorator";
-import { AuthModule } from "src/auth/auth.module";
-import { TypeOrmExModule } from "src/utilities/typeorm-ex.module";
-import { FeedbackController } from "./feedback.controller";
-import { FeedbackRepository } from "./feedback.repository";
-import { FeedbackService } from "./feedback.service";
+import { Module } from '@nestjs/common/decorators/modules/module.decorator';
+import { AuthModule } from 'src/auth/auth.module';
+import { TypeOrmExModule } from 'src/utilities/typeorm-ex.module';
+import { FeedbackController } from './feedback.controller';
+import { FeedbackRepository } from './feedback.repository';
+import { FeedbackService } from './feedback.service';
 
 @Module({
   imports: [
@@ -12,6 +12,6 @@ import { FeedbackService } from "./feedback.service";
   ],
   controllers: [FeedbackController],
   providers: [FeedbackService],
-  exports: [FeedbackService]
+  exports: [FeedbackService],
 })
 export class FeedbackModule {}

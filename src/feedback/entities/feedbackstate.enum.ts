@@ -1,6 +1,6 @@
 export enum FeedbackState {
-    Opened = 'OPENED',
-    InProgress = 'INPROGRESS',
-    OnHold = 'ONHOLD',
-    Complete = 'COMPLETE',
-  }
+  Opened = 'OPENED',
+  InProgress = 'INPROGRESS',
+  OnHold = 'ONHOLD',
+  Complete = 'COMPLETE',
+}

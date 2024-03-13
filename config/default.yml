@@ -1,10 +1,11 @@
 server:
-  port: 5432 
+  port: 5432
 
 db:
-  type: "postgres"
+  type: 'postgres'
   port: 5432
-  database: "pictalk"
+  database: 'pictalk-keycloak'
+  #database: "pictalk"
 
 jwt:
   expiresIn: 604800

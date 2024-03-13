@@ -1001,10 +1001,7 @@
             "required": true,
             "in": "query",
             "schema": {
-              "enum": [
-                "ASC",
-                "DESC"
-              ],
+              "enum": ["ASC", "DESC"],
               "type": "string"
             }
           }
@@ -1088,13 +1085,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "source",
-          "title",
-          "author",
-          "thumbnail",
-          "download"
-        ]
+        "required": ["source", "title", "author", "thumbnail", "download"]
       },
       "TranslateDto": {
         "type": "object",
@@ -1112,12 +1103,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "text",
-          "targetLang",
-          "sourceLang",
-          "targetService"
-        ]
+        "required": ["text", "targetLang", "sourceLang", "targetService"]
       },
       "TranslationResponse": {
         "type": "object",
@@ -1150,13 +1136,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "type",
-          "operation",
-          "affected",
-          "meaning",
-          "username"
-        ]
+        "required": ["type", "operation", "affected", "meaning", "username"]
       },
       "User": {
         "type": "object",
@@ -1438,11 +1418,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "access",
-          "usernames",
-          "role"
-        ]
+        "required": ["access", "usernames", "role"]
       },
       "createPictoDto": {
         "type": "object",
@@ -1500,13 +1476,7 @@
             "type": "number"
           }
         },
-        "required": [
-          "meaning",
-          "speech",
-          "color",
-          "collectionIds",
-          "priority"
-        ]
+        "required": ["meaning", "speech", "color", "collectionIds", "priority"]
       },
       "copyPictoDto": {
         "type": "object",
@@ -1518,10 +1488,7 @@
             "type": "number"
           }
         },
-        "required": [
-          "pictoId",
-          "fatherCollectionId"
-        ]
+        "required": ["pictoId", "fatherCollectionId"]
       },
       "CreateUserDto": {
         "type": "object",
@@ -1579,10 +1546,7 @@
             "maxLength": 20
           }
         },
-        "required": [
-          "username",
-          "password"
-        ]
+        "required": ["username", "password"]
       },
       "ResetPasswordDto": {
         "type": "object",
@@ -1593,9 +1557,7 @@
             "maxLength": 254
           }
         },
-        "required": [
-          "username"
-        ]
+        "required": ["username"]
       },
       "ChangePasswordDto": {
         "type": "object",
@@ -1606,9 +1568,7 @@
             "maxLength": 20
           }
         },
-        "required": [
-          "password"
-        ]
+        "required": ["password"]
       },
       "EditUserDto": {
         "type": "object",
@@ -1665,11 +1625,7 @@
             "$ref": "#/components/schemas/Collection"
           }
         },
-        "required": [
-          "levelA",
-          "levelB",
-          "levelC"
-        ]
+        "required": ["levelA", "levelB", "levelC"]
       },
       "copyCollectionDto": {
         "type": "object",
@@ -1681,10 +1637,7 @@
             "type": "number"
           }
         },
-        "required": [
-          "collectionId",
-          "fatherCollectionId"
-        ]
+        "required": ["collectionId", "fatherCollectionId"]
       },
       "multipleShareCollectionDto": {
         "type": "object",
@@ -1702,11 +1655,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "access",
-          "usernames",
-          "role"
-        ]
+        "required": ["access", "usernames", "role"]
       },
       "publicCollectionDto": {
         "type": "object",
@@ -1715,9 +1664,7 @@
             "type": "number"
           }
         },
-        "required": [
-          "publish"
-        ]
+        "required": ["publish"]
       },
       "createCollectionDto": {
         "type": "object",
@@ -1862,12 +1809,7 @@
             "type": "string"
           },
           "state": {
-            "enum": [
-              "OPENED",
-              "INPROGRESS",
-              "ONHOLD",
-              "COMPLETE"
-            ],
+            "enum": ["OPENED", "INPROGRESS", "ONHOLD", "COMPLETE"],
             "type": "string"
           }
         },
@@ -1920,12 +1862,7 @@
           },
           "state": {
             "type": "string",
-            "enum": [
-              "OPENED",
-              "INPROGRESS",
-              "ONHOLD",
-              "COMPLETE"
-            ]
+            "enum": ["OPENED", "INPROGRESS", "ONHOLD", "COMPLETE"]
           },
           "createdDate": {
             "format": "date-time",

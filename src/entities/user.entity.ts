@@ -1,4 +1,5 @@
-import {BaseEntity,
+import {
+  BaseEntity,
   Entity,
   PrimaryGeneratedColumn,
   Column,
@@ -17,17 +18,17 @@ export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({unique: true})
+  @Column({ unique: true })
   username: string;
 
-  @Column({default: ""})
+  @Column({ default: '' })
   displayLanguage: string;
 
-  @Column({default: ""})
+  @Column({ default: '' })
   language: string;
 
-  @Column({default: ""})
-  languages : string
+  @Column({ default: '' })
+  languages: string;
 
   @Column()
   password: string;
@@ -35,19 +36,21 @@ export class User extends BaseEntity {
   @Column()
   salt: string;
 
-  @OneToMany(() => Collection, (collection) => collection.user, {eager: false,})
+  @OneToMany(() => Collection, (collection) => collection.user, {
+    eager: false,
+  })
   collections: Collection[];
 
   @OneToMany(() => Picto, (picto) => picto.user, { eager: false })
   pictos: Picto[];
 
-  @Column({nullable : true, unique: true})
+  @Column({ nullable: true, unique: true })
   root: number;
 
-  @Column({nullable : true, unique: true})
+  @Column({ nullable: true, unique: true })
   sider: number;
 
-  @Column({nullable : true, unique: true})
+  @Column({ nullable: true, unique: true })
   shared: number;
 
   @Column()
@@ -59,24 +62,24 @@ export class User extends BaseEntity {
   @Column()
   resetPasswordExpires: string;
 
-  @Column("text",{default: [], array: true})
+  @Column('text', { default: [], array: true })
   directSharers: string[];
 
-  @Column({type: "jsonb", default: []})
-  notifications : Notif[];
+  @Column({ type: 'jsonb', default: [] })
+  notifications: Notif[];
 
-  @Column({default: defaultSettings})
-  settings : string;
+  @Column({ default: defaultSettings })
+  settings: string;
 
-  @Column({default: "[]"})
-  mailingList : string;
+  @Column({ default: '[]' })
+  mailingList: string;
 
-  @Column({default: false})
+  @Column({ default: false })
   admin: boolean;
 
   @CreateDateColumn()
   createdDate: Date;
-  
+
   @UpdateDateColumn()
   updatedDate: Date;
 

@@ -14,6 +14,6 @@ import { PictoService } from './picto.service';
   ],
   controllers: [PictoController],
   providers: [PictoService],
-  exports: [PictoService]
+  exports: [PictoService],
 })
 export class PictoModule {}

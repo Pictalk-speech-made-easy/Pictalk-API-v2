@@ -7,9 +7,6 @@ export class ResetPasswordDto {
   @IsString()
   @MinLength(3)
   @MaxLength(254)
-  @Matches(
-    usernameRegexp,
-    { message: 'Not a valid email address' },
-  )
+  @Matches(usernameRegexp, { message: 'Not a valid email address' })
   username: string;
 }

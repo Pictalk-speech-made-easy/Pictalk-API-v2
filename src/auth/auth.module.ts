@@ -11,15 +11,11 @@ const jwtConfig = config.get('jwt');
     TypeOrmExModule.forCustomRepository([UserRepository]),
     forwardRef(() => CollectionModule),
   ],
-  
+
   controllers: [AuthController],
-  
-  providers: [
-    AuthService,
-  ],
-  
-  exports: [
-    AuthService,
-  ],
+
+  providers: [AuthService],
+
+  exports: [AuthService],
 })
 export class AuthModule {}

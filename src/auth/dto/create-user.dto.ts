@@ -16,10 +16,7 @@ export class CreateUserDto {
   @IsString()
   @MinLength(3)
   @MaxLength(254)
-  @Matches(
-    usernameRegexp,
-    { message: 'Not a valid email address' },
-  )
+  @Matches(usernameRegexp, { message: 'Not a valid email address' })
   username: string;
 
   @ApiProperty()
@@ -43,7 +40,7 @@ export class CreateUserDto {
 
   @ApiProperty()
   @IsOptional()
-  @IsString({each: true})
+  @IsString({ each: true })
   directSharers: string[];
 
   @ApiProperty()

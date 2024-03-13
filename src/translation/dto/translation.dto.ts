@@ -1,22 +1,22 @@
-import { IsNotEmpty, IsOptional, IsString, Matches } from "class-validator";
-import { deeplLangRegex } from "src/utilities/supported.languages";
+import { IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator';
+import { deeplLangRegex } from 'src/utilities/supported.languages';
 
-export class TranslateDto{
-    @IsNotEmpty()
-    @IsString()
-    text: string;
-    
-    @IsNotEmpty()
-    @IsString()
-    @Matches(deeplLangRegex)
-    targetLang: string;
+export class TranslateDto {
+  @IsNotEmpty()
+  @IsString()
+  text: string;
 
-    @IsNotEmpty()
-    @IsString()
-    @Matches(deeplLangRegex)
-    sourceLang: string;
+  @IsNotEmpty()
+  @IsString()
+  @Matches(deeplLangRegex)
+  targetLang: string;
 
-    @IsOptional()
-    @IsString()
-    targetService: string;
+  @IsNotEmpty()
+  @IsString()
+  @Matches(deeplLangRegex)
+  sourceLang: string;
+
+  @IsOptional()
+  @IsString()
+  targetService: string;
 }

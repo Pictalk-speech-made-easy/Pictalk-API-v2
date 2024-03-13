@@ -1,11 +1,11 @@
-import { IsNotEmpty, IsNumberString, IsOptional } from "class-validator";
+import { IsNotEmpty, IsNumberString, IsOptional } from 'class-validator';
 
-export class deleteCollectionDto{
-    @IsNotEmpty()
-    @IsNumberString()
-    collectionId: number;
+export class deleteCollectionDto {
+  @IsNotEmpty()
+  @IsNumberString()
+  collectionId: number;
 
-    @IsOptional()
-    @IsNumberString()
-    fatherId: number;
+  @IsOptional()
+  @IsNumberString()
+  fatherId: number;
 }

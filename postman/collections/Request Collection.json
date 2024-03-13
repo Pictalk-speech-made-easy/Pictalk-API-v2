@@ -1,1570 +1,1440 @@
 {
-	"info": {
-		"_postman_id": "0e97f007-dc74-475f-a452-0afa6e60354d",
-		"name": "Request Collection",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_uid": "10883347-0e97f007-dc74-475f-a452-0afa6e60354d"
-	},
-	"item": [
-		{
-			"name": "Auth",
-			"item": [
-				{
-					"name": "Signin",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "b6180f3e-6e76-4903-a95a-dc29f0939e6a",
-								"exec": [
-									"var jsonData = JSON.parse(responseBody);\r",
-									"postman.setEnvironmentVariable(\"token\", jsonData.accessToken);\r",
-									"\r",
-									"pm.test(\"Status code is 201\", function () {\r",
-									"    pm.response.to.have.status(201);\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "ed3f177d-dcfa-4055-863d-86ac3589fec7",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "urlencoded",
-							"urlencoded": [
-								{
-									"key": "username",
-									"value": "{{username}}",
-									"type": "text"
-								},
-								{
-									"key": "password",
-									"value": "{{password}}",
-									"type": "text"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{url}}/auth/signin",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"auth",
-								"signin"
-							]
-						},
-						"description": "# Inputs\n- Username : *not empty*\n- Password : *not empty*\n\n# Outputs\n- Token\n\n## Token ?\nThe token allows you to do interact with the API, if you don't have a Token, you will get an unauthorised error"
-					},
-					"response": []
-				},
-				{
-					"name": "Get ROOT",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "9fdcf4bd-6c24-40b3-99a1-d22129aedc14",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"pm.test(\"Testing root collection id and user id\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.id).to.eql(181);",
-									"    pm.expect(jsonData.userId).to.eql(26);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "6d34cdfb-a4a6-4247-8d60-b4df4cf644f1",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{url}}/user/root",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"user",
-								"root"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Reset Password",
-					"id": "b41dd6b0-e369-47af-a49f-bfba4e38f330",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "urlencoded",
-							"urlencoded": [
-								{
-									"key": "username",
-									"value": "Alex",
-									"type": "text"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{url}}/resetPassword",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"resetPassword"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Details",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "094bdc7a-4ac7-4115-9389-7c97067ec30c",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"pm.test(\"Checking general fields of user\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.username).to.eql(pm.environment.get(\"username\"));",
-									"    pm.environment.set(\"rootCollection\", jsonData.root);",
-									"    pm.environment.set(\"sharedCollection\", jsonData.shared);",
-									"    pm.environment.set(\"siderCollection\", jsonData.sider);",
-									"    pm.expect(jsonData.root).to.eql(181);",
-									"    pm.expect(jsonData.shared).to.eql(182);",
-									"    pm.expect(jsonData.sider).to.eql(183);",
-									"    pm.expect(jsonData.validationToken).to.eql(\"verified\");",
-									"});",
-									"",
-									"pm.test(\"Testing the setting field of the user\", function() {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.have.property('settings');",
-									"    var jsonDataSettings = JSON.parse(jsonData.settings)",
-									"    pm.expect(jsonDataSettings).to.have.property('pronounceClick');",
-									"    pm.expect(jsonDataSettings).to.have.property('securityMode');",
-									"    pm.expect(jsonDataSettings).to.have.property('returnWithoutRemove');",
-									"    pm.expect(jsonDataSettings).to.have.property('travelMode');",
-									"});",
-									"",
-									"pm.test(\"Testing the language field of the user\", function() {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.have.property('language');",
-									"    var jsonDataLanguage = JSON.parse(jsonData.language)",
-									"});",
-									"",
-									"pm.test(\"Testing the languages field of the user\", function() {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.have.property('languages');",
-									"    var jsonDataLanguages = JSON.parse(jsonData.languages);",
-									"    pm.expect(jsonDataLanguages).to.have.property('fr');",
-									"});",
-									"pm.test(\"Testing the french language in languages field of the user\", function() {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.have.property('languages');",
-									"    var jsonDataLanguages = JSON.parse(jsonData.languages);",
-									"    pm.expect(jsonDataLanguages).to.have.property('fr');",
-									"    var jsonDataLanguagesFr = jsonDataLanguages.fr;",
-									"    var first_device = jsonDataLanguagesFr[Object.keys(jsonDataLanguagesFr)[0]];",
-									"    pm.expect(first_device).to.have.property('voiceURI');",
-									"    pm.expect(first_device).to.have.property('pitch');",
-									"    pm.expect(first_device).to.have.property('rate');",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "998c75a8-7d49-42e3-96e9-a7fdba2d889c",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "urlencoded",
-							"urlencoded": [
-								{
-									"key": "username",
-									"value": "adri@pictalk.xyz",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "language",
-									"value": "es-ES",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "password",
-									"value": "Adri2000",
-									"type": "text",
-									"disabled": true
-								}
-							]
-						},
-						"url": {
-							"raw": "{{url}}/user/details",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"user",
-								"details"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Edit User Details",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "628e1e27-366f-4961-834e-0bb823b67f2a",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"pm.test(\"Checking general fields of user\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.username).to.eql(pm.environment.get(\"username\"));",
-									"    pm.expect(jsonData.displayLanguage).to.eql(pm.collectionVariables.get(\"Auth_user_displayLanguage\"));",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"id": "265969a0-e78f-473e-b3ea-5283ab856418",
-								"exec": [
-									"pm.collectionVariables.set(\"Auth_user_displayLanguage\", \"fr\");"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "aefaebbb-2fac-435b-a857-e7b031c80a05",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "urlencoded",
-							"urlencoded": [
-								{
-									"key": "username",
-									"value": "adri@pictalk.xyz",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "displayLanguage",
-									"value": "{{Auth_user_displayLanguage}}",
-									"type": "text"
-								},
-								{
-									"key": "password",
-									"value": "Adri2000",
-									"type": "text",
-									"disabled": true
-								}
-							]
-						},
-						"url": {
-							"raw": "{{url}}/user/details",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"user",
-								"details"
-							]
-						}
-					},
-					"response": []
-				}
-			],
-			"id": "398662c3-7a3a-4263-a698-0d95c9251afb"
-		},
-		{
-			"name": "Collection",
-			"item": [
-				{
-					"name": "Get Collection By Id",
-					"id": "09e72202-29bc-41ab-bb54-7e6a5938029e",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{url}}/collection/find/{{rootCollection}}",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"collection",
-								"find",
-								"{{rootCollection}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get All Collections",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "e2b65e49-7b4a-4a08-b6fd-00a41a3fa743",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"pm.test(\"Checking if root, sider and shared exist\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    var jsonDataCollectionArray = jsonData.map((col) => col.id);",
-									"    pm.expect(jsonDataCollectionArray).to.include(pm.variables.get(\"rootCollection\"));",
-									"    pm.expect(jsonDataCollectionArray).to.include(pm.variables.get(\"sharedCollection\"));",
-									"    pm.expect(jsonDataCollectionArray).to.include(pm.variables.get(\"siderCollection\"));",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "2ce3cc41-25de-4936-b26c-d7e467ba0d8b",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{url}}/collection",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"collection"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Public",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "43d59f73-60a7-4b16-8253-55025687e280",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"pm.test(\"Checking if public has at least the collection level A & other\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    var jsonDataCollectionArray = jsonData.map((col) => JSON.parse(col.meaning));",
-									"    var jsonDataCollectionArrayValue = jsonDataCollectionArray.map((obj) => obj[\"fr\"]);",
-									"    pm.expect(jsonDataCollectionArrayValue).to.include(pm.environment.get(\"collectionLevelAMeaning\"));",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "bc5249a3-347a-4ba0-92d1-83530f138fc2",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{url}}/collection/public",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"collection",
-								"public"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create Collection",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "e4c09234-f68e-461e-82da-9292c3a64400",
-								"exec": [
-									"pm.test(\"Status code is 201\", function () {",
-									"    pm.response.to.have.status(201);",
-									"});",
-									"pm.test(\"Checking fields of created collection\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.environment.set(\"collectionId\", jsonData.id);",
-									"    pm.expect(JSON.parse(jsonData.meaning)).to.eql(JSON.parse(pm.environment.get(\"collectionMeaning\")));",
-									"    pm.expect(JSON.parse(jsonData.speech)).to.eql(JSON.parse(pm.environment.get(\"collectionMeaning\"))); ",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "d45981f4-7c7d-4759-9ad1-3b2f83a80cb2",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "image",
-									"type": "file",
-									"src": "./postman/logo.png"
-								},
-								{
-									"key": "color",
-									"value": "#F1F1F1",
-									"type": "text"
-								},
-								{
-									"key": "fatherCollectionId",
-									"value": "{{rootCollection}}",
-									"type": "text"
-								},
-								{
-									"key": "meaning",
-									"value": "{{collectionMeaning}}",
-									"type": "text"
-								},
-								{
-									"key": "speech",
-									"value": "{{collectionMeaning}}",
-									"type": "text"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{url}}/collection/",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"collection",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Modify Collection",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "604ae3cd-a393-40b1-b25a-0657a8c61d33",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"pm.test(\"Modified collection corresponds to modified arguments\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.environment.set(\"collectionId\", jsonData.id);",
-									"    pm.expect(JSON.parse(jsonData.meaning)).to.eql(JSON.parse(pm.environment.get(\"collectionMeaningModified\")));",
-									"    pm.expect(JSON.parse(jsonData.speech)).to.eql(JSON.parse(pm.environment.get(\"collectionMeaningModified\")));",
-									"    pm.expect(jsonData.priority).to.eql(1);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "f6a312f0-ac17-4b97-a187-9656b54d4395",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "meaning",
-									"value": "{\"fr\":\"bonjourModified\",\"es\":\"HolaModified\"}",
-									"type": "text"
-								},
-								{
-									"key": "speech",
-									"value": "{\"fr\":\"bonjourModified\",\"es\":\"HolaModified\"}",
-									"type": "text"
-								},
-								{
-									"key": "image",
-									"type": "file",
-									"src": "/C:/Users/Adri/Desktop/i8LqJJuMRq.png",
-									"disabled": true
-								},
-								{
-									"key": "priority",
-									"value": "1",
-									"type": "text"
-								},
-								{
-									"key": "pictoIds[0]",
-									"value": "3",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "collectionIds",
-									"value": "3",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "collectionIds",
-									"value": "6",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "collectionIds",
-									"value": "8",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "collectionIds[0]",
-									"value": "12",
-									"type": "text",
-									"disabled": true
-								}
-							]
-						},
-						"url": {
-							"raw": "{{url}}/collection/{{collectionId}}",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"collection",
-								"{{collectionId}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Copy By Id",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "d9d8703d-2cba-4ab8-8105-117d0e32961a",
-								"exec": [
-									"pm.test(\"Status code is 201\", function () {",
-									"    pm.response.to.have.status(201);",
-									"});",
-									"pm.test(\"Checking fields of copied collection\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    var jsonDataCollections = jsonData.collections;",
-									"    var collectionCount = 0;",
-									"    for (const collection of jsonDataCollections) {",
-									"        if (JSON.stringify(JSON.parse(collection.meaning)) === JSON.stringify(JSON.parse(pm.environment.get(\"collectionMeaning\")))) {",
-									"            collectionCount++;",
-									"        }",
-									"    }",
-									"    pm.expect(collectionCount).to.eql(2);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "38c0a641-770d-4fed-a546-40beb91c54c4",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "urlencoded",
-							"urlencoded": [
-								{
-									"key": "collectionId",
-									"value": "{{collectionId}}",
-									"type": "text"
-								},
-								{
-									"key": "fatherCollectionId",
-									"value": "{{rootCollection}}",
-									"type": "text"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{url}}/collection/copy",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"collection",
-								"copy"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Share Collection",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "9b3fce30-4ed5-43e0-a0b5-22e346fb08b8",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"pm.test(\"Modified collection corresponds to modified arguments\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.editors).to.include(pm.environment.get(\"shareUsername\"));",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "247f31f4-4ca5-498f-bf44-7106e603c24a",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "urlencoded",
-							"urlencoded": [
-								{
-									"key": "access",
-									"value": "1",
-									"type": "text"
-								},
-								{
-									"key": "usernames[]",
-									"value": "{{shareUsername}}",
-									"type": "text"
-								},
-								{
-									"key": "role",
-									"value": "editor",
-									"type": "text"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{url}}/collection/share/{{collectionId}}",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"collection",
-								"share",
-								"{{collectionId}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Collection",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "78c911a8-222a-4ee1-983b-b6e1718f7cbc",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "1c74e9a8-7936-468d-b416-b663092ae5f5",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "DELETE",
-						"header": [],
-						"url": {
-							"raw": "{{url}}/collection/?collectionId={{collectionId}}&fatherId={{rootCollection}}",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"collection",
-								""
-							],
-							"query": [
-								{
-									"key": "collectionId",
-									"value": "{{collectionId}}"
-								},
-								{
-									"key": "fatherId",
-									"value": "{{rootCollection}}"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Collection Copied",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"id": "d8399451-3ffd-41ec-a911-41eb047946a1",
-								"exec": [
-									"pm.environment.set(\"collectionId\", pm.environment.get(\"collectionId\")+1)"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"id": "2d87759b-9e08-468d-bc87-fc0840f117e0",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "b336629c-a4c6-41c4-b513-a6af2c35af36",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "DELETE",
-						"header": [],
-						"url": {
-							"raw": "{{url}}/collection/?collectionId={{collectionId}}&fatherId={{rootCollection}}",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"collection",
-								""
-							],
-							"query": [
-								{
-									"key": "collectionId",
-									"value": "{{collectionId}}"
-								},
-								{
-									"key": "fatherId",
-									"value": "{{rootCollection}}"
-								}
-							]
-						}
-					},
-					"response": []
-				}
-			],
-			"id": "45153423-b5e8-4c38-8594-64d6e8e29e45"
-		},
-		{
-			"name": "Picto",
-			"item": [
-				{
-					"name": "Create Picto",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "77b0f05c-f5ee-466d-9a79-dbc513b25b20",
-								"exec": [
-									"pm.test(\"Status code is 201\", function () {",
-									"    pm.response.to.have.status(201);",
-									"});",
-									"pm.test(\"Checking fields of created collection\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.environment.set(\"pictoId\", jsonData.id);",
-									"    pm.expect(JSON.parse(jsonData.meaning)).to.eql(JSON.parse(pm.environment.get(\"collectionMeaning\")));",
-									"    pm.expect(JSON.parse(jsonData.speech)).to.eql(JSON.parse(pm.environment.get(\"collectionMeaning\"))); ",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "3ceebb07-d0af-492c-843a-064c8af7eb1e",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "meaning",
-									"value": "{{collectionMeaning}}",
-									"type": "text"
-								},
-								{
-									"key": "speech",
-									"value": "{{collectionMeaning}}",
-									"type": "text"
-								},
-								{
-									"key": "image",
-									"type": "file",
-									"src": "./postman/logo.png"
-								},
-								{
-									"key": "collectionIds",
-									"value": "",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "fatherCollectionId",
-									"value": "{{rootCollection}}",
-									"type": "text"
-								},
-								{
-									"key": "color",
-									"value": "#F1F1F1",
-									"type": "text"
-								},
-								{
-									"key": "share",
-									"value": "0",
-									"type": "text",
-									"disabled": true
-								}
-							]
-						},
-						"url": {
-							"raw": "{{url}}/picto/",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"picto",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Picto By Id",
-					"id": "74cce090-f2cc-40eb-a3de-861b0a79e25c",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{url}}/picto/4",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"picto",
-								"4"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get All Pictos",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "d391b3ef-ecef-4cf0-a892-351dee3e20f1",
-								"exec": [
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "ca011948-5183-4c97-888a-29d5a6ff01d8",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{url}}/picto",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"picto"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Modify Picto",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "93ef446e-132e-4d95-a019-0925f591b9a2",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"pm.test(\"Modified collection corresponds to modified arguments\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.environment.set(\"collectionId\", jsonData.id);",
-									"    pm.expect(JSON.parse(jsonData.meaning)).to.eql(JSON.parse(pm.environment.get(\"collectionMeaningModified\")));",
-									"    pm.expect(JSON.parse(jsonData.speech)).to.eql(JSON.parse(pm.environment.get(\"collectionMeaningModified\")));",
-									"    pm.expect(jsonData.priority).to.eql(1);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "3e7c319d-b0b2-4411-8e18-2b702d0ec0fd",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "meaning",
-									"value": "{{collectionMeaningModified}}",
-									"type": "text"
-								},
-								{
-									"key": "speech",
-									"value": "{{collectionMeaningModified}}",
-									"type": "text"
-								},
-								{
-									"key": "image",
-									"type": "file",
-									"src": "/C:/Users/Adri/Desktop/certifcat.jpg",
-									"disabled": true
-								},
-								{
-									"key": "priority",
-									"value": "1",
-									"type": "text"
-								},
-								{
-									"key": "collectionIds",
-									"value": "1",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "collectionIds",
-									"value": "15",
-									"type": "text",
-									"disabled": true
-								}
-							]
-						},
-						"url": {
-							"raw": "{{url}}/picto/{{pictoId}}",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"picto",
-								"{{pictoId}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Share Picto",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "1f0534b8-d55b-4707-8612-eb3834057886",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"pm.test(\"Modified collection corresponds to modified arguments\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.editors).to.include(pm.environment.get(\"shareUsername\"));",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "626493e3-2310-463e-a09a-4314d4a7e0b7",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "urlencoded",
-							"urlencoded": [
-								{
-									"key": "access",
-									"value": "1",
-									"type": "text"
-								},
-								{
-									"key": "usernames[]",
-									"value": "alex@pictalk.org",
-									"type": "text"
-								},
-								{
-									"key": "role",
-									"value": "editor",
-									"type": "text"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{url}}/picto/share/{{pictoId}}",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"picto",
-								"share",
-								"{{pictoId}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Picto",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "241089e9-637a-45f7-8096-45fdf5bfccc7",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"id": "445c99a5-5cba-4ec5-b1d3-197462c8723d",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "DELETE",
-						"header": [],
-						"url": {
-							"raw": "{{url}}/picto/?pictoId={{pictoId}}&fatherId={{rootCollection}}",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"picto",
-								""
-							],
-							"query": [
-								{
-									"key": "pictoId",
-									"value": "{{pictoId}}"
-								},
-								{
-									"key": "fatherId",
-									"value": "{{rootCollection}}"
-								}
-							]
-						}
-					},
-					"response": []
-				}
-			],
-			"id": "6e430ea3-5d2b-4215-9e37-c6f096d5f321"
-		},
-		{
-			"name": "images",
-			"item": [
-				{
-					"name": "Get image",
-					"id": "ab23116c-afde-48e3-82c1-8db34de38e16",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{url}}/image/pictalk/9307f003e003f1ff7d87817740ff004d400240df6eff3b92408f25f04f9d477f.jpg",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"image",
-								"pictalk",
-								"9307f003e003f1ff7d87817740ff004d400240df6eff3b92408f25f04f9d477f.jpg"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Flickr Search",
-					"id": "cd0af8f5-829c-452e-8e2d-e9c2d8f05f29",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{url}}/image/flickr/?search=camion&language=fr-FR",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"image",
-								"flickr",
-								""
-							],
-							"query": [
-								{
-									"key": "search",
-									"value": "camion"
-								},
-								{
-									"key": "language",
-									"value": "fr-FR"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Flickr Image",
-					"id": "e13ebd44-2701-41e7-9bba-db01f1bb3ad3",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "https://live.staticflickr.com/4005/4297791753_c7327c31a0.jpg",
-							"protocol": "https",
-							"host": [
-								"live",
-								"staticflickr",
-								"com"
-							],
-							"path": [
-								"4005",
-								"4297791753_c7327c31a0.jpg"
-							]
-						}
-					},
-					"response": []
-				}
-			],
-			"id": "ee71de1f-2f8c-4ca3-a21c-4940bae7af25"
-		},
-		{
-			"name": "Translation",
-			"item": [
-				{
-					"name": "Translate",
-					"id": "0c9a7a33-8f18-47eb-9a31-ff2ebb93cd56",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true,
-						"disabledSystemHeaders": {}
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "Host",
-								"value": "api.deepl.com",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "urlencoded",
-							"urlencoded": []
-						},
-						"url": {
-							"raw": "{{url}}/translation/?text=Bonjour&targetLang=en",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"translation",
-								""
-							],
-							"query": [
-								{
-									"key": "text",
-									"value": "Bonjour"
-								},
-								{
-									"key": "targetLang",
-									"value": "en"
-								}
-							]
-						}
-					},
-					"response": []
-				}
-			],
-			"id": "ccf96e48-e333-46f6-98b0-02384007a9ba"
-		},
-		{
-			"name": "Feedback",
-			"item": [
-				{
-					"name": "Create feedback",
-					"id": "38087dce-6fe8-49d3-a6fb-5f426f03dd60",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "urlencoded",
-							"urlencoded": [
-								{
-									"key": "title",
-									"value": "Test",
-									"type": "text"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{url}}/feedback",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"feedback"
-							]
-						}
-					},
-					"response": []
-				}
-			],
-			"id": "9e31d0ed-8566-4c6f-b542-20921faeef16"
-		}
-	],
-	"auth": {
-		"type": "bearer",
-		"bearer": [
-			{
-				"key": "token",
-				"value": "{{token}}",
-				"type": "string"
-			}
-		]
-	},
-	"event": [
-		{
-			"listen": "prerequest",
-			"script": {
-				"id": "72ab04ee-d8cd-425d-b290-25666a62c3f7",
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
-			}
-		},
-		{
-			"listen": "test",
-			"script": {
-				"id": "1cd5f916-02ca-4d3a-b062-46054f600adf",
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
-			}
-		}
-	],
-	"variable": [
-		{
-			"id": "9cabd343-fbfd-4ec6-9d8a-f768f5017b0d",
-			"key": "Auth_user_displayLanguage",
-			"value": "",
-			"type": "string"
-		}
-	]
+  "info": {
+    "_postman_id": "0e97f007-dc74-475f-a452-0afa6e60354d",
+    "name": "Request Collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_uid": "10883347-0e97f007-dc74-475f-a452-0afa6e60354d"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Signin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "b6180f3e-6e76-4903-a95a-dc29f0939e6a",
+                "exec": [
+                  "var jsonData = JSON.parse(responseBody);\r",
+                  "postman.setEnvironmentVariable(\"token\", jsonData.accessToken);\r",
+                  "\r",
+                  "pm.test(\"Status code is 201\", function () {\r",
+                  "    pm.response.to.have.status(201);\r",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "id": "ed3f177d-dcfa-4055-863d-86ac3589fec7",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "username",
+                  "value": "{{username}}",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "{{password}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{url}}/auth/signin",
+              "host": ["{{url}}"],
+              "path": ["auth", "signin"]
+            },
+            "description": "# Inputs\n- Username : *not empty*\n- Password : *not empty*\n\n# Outputs\n- Token\n\n## Token ?\nThe token allows you to do interact with the API, if you don't have a Token, you will get an unauthorised error"
+          },
+          "response": []
+        },
+        {
+          "name": "Get ROOT",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "9fdcf4bd-6c24-40b3-99a1-d22129aedc14",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Testing root collection id and user id\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.id).to.eql(181);",
+                  "    pm.expect(jsonData.userId).to.eql(26);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "id": "6d34cdfb-a4a6-4247-8d60-b4df4cf644f1",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{url}}/user/root",
+              "host": ["{{url}}"],
+              "path": ["user", "root"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reset Password",
+          "id": "b41dd6b0-e369-47af-a49f-bfba4e38f330",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "username",
+                  "value": "Alex",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{url}}/resetPassword",
+              "host": ["{{url}}"],
+              "path": ["resetPassword"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Details",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "094bdc7a-4ac7-4115-9389-7c97067ec30c",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Checking general fields of user\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.username).to.eql(pm.environment.get(\"username\"));",
+                  "    pm.environment.set(\"rootCollection\", jsonData.root);",
+                  "    pm.environment.set(\"sharedCollection\", jsonData.shared);",
+                  "    pm.environment.set(\"siderCollection\", jsonData.sider);",
+                  "    pm.expect(jsonData.root).to.eql(181);",
+                  "    pm.expect(jsonData.shared).to.eql(182);",
+                  "    pm.expect(jsonData.sider).to.eql(183);",
+                  "    pm.expect(jsonData.validationToken).to.eql(\"verified\");",
+                  "});",
+                  "",
+                  "pm.test(\"Testing the setting field of the user\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('settings');",
+                  "    var jsonDataSettings = JSON.parse(jsonData.settings)",
+                  "    pm.expect(jsonDataSettings).to.have.property('pronounceClick');",
+                  "    pm.expect(jsonDataSettings).to.have.property('securityMode');",
+                  "    pm.expect(jsonDataSettings).to.have.property('returnWithoutRemove');",
+                  "    pm.expect(jsonDataSettings).to.have.property('travelMode');",
+                  "});",
+                  "",
+                  "pm.test(\"Testing the language field of the user\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('language');",
+                  "    var jsonDataLanguage = JSON.parse(jsonData.language)",
+                  "});",
+                  "",
+                  "pm.test(\"Testing the languages field of the user\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('languages');",
+                  "    var jsonDataLanguages = JSON.parse(jsonData.languages);",
+                  "    pm.expect(jsonDataLanguages).to.have.property('fr');",
+                  "});",
+                  "pm.test(\"Testing the french language in languages field of the user\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('languages');",
+                  "    var jsonDataLanguages = JSON.parse(jsonData.languages);",
+                  "    pm.expect(jsonDataLanguages).to.have.property('fr');",
+                  "    var jsonDataLanguagesFr = jsonDataLanguages.fr;",
+                  "    var first_device = jsonDataLanguagesFr[Object.keys(jsonDataLanguagesFr)[0]];",
+                  "    pm.expect(first_device).to.have.property('voiceURI');",
+                  "    pm.expect(first_device).to.have.property('pitch');",
+                  "    pm.expect(first_device).to.have.property('rate');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "id": "998c75a8-7d49-42e3-96e9-a7fdba2d889c",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "username",
+                  "value": "adri@pictalk.xyz",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "language",
+                  "value": "es-ES",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "password",
+                  "value": "Adri2000",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{url}}/user/details",
+              "host": ["{{url}}"],
+              "path": ["user", "details"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Edit User Details",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "628e1e27-366f-4961-834e-0bb823b67f2a",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Checking general fields of user\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.username).to.eql(pm.environment.get(\"username\"));",
+                  "    pm.expect(jsonData.displayLanguage).to.eql(pm.collectionVariables.get(\"Auth_user_displayLanguage\"));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "265969a0-e78f-473e-b3ea-5283ab856418",
+                "exec": [
+                  "pm.collectionVariables.set(\"Auth_user_displayLanguage\", \"fr\");"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "id": "aefaebbb-2fac-435b-a857-e7b031c80a05",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "username",
+                  "value": "adri@pictalk.xyz",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "displayLanguage",
+                  "value": "{{Auth_user_displayLanguage}}",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "Adri2000",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{url}}/user/details",
+              "host": ["{{url}}"],
+              "path": ["user", "details"]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "398662c3-7a3a-4263-a698-0d95c9251afb"
+    },
+    {
+      "name": "Collection",
+      "item": [
+        {
+          "name": "Get Collection By Id",
+          "id": "09e72202-29bc-41ab-bb54-7e6a5938029e",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{url}}/collection/find/{{rootCollection}}",
+              "host": ["{{url}}"],
+              "path": ["collection", "find", "{{rootCollection}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Collections",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "e2b65e49-7b4a-4a08-b6fd-00a41a3fa743",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Checking if root, sider and shared exist\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    var jsonDataCollectionArray = jsonData.map((col) => col.id);",
+                  "    pm.expect(jsonDataCollectionArray).to.include(pm.variables.get(\"rootCollection\"));",
+                  "    pm.expect(jsonDataCollectionArray).to.include(pm.variables.get(\"sharedCollection\"));",
+                  "    pm.expect(jsonDataCollectionArray).to.include(pm.variables.get(\"siderCollection\"));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "id": "2ce3cc41-25de-4936-b26c-d7e467ba0d8b",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{url}}/collection",
+              "host": ["{{url}}"],
+              "path": ["collection"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Public",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "43d59f73-60a7-4b16-8253-55025687e280",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Checking if public has at least the collection level A & other\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    var jsonDataCollectionArray = jsonData.map((col) => JSON.parse(col.meaning));",
+                  "    var jsonDataCollectionArrayValue = jsonDataCollectionArray.map((obj) => obj[\"fr\"]);",
+                  "    pm.expect(jsonDataCollectionArrayValue).to.include(pm.environment.get(\"collectionLevelAMeaning\"));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "id": "bc5249a3-347a-4ba0-92d1-83530f138fc2",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{url}}/collection/public",
+              "host": ["{{url}}"],
+              "path": ["collection", "public"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Collection",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "e4c09234-f68e-461e-82da-9292c3a64400",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test(\"Checking fields of created collection\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"collectionId\", jsonData.id);",
+                  "    pm.expect(JSON.parse(jsonData.meaning)).to.eql(JSON.parse(pm.environment.get(\"collectionMeaning\")));",
+                  "    pm.expect(JSON.parse(jsonData.speech)).to.eql(JSON.parse(pm.environment.get(\"collectionMeaning\"))); ",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "id": "d45981f4-7c7d-4759-9ad1-3b2f83a80cb2",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": "./postman/logo.png"
+                },
+                {
+                  "key": "color",
+                  "value": "#F1F1F1",
+                  "type": "text"
+                },
+                {
+                  "key": "fatherCollectionId",
+                  "value": "{{rootCollection}}",
+                  "type": "text"
+                },
+                {
+                  "key": "meaning",
+                  "value": "{{collectionMeaning}}",
+                  "type": "text"
+                },
+                {
+                  "key": "speech",
+                  "value": "{{collectionMeaning}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{url}}/collection/",
+              "host": ["{{url}}"],
+              "path": ["collection", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Modify Collection",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "604ae3cd-a393-40b1-b25a-0657a8c61d33",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Modified collection corresponds to modified arguments\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"collectionId\", jsonData.id);",
+                  "    pm.expect(JSON.parse(jsonData.meaning)).to.eql(JSON.parse(pm.environment.get(\"collectionMeaningModified\")));",
+                  "    pm.expect(JSON.parse(jsonData.speech)).to.eql(JSON.parse(pm.environment.get(\"collectionMeaningModified\")));",
+                  "    pm.expect(jsonData.priority).to.eql(1);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "id": "f6a312f0-ac17-4b97-a187-9656b54d4395",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "meaning",
+                  "value": "{\"fr\":\"bonjourModified\",\"es\":\"HolaModified\"}",
+                  "type": "text"
+                },
+                {
+                  "key": "speech",
+                  "value": "{\"fr\":\"bonjourModified\",\"es\":\"HolaModified\"}",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": "/C:/Users/Adri/Desktop/i8LqJJuMRq.png",
+                  "disabled": true
+                },
+                {
+                  "key": "priority",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "pictoIds[0]",
+                  "value": "3",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "collectionIds",
+                  "value": "3",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "collectionIds",
+                  "value": "6",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "collectionIds",
+                  "value": "8",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "collectionIds[0]",
+                  "value": "12",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{url}}/collection/{{collectionId}}",
+              "host": ["{{url}}"],
+              "path": ["collection", "{{collectionId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Copy By Id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "d9d8703d-2cba-4ab8-8105-117d0e32961a",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test(\"Checking fields of copied collection\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    var jsonDataCollections = jsonData.collections;",
+                  "    var collectionCount = 0;",
+                  "    for (const collection of jsonDataCollections) {",
+                  "        if (JSON.stringify(JSON.parse(collection.meaning)) === JSON.stringify(JSON.parse(pm.environment.get(\"collectionMeaning\")))) {",
+                  "            collectionCount++;",
+                  "        }",
+                  "    }",
+                  "    pm.expect(collectionCount).to.eql(2);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "id": "38c0a641-770d-4fed-a546-40beb91c54c4",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "collectionId",
+                  "value": "{{collectionId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "fatherCollectionId",
+                  "value": "{{rootCollection}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{url}}/collection/copy",
+              "host": ["{{url}}"],
+              "path": ["collection", "copy"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Share Collection",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "9b3fce30-4ed5-43e0-a0b5-22e346fb08b8",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Modified collection corresponds to modified arguments\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.editors).to.include(pm.environment.get(\"shareUsername\"));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "id": "247f31f4-4ca5-498f-bf44-7106e603c24a",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "access",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "usernames[]",
+                  "value": "{{shareUsername}}",
+                  "type": "text"
+                },
+                {
+                  "key": "role",
+                  "value": "editor",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{url}}/collection/share/{{collectionId}}",
+              "host": ["{{url}}"],
+              "path": ["collection", "share", "{{collectionId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Collection",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "78c911a8-222a-4ee1-983b-b6e1718f7cbc",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "id": "1c74e9a8-7936-468d-b416-b663092ae5f5",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{url}}/collection/?collectionId={{collectionId}}&fatherId={{rootCollection}}",
+              "host": ["{{url}}"],
+              "path": ["collection", ""],
+              "query": [
+                {
+                  "key": "collectionId",
+                  "value": "{{collectionId}}"
+                },
+                {
+                  "key": "fatherId",
+                  "value": "{{rootCollection}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Collection Copied",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "id": "d8399451-3ffd-41ec-a911-41eb047946a1",
+                "exec": [
+                  "pm.environment.set(\"collectionId\", pm.environment.get(\"collectionId\")+1)"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "id": "2d87759b-9e08-468d-bc87-fc0840f117e0",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "id": "b336629c-a4c6-41c4-b513-a6af2c35af36",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{url}}/collection/?collectionId={{collectionId}}&fatherId={{rootCollection}}",
+              "host": ["{{url}}"],
+              "path": ["collection", ""],
+              "query": [
+                {
+                  "key": "collectionId",
+                  "value": "{{collectionId}}"
+                },
+                {
+                  "key": "fatherId",
+                  "value": "{{rootCollection}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "45153423-b5e8-4c38-8594-64d6e8e29e45"
+    },
+    {
+      "name": "Picto",
+      "item": [
+        {
+          "name": "Create Picto",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "77b0f05c-f5ee-466d-9a79-dbc513b25b20",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test(\"Checking fields of created collection\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"pictoId\", jsonData.id);",
+                  "    pm.expect(JSON.parse(jsonData.meaning)).to.eql(JSON.parse(pm.environment.get(\"collectionMeaning\")));",
+                  "    pm.expect(JSON.parse(jsonData.speech)).to.eql(JSON.parse(pm.environment.get(\"collectionMeaning\"))); ",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "id": "3ceebb07-d0af-492c-843a-064c8af7eb1e",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "meaning",
+                  "value": "{{collectionMeaning}}",
+                  "type": "text"
+                },
+                {
+                  "key": "speech",
+                  "value": "{{collectionMeaning}}",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": "./postman/logo.png"
+                },
+                {
+                  "key": "collectionIds",
+                  "value": "",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "fatherCollectionId",
+                  "value": "{{rootCollection}}",
+                  "type": "text"
+                },
+                {
+                  "key": "color",
+                  "value": "#F1F1F1",
+                  "type": "text"
+                },
+                {
+                  "key": "share",
+                  "value": "0",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{url}}/picto/",
+              "host": ["{{url}}"],
+              "path": ["picto", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Picto By Id",
+          "id": "74cce090-f2cc-40eb-a3de-861b0a79e25c",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{url}}/picto/4",
+              "host": ["{{url}}"],
+              "path": ["picto", "4"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Pictos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "d391b3ef-ecef-4cf0-a892-351dee3e20f1",
+                "exec": [""],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "id": "ca011948-5183-4c97-888a-29d5a6ff01d8",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{url}}/picto",
+              "host": ["{{url}}"],
+              "path": ["picto"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Modify Picto",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "93ef446e-132e-4d95-a019-0925f591b9a2",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Modified collection corresponds to modified arguments\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"collectionId\", jsonData.id);",
+                  "    pm.expect(JSON.parse(jsonData.meaning)).to.eql(JSON.parse(pm.environment.get(\"collectionMeaningModified\")));",
+                  "    pm.expect(JSON.parse(jsonData.speech)).to.eql(JSON.parse(pm.environment.get(\"collectionMeaningModified\")));",
+                  "    pm.expect(jsonData.priority).to.eql(1);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "id": "3e7c319d-b0b2-4411-8e18-2b702d0ec0fd",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "meaning",
+                  "value": "{{collectionMeaningModified}}",
+                  "type": "text"
+                },
+                {
+                  "key": "speech",
+                  "value": "{{collectionMeaningModified}}",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": "/C:/Users/Adri/Desktop/certifcat.jpg",
+                  "disabled": true
+                },
+                {
+                  "key": "priority",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "collectionIds",
+                  "value": "1",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "collectionIds",
+                  "value": "15",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{url}}/picto/{{pictoId}}",
+              "host": ["{{url}}"],
+              "path": ["picto", "{{pictoId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Share Picto",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "1f0534b8-d55b-4707-8612-eb3834057886",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Modified collection corresponds to modified arguments\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.editors).to.include(pm.environment.get(\"shareUsername\"));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "id": "626493e3-2310-463e-a09a-4314d4a7e0b7",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "access",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "usernames[]",
+                  "value": "alex@pictalk.org",
+                  "type": "text"
+                },
+                {
+                  "key": "role",
+                  "value": "editor",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{url}}/picto/share/{{pictoId}}",
+              "host": ["{{url}}"],
+              "path": ["picto", "share", "{{pictoId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Picto",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "id": "241089e9-637a-45f7-8096-45fdf5bfccc7",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "id": "445c99a5-5cba-4ec5-b1d3-197462c8723d",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{url}}/picto/?pictoId={{pictoId}}&fatherId={{rootCollection}}",
+              "host": ["{{url}}"],
+              "path": ["picto", ""],
+              "query": [
+                {
+                  "key": "pictoId",
+                  "value": "{{pictoId}}"
+                },
+                {
+                  "key": "fatherId",
+                  "value": "{{rootCollection}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "6e430ea3-5d2b-4215-9e37-c6f096d5f321"
+    },
+    {
+      "name": "images",
+      "item": [
+        {
+          "name": "Get image",
+          "id": "ab23116c-afde-48e3-82c1-8db34de38e16",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{url}}/image/pictalk/9307f003e003f1ff7d87817740ff004d400240df6eff3b92408f25f04f9d477f.jpg",
+              "host": ["{{url}}"],
+              "path": [
+                "image",
+                "pictalk",
+                "9307f003e003f1ff7d87817740ff004d400240df6eff3b92408f25f04f9d477f.jpg"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Flickr Search",
+          "id": "cd0af8f5-829c-452e-8e2d-e9c2d8f05f29",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{url}}/image/flickr/?search=camion&language=fr-FR",
+              "host": ["{{url}}"],
+              "path": ["image", "flickr", ""],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "camion"
+                },
+                {
+                  "key": "language",
+                  "value": "fr-FR"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Flickr Image",
+          "id": "e13ebd44-2701-41e7-9bba-db01f1bb3ad3",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://live.staticflickr.com/4005/4297791753_c7327c31a0.jpg",
+              "protocol": "https",
+              "host": ["live", "staticflickr", "com"],
+              "path": ["4005", "4297791753_c7327c31a0.jpg"]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "ee71de1f-2f8c-4ca3-a21c-4940bae7af25"
+    },
+    {
+      "name": "Translation",
+      "item": [
+        {
+          "name": "Translate",
+          "id": "0c9a7a33-8f18-47eb-9a31-ff2ebb93cd56",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true,
+            "disabledSystemHeaders": {}
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Host",
+                "value": "api.deepl.com",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": []
+            },
+            "url": {
+              "raw": "{{url}}/translation/?text=Bonjour&targetLang=en",
+              "host": ["{{url}}"],
+              "path": ["translation", ""],
+              "query": [
+                {
+                  "key": "text",
+                  "value": "Bonjour"
+                },
+                {
+                  "key": "targetLang",
+                  "value": "en"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "ccf96e48-e333-46f6-98b0-02384007a9ba"
+    },
+    {
+      "name": "Feedback",
+      "item": [
+        {
+          "name": "Create feedback",
+          "id": "38087dce-6fe8-49d3-a6fb-5f426f03dd60",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "title",
+                  "value": "Test",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{url}}/feedback",
+              "host": ["{{url}}"],
+              "path": ["feedback"]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "9e31d0ed-8566-4c6f-b542-20921faeef16"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "id": "72ab04ee-d8cd-425d-b290-25666a62c3f7",
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "id": "1cd5f916-02ca-4d3a-b062-46054f600adf",
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "id": "9cabd343-fbfd-4ec6-9d8a-f768f5017b0d",
+      "key": "Auth_user_displayLanguage",
+      "value": "",
+      "type": "string"
+    }
+  ]
 }

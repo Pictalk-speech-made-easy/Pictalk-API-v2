@@ -8,7 +8,6 @@ import {
   IsOptional,
 } from 'class-validator';
 
-
 export class EditUserDto {
   @ApiProperty()
   @IsOptional()
@@ -40,7 +39,7 @@ export class EditUserDto {
 
   @ApiProperty()
   @IsOptional()
-  @IsString({each: true})
+  @IsString({ each: true })
   directSharers: string[];
 
   @ApiProperty()
