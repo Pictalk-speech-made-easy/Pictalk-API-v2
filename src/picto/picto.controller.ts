@@ -43,6 +43,9 @@ import { deletePictoDto } from './dto/picto.delete.dto';
 import { copyPictoDto } from './dto/picto.copy.dto';
 import { Collection } from 'src/entities/collection.entity';
 import { AuthenticatedUser, Public, AuthGuard } from 'nest-keycloak-connect';
+import { UserGuard } from 'src/auth/user.guard';
+import { GetUser } from 'src/auth/get-user.decorator';
+@UseGuards(UserGuard)
 @Controller('picto')
 export class PictoController {
   private logger = new Logger('PictosController');
@@ -56,7 +59,7 @@ export class PictoController {
   @Get('/:id')
   getPictoById(
     @Param('id', ParseIntPipe) id: number,
-    @AuthenticatedUser() user: User,
+    @GetUser() user: User,
   ): Promise<Picto> {
     this.logger.verbose(`User "${user.username}" getting Picto with id ${id}`);
     return this.pictoService.getPictoById(id, user);
@@ -64,7 +67,7 @@ export class PictoController {
 
   @Get()
   @ApiOperation({ summary: 'get all your pictos' })
-  getAllUserPictos(@AuthenticatedUser() user: User): Promise<Picto[]> {
+  getAllUserPictos(@GetUser() user: User): Promise<Picto[]> {
     this.logger.verbose(`User "${user.username}" getting all Picto`);
     return this.pictoService.getAllUserPictos(user);
   }
@@ -77,7 +80,7 @@ export class PictoController {
   async sharePictoById(
     @Param('id', ParseIntPipe) id: number,
     @Body() multipleSharePictoDto: multipleSharePictoDto,
-    @AuthenticatedUser() user: User,
+    @GetUser() user: User,
   ): Promise<Picto> {
     let picto: Picto;
     if (!multipleSharePictoDto.role) {
@@ -121,7 +124,7 @@ export class PictoController {
   )
   async createPicto(
     @Body() createPictoDto: createPictoDto,
-    @AuthenticatedUser() user: User,
+    @GetUser() user: User,
     @UploadedFile() file: Express.Multer.File,
   ): Promise<Picto> {
     if (!file) {
@@ -192,7 +195,7 @@ export class PictoController {
   @Delete()
   deletePicto(
     @Query(ValidationPipe) deletePictoDto: deletePictoDto,
-    @AuthenticatedUser() user: User,
+    @GetUser() user: User,
   ): Promise<void> {
     deletePictoDto.pictoId = Number(deletePictoDto.pictoId);
     this.logger.verbose(
@@ -215,7 +218,7 @@ export class PictoController {
   )
   async modifyPicto(
     @Param('id', ParseIntPipe) id: number,
-    @AuthenticatedUser() user: User,
+    @GetUser() user: User,
     @Body() modifyPictoDto: modifyPictoDto,
     @UploadedFile() file: Express.Multer.File,
   ): Promise<Picto> {
@@ -247,7 +250,7 @@ export class PictoController {
   @Post('copy')
   async copyPicto(
     @Body() copyPictoDto: copyPictoDto,
-    @AuthenticatedUser() user: User,
+    @GetUser() user: User,
   ): Promise<Collection> {
     this.logger.verbose(
       `User "${user.username}" copying Picto with id ${copyPictoDto.pictoId}`,

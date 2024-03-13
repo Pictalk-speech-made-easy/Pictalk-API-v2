@@ -20,17 +20,13 @@ import {
   RoleGuard,
 } from 'nest-keycloak-connect';
 import { APP_GUARD } from '@nestjs/core';
+import keycloakConfig from './config/keycloak.config';
 @Module({
   imports: [
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot(typeOrmConfig),
-    KeycloakConnectModule.register({
-      authServerUrl: 'https://auth.picmind.org',
-      realm: 'master',
-      clientId: 'pictalk-api',
-      secret: 'CWLSdXiTtaRfaVmg1DIDHAfqK67E3HGd',
-      // Secret key of the client taken from keycloak server
-    }),
+    ConfigModule.forRoot({ load: [keycloakConfig] }),
+    KeycloakConnectModule.register(keycloakConfig()),
     PictoModule,
     CollectionModule,
     AuthModule,

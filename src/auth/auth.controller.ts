@@ -28,6 +28,9 @@ import { Notif } from 'src/entities/notification.entity';
 import { usernameRegexp } from 'src/utilities/creation';
 import { modifyCollectionDto } from 'src/collection/dto/collection.modify.dto';
 import { AuthenticatedUser, Public, AuthGuard } from 'nest-keycloak-connect';
+import { UserGuard } from './user.guard';
+import { GetUser } from './get-user.decorator';
+@UseGuards(UserGuard)
 @Controller('')
 export class AuthController {
   private logger = new Logger('AuthController');
@@ -102,14 +105,14 @@ export class AuthController {
   }
 
   @Get('user/details')
-  getUserDetails(@AuthenticatedUser() user: User): Promise<User> {
+  getUserDetails(@GetUser() user: User): Promise<User> {
     this.logger.verbose(`User "${user.username}" is trying to get Details`);
     return this.authService.getUserDetails(user);
   }
 
   @Put('user/details')
   async editUser(
-    @AuthenticatedUser() user: User,
+    @GetUser() user: User,
     @Body(ValidationPipe) editUserDto: EditUserDto,
   ): Promise<User> {
     if (editUserDto.mailingList) {
@@ -148,21 +151,22 @@ export class AuthController {
   }
 
   @Get('/user/root')
-  async getRoot(@AuthenticatedUser() user: User): Promise<Collection> {
+  
+  async getRoot(@GetUser() user: User): Promise<Collection> {
     this.logger.verbose(`User "${user.username}" getting his root`);
     const root = await this.authService.getRoot(user);
     return this.collectionService.getCollectionById(root, user);
   }
 
   @Get('/user/sider')
-  async getSider(@AuthenticatedUser() user: User): Promise<Collection> {
+  async getSider(@GetUser() user: User): Promise<Collection> {
     this.logger.verbose(`User "${user.username}" getting his root`);
     const sider = await this.authService.getSider(user);
     return this.collectionService.getCollectionById(sider, user);
   }
 
   @Get('/user/shared')
-  async getShared(@AuthenticatedUser() user: User): Promise<Collection> {
+  async getShared(@GetUser() user: User): Promise<Collection> {
     this.logger.verbose(
       `User "${user.username}" getting his shared with me Collection`,
     );
@@ -171,12 +175,12 @@ export class AuthController {
   }
 
   @Get('/user/notification')
-  async getNotifications(@AuthenticatedUser() user: User): Promise<Notif[]> {
+  async getNotifications(@GetUser() user: User): Promise<Notif[]> {
     return this.authService.getNotifications(user);
   }
 
   @Delete('/user/notification')
-  async clearNotifications(@AuthenticatedUser() user: User): Promise<Notif[]> {
+  async clearNotifications(@GetUser() user: User): Promise<Notif[]> {
     this.logger.verbose(`User "${user.username}" clearing his notifications`);
     return this.authService.clearNotifications(user);
   }

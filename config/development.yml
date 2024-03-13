@@ -2,7 +2,7 @@ db:
   host: 'localhost' # This is the name of the service (see docker-compose.yml from pictalk-frontend) that runs the database
   username: 'postgres'
   password: 'postgres'
-  synchronize: true
+  synchronize: false
 
 jwt:
   secret: 'WayTooMuchSunScreen'

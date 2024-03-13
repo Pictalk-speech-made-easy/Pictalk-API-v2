@@ -45,6 +45,9 @@ import { SearchCollectionDto } from './dto/collection.search.public.dto';
 import { levelCollectionDto } from './dto/collection.level.dto';
 import { MoveToCollectionDto } from './dto/collection.move.dto';
 import { AuthenticatedUser, Public, AuthGuard } from 'nest-keycloak-connect';
+import { UserGuard } from 'src/auth/user.guard';
+import { GetUser } from 'src/auth/get-user.decorator';
+@UseGuards(UserGuard)
 @Controller('collection')
 export class CollectionController {
   private logger = new Logger('CollectionController');
@@ -55,7 +58,7 @@ export class CollectionController {
   @ApiOperation({ summary: 'get a collection that has the provided id' })
   getCollectionById(
     @Param('id', ParseIntPipe) id: number,
-    @AuthenticatedUser() user: User,
+    @GetUser() user: User,
   ): Promise<Collection> {
     this.logger.verbose(
       `User "${user.username}" getting Collection with id ${id}`,
@@ -120,7 +123,7 @@ export class CollectionController {
   @Get()
   @ApiOperation({ summary: 'get all your collection' })
   getAllUserCollections(
-    @AuthenticatedUser() user: User,
+    @GetUser() user: User,
   ): Promise<Collection[]> {
     this.logger.verbose(`User "${user.username}" getting all Collection`);
     return this.collectionService.getAllUserCollections(user);
@@ -130,7 +133,7 @@ export class CollectionController {
   @ApiOperation({ summary: 'copy a collection with its ID' })
   async copyCollection(
     @Body() copyCollectionDto: copyCollectionDto,
-    @AuthenticatedUser() user: User,
+    @GetUser() user: User,
   ): Promise<Collection> {
     const fatherCollection = await this.collectionService.getCollectionById(
       copyCollectionDto.fatherCollectionId,
@@ -174,7 +177,7 @@ export class CollectionController {
   async shareCollectionById(
     @Param('id', ParseIntPipe) id: number,
     @Body() multipleShareCollectionDto: multipleShareCollectionDto,
-    @AuthenticatedUser() user: User,
+    @GetUser() user: User,
   ): Promise<Collection> {
     let collection: Collection;
     if (!multipleShareCollectionDto.role) {
@@ -203,7 +206,7 @@ export class CollectionController {
   publishCollectionById(
     @Param('id', ParseIntPipe) id: number,
     @Body() publicCollectionDto: publicCollectionDto,
-    @AuthenticatedUser() user: User,
+    @GetUser() user: User,
   ): Promise<Collection> {
     if (user.admin === true) {
       return this.collectionService.publishCollectionById(
@@ -232,7 +235,7 @@ export class CollectionController {
   )
   async createCollection(
     @Body() createCollectionDto: createCollectionDto,
-    @AuthenticatedUser() user: User,
+    @GetUser() user: User,
     @UploadedFile() file: Express.Multer.File,
   ): Promise<Collection> {
     if (!file) {
@@ -303,7 +306,7 @@ export class CollectionController {
   }
 
   @Post('/root')
-  createRoot(@AuthenticatedUser() user: User): Promise<number> {
+  createRoot(@GetUser() user: User): Promise<number> {
     this.logger.verbose(
       `User "${user.username}" Creating 'Root' Collection if needed`,
     );
@@ -313,7 +316,7 @@ export class CollectionController {
   @Delete()
   deleteCollection(
     @Query(ValidationPipe) deleteCollectionDto: deleteCollectionDto,
-    @AuthenticatedUser() user: User,
+    @GetUser() user: User,
   ): Promise<void> {
     deleteCollectionDto.collectionId = Number(deleteCollectionDto.collectionId);
     this.logger.verbose(
@@ -336,7 +339,7 @@ export class CollectionController {
   )
   async modifyCollection(
     @Param('id', ParseIntPipe) id: number,
-    @AuthenticatedUser() user: User,
+    @GetUser() user: User,
     @Body() modifyCollectionDto: modifyCollectionDto,
     @UploadedFile() file: Express.Multer.File,
   ): Promise<Collection> {
@@ -374,7 +377,7 @@ export class CollectionController {
   @UsePipes(ValidationPipe)
   async moveToCollection(
     @Param('id', ParseIntPipe) fatherCollectionId: number,
-    @AuthenticatedUser() user: User,
+    @GetUser() user: User,
     @Body() moveToCollectionDto: MoveToCollectionDto,
   ): Promise<Collection> {
     this.logger.verbose(

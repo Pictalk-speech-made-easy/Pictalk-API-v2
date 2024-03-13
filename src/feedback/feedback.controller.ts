@@ -20,6 +20,9 @@ import { SearchFeedbackDto } from './dto/search.feedback.dto';
 import { Feedback } from './entities/feedback.entity';
 import { FeedbackService } from './feedback.service';
 import { AuthenticatedUser, AuthGuard } from 'nest-keycloak-connect';
+import { UserGuard } from 'src/auth/user.guard';
+import { GetUser } from 'src/auth/get-user.decorator';
+@UseGuards(UserGuard)
 @Controller('feedback')
 export class FeedbackController {
   private logger = new Logger('CollectionController');
@@ -39,7 +42,7 @@ export class FeedbackController {
   @Get()
   @UsePipes(ValidationPipe)
   async getFeedback(
-    @AuthenticatedUser() user: User,
+    @GetUser() user: User,
     @Query() searchFeedbackDto: SearchFeedbackDto,
   ): Promise<{ feedbacks: Feedback[]; total_count: number }> {
     if (!user.admin) {
@@ -55,7 +58,7 @@ export class FeedbackController {
   @Put('/:id')
   @UsePipes(ValidationPipe)
   async editFeedback(
-    @AuthenticatedUser() user: User,
+    @GetUser() user: User,
     @Param('id', ParseIntPipe) id: number,
     @Body() editFeedbackDto: EditFeedbackDto,
   ): Promise<Feedback> {
