@@ -47,12 +47,14 @@ import { MoveToCollectionDto } from './dto/collection.move.dto';
 import { AuthenticatedUser, Public, AuthGuard } from 'nest-keycloak-connect';
 import { UserGuard } from 'src/auth/user.guard';
 import { GetUser } from 'src/auth/get-user.decorator';
-@UseGuards(UserGuard)
+import { OptionnalUserGuard } from 'src/auth/optionnal-user.guard';
+
 @Controller('collection')
 export class CollectionController {
   private logger = new Logger('CollectionController');
   constructor(private collectionService: CollectionService) {}
-
+  
+  @UseGuards(OptionnalUserGuard)
   @Public(false)
   @Get('find/:id')
   @ApiOperation({ summary: 'get a collection that has the provided id' })
@@ -60,12 +62,15 @@ export class CollectionController {
     @Param('id', ParseIntPipe) id: number,
     @GetUser() user: User,
   ): Promise<Collection> {
+    console.log('user', user);
+
     this.logger.verbose(
-      `User "${user.username}" getting Collection with id ${id}`,
+      `User "${user?.username}" getting Collection with id ${id}`,
     );
     return this.collectionService.getCollectionById(id, user);
   }
 
+  @Public(false)
   @Get('/levels')
   @ApiOperation({ summary: 'get all the levels collections' })
   async getLevelCollections(): Promise<levelCollectionDto> {
@@ -92,6 +97,7 @@ export class CollectionController {
     return collectionArray;
   }
 
+  @Public(false)
   @Get('public')
   getPublicCollections(
     @Query(ValidationPipe) SearchCollectionDto: SearchCollectionDto,
@@ -119,16 +125,15 @@ export class CollectionController {
     }
     return this.collectionService.getPublicCollection(SearchCollectionDto);
   }
-
+  @UseGuards(UserGuard)
   @Get()
   @ApiOperation({ summary: 'get all your collection' })
-  getAllUserCollections(
-    @GetUser() user: User,
-  ): Promise<Collection[]> {
+  getAllUserCollections(@GetUser() user: User): Promise<Collection[]> {
     this.logger.verbose(`User "${user.username}" getting all Collection`);
     return this.collectionService.getAllUserCollections(user);
   }
 
+  @UseGuards(UserGuard)
   @Post('copy')
   @ApiOperation({ summary: 'copy a collection with its ID' })
   async copyCollection(
@@ -144,7 +149,7 @@ export class CollectionController {
       copyCollectionDto.collectionId,
       user,
     );
-    let fatherCollectionsIds = fatherCollection.collections.map(
+    const fatherCollectionsIds = fatherCollection.collections.map(
       (collection) => {
         return collection.id;
       },
@@ -167,7 +172,7 @@ export class CollectionController {
     );
     return this.getCollectionById(copyCollectionDto.fatherCollectionId, user);
   }
-
+  @UseGuards(UserGuard)
   @Put('share/:id')
   @UsePipes(ValidationPipe)
   @ApiOperation({
@@ -179,7 +184,6 @@ export class CollectionController {
     @Body() multipleShareCollectionDto: multipleShareCollectionDto,
     @GetUser() user: User,
   ): Promise<Collection> {
-    let collection: Collection;
     if (!multipleShareCollectionDto.role) {
       multipleShareCollectionDto.role = 'viewer';
     }
@@ -193,14 +197,15 @@ export class CollectionController {
         `User "${user.username}" revoking access to Collection with id ${id} for Users ${multipleShareCollectionDto.usernames}`,
       );
     }
-    collection = await this.collectionService.shareCollectionVerification(
-      id,
-      user,
-      multipleShareCollectionDto,
-    );
+    const collection: Collection =
+      await this.collectionService.shareCollectionVerification(
+        id,
+        user,
+        multipleShareCollectionDto,
+      );
     return collection;
   }
-
+  @UseGuards(UserGuard)
   @Put('publish/:id')
   @UsePipes(ValidationPipe)
   publishCollectionById(
@@ -220,7 +225,7 @@ export class CollectionController {
       );
     }
   }
-
+  @UseGuards(UserGuard)
   @Post()
   @UsePipes(ValidationPipe)
   @UseInterceptors(
@@ -258,7 +263,7 @@ export class CollectionController {
               createCollectionDto.fatherCollectionId,
               user,
             );
-          let fatherCollectionsIds = fatherCollection.collections.map(
+          const fatherCollectionsIds = fatherCollection.collections.map(
             (collection) => {
               return collection.id;
             },
@@ -304,7 +309,7 @@ export class CollectionController {
       }
     }
   }
-
+  @UseGuards(UserGuard)
   @Post('/root')
   createRoot(@GetUser() user: User): Promise<number> {
     this.logger.verbose(
@@ -312,7 +317,7 @@ export class CollectionController {
     );
     return this.collectionService.createRoot(user);
   }
-
+  @UseGuards(UserGuard)
   @Delete()
   deleteCollection(
     @Query(ValidationPipe) deleteCollectionDto: deleteCollectionDto,
@@ -324,7 +329,7 @@ export class CollectionController {
     );
     return this.collectionService.deleteCollection(deleteCollectionDto, user);
   }
-
+  @UseGuards(UserGuard)
   @Put('/:id')
   @UsePipes(ValidationPipe)
   @UseInterceptors(
@@ -372,7 +377,7 @@ export class CollectionController {
       );
     }
   }
-
+  @UseGuards(UserGuard)
   @Put('/move/:id')
   @UsePipes(ValidationPipe)
   async moveToCollection(

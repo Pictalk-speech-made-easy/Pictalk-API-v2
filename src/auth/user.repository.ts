@@ -2,25 +2,18 @@ import { Repository } from 'typeorm';
 import {
   ConflictException,
   ForbiddenException,
-  Injectable,
   InternalServerErrorException,
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
-import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { User } from 'src/entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
-import { ResetPasswordDto } from './dto/reset-password.dto';
 import { EditUserDto } from './dto/edit-user.dto';
-import { ChangePasswordDto } from './dto/change-password.dto';
 import { getArrayIfNeeded } from 'src/utilities/tools';
 import { Notif } from 'src/entities/notification.entity';
 import { stringifyMap, validLanguage } from 'src/utilities/creation';
 import sgMail = require('@sendgrid/mail');
-import { randomBytes } from 'crypto';
-import { Validation } from './dto/user-validation.dto';
-import { resetPassword, welcome } from 'src/utilities/emails';
+import { welcome } from 'src/utilities/emails';
 import { CustomRepository } from 'src/utilities/typeorm-ex.decorator';
 
 @CustomRepository(User)
@@ -28,24 +21,12 @@ export class UserRepository extends Repository<User> {
   private logger = new Logger('AuthService');
   private sgmail = sgMail.setApiKey(process.env.SENDGRID_KEY);
   async signUp(createUserDto: CreateUserDto): Promise<User> {
-    const {
-      username,
-      password,
-      language,
-      directSharers,
-      languages,
-      displayLanguage,
-    } = createUserDto;
-    const validationToken = randomBytes(20).toString('hex');
+    const { username, language, directSharers, languages, displayLanguage } =
+      createUserDto;
     const user = this.create();
     user.username = username;
-    user.salt = await bcrypt.genSalt();
-    user.password = await this.hashPassword(password, user.salt);
-    user.resetPasswordToken = '';
-    user.resetPasswordExpires = '';
     user.language = language;
     user.displayLanguage = displayLanguage;
-    user.validationToken = validationToken;
     const voices = validLanguage(languages);
     user.languages = stringifyMap(voices);
     if (directSharers) {
@@ -128,26 +109,6 @@ export class UserRepository extends Repository<User> {
     }
   }
 
-  async validateUserPassword(
-    authCredentialsDto: AuthCredentialsDto,
-  ): Promise<Validation> {
-    const { username, password } = authCredentialsDto;
-    const user = await this.findOne({
-      where: {
-        username,
-      },
-    });
-    if (user && (await user.validatePassword(password))) {
-      return new Validation(user.username, user.validationToken);
-    } else {
-      return null;
-    }
-  }
-
-  private async hashPassword(password: string, salt: string): Promise<string> {
-    return bcrypt.hash(password, salt);
-  }
-
   async pushRoot(user: User, root: number): Promise<void> {
     if (user.root) {
       throw new ForbiddenException(
@@ -160,48 +121,6 @@ export class UserRepository extends Repository<User> {
       await user.save();
     } catch (error) {
       throw new InternalServerErrorException(error);
-    }
-    return;
-  }
-
-  async resetPassword(
-    resetPasswordDto: ResetPasswordDto,
-    resetTokenValue: string,
-    resetTokenExpiration: string,
-  ): Promise<void> {
-    const { username } = resetPasswordDto;
-    const user = await this.findOne({
-      where: {
-        username,
-      },
-    });
-    if (!user) {
-      return;
-    }
-
-    user.resetPasswordToken = resetTokenValue;
-    user.resetPasswordExpires = resetTokenExpiration;
-
-    try {
-      await user.save();
-    } catch (error) {
-      throw new InternalServerErrorException(error);
-    }
-
-    try {
-      sgMail.send({
-        from: 'alex@pictalk.org',
-        to: user.username,
-        templateId: 'd-d68b41c356ba493eac635229b678744e',
-        dynamicTemplateData: {
-          resetPassword: resetPassword[`${user.displayLanguage}`]
-            ? resetPassword[`${user.displayLanguage}`]
-            : resetPassword.en,
-          token: resetTokenValue,
-        },
-      });
-    } catch (error) {
-      throw new Error(error);
     }
     return;
   }
@@ -219,7 +138,6 @@ export class UserRepository extends Repository<User> {
   async editUser(user: User, editUserDto: EditUserDto): Promise<User> {
     const {
       language,
-      password,
       directSharers,
       languages,
       displayLanguage,
@@ -228,10 +146,6 @@ export class UserRepository extends Repository<User> {
     } = editUserDto;
     if (language) {
       user.language = language;
-    }
-    if (password) {
-      user.salt = await bcrypt.genSalt();
-      user.password = await this.hashPassword(password, user.salt);
     }
     if (directSharers) {
       user.directSharers = directSharers;
@@ -254,29 +168,6 @@ export class UserRepository extends Repository<User> {
       throw new InternalServerErrorException(error);
     }
     return this.getUserDetails(user);
-  }
-
-  async changePassword(
-    changePasswordDto: ChangePasswordDto,
-    token: string,
-  ): Promise<void> {
-    const { password } = changePasswordDto;
-    const user = await this.findOne({ where: { resetPasswordToken: token } });
-    if (!user) {
-      return;
-    }
-    if (Number(user.resetPasswordExpires) > Date.now()) {
-      user.salt = await bcrypt.genSalt();
-      user.password = await this.hashPassword(password, user.salt);
-      user.resetPasswordToken = '';
-      user.resetPasswordExpires = '';
-      try {
-        await user.save();
-      } catch (error) {
-        throw new InternalServerErrorException(error);
-      }
-    }
-    return;
   }
 
   async clearNotifications(user: User): Promise<Notif[]> {

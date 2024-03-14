@@ -8,28 +8,22 @@ import {
   Get,
   Inject,
   Logger,
-  NotFoundException,
-  Param,
   Post,
   Put,
   UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { User } from 'src/entities/user.entity';
 import { Collection } from 'src/entities/collection.entity';
 import { CollectionService } from 'src/collection/collection.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { ResetPasswordDto } from './dto/reset-password.dto';
-import { ChangePasswordDto } from './dto/change-password.dto';
 import { EditUserDto } from './dto/edit-user.dto';
 import { Notif } from 'src/entities/notification.entity';
-import { usernameRegexp } from 'src/utilities/creation';
 import { modifyCollectionDto } from 'src/collection/dto/collection.modify.dto';
-import { AuthenticatedUser, Public, AuthGuard } from 'nest-keycloak-connect';
 import { UserGuard } from './user.guard';
 import { GetUser } from './get-user.decorator';
+import { AuthenticatedUser } from 'nest-keycloak-connect';
 @UseGuards(UserGuard)
 @Controller('')
 export class AuthController {
@@ -41,11 +35,13 @@ export class AuthController {
   ) {}
 
   @Post('auth/signup')
-  @Public(false)
   async signUp(
     @Body(ValidationPipe) createUserDto: CreateUserDto,
+    @AuthenticatedUser() kcUser: any,
   ): Promise<void> {
-    this.logger.verbose(`User signin up`);
+    this.logger.verbose(`User sign up`);
+    const username = kcUser?.preferred_username || kcUser?.email;
+    createUserDto.username = username;
     const user = await this.authService.signUp(createUserDto);
     const rootId: number = await this.collectionService.createRoot(user);
     await this.collectionService.createShared(user);

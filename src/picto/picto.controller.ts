@@ -45,7 +45,7 @@ import { Collection } from 'src/entities/collection.entity';
 import { AuthenticatedUser, Public, AuthGuard } from 'nest-keycloak-connect';
 import { UserGuard } from 'src/auth/user.guard';
 import { GetUser } from 'src/auth/get-user.decorator';
-@UseGuards(UserGuard)
+
 @Controller('picto')
 export class PictoController {
   private logger = new Logger('PictosController');
@@ -64,14 +64,14 @@ export class PictoController {
     this.logger.verbose(`User "${user.username}" getting Picto with id ${id}`);
     return this.pictoService.getPictoById(id, user);
   }
-
+  @UseGuards(UserGuard)
   @Get()
   @ApiOperation({ summary: 'get all your pictos' })
   getAllUserPictos(@GetUser() user: User): Promise<Picto[]> {
     this.logger.verbose(`User "${user.username}" getting all Picto`);
     return this.pictoService.getAllUserPictos(user);
   }
-
+  @UseGuards(UserGuard)
   @Put('share/:id')
   @UsePipes(ValidationPipe)
   @ApiOperation({
@@ -109,7 +109,7 @@ export class PictoController {
     }
     return picto;
   }
-
+  @UseGuards(UserGuard)
   @Post()
   @UsePipes(ValidationPipe)
   @UseInterceptors(
@@ -191,7 +191,7 @@ export class PictoController {
       }
     }
   }
-
+  @UseGuards(UserGuard)
   @Delete()
   deletePicto(
     @Query(ValidationPipe) deletePictoDto: deletePictoDto,
@@ -203,7 +203,7 @@ export class PictoController {
     );
     return this.pictoService.deletePicto(deletePictoDto, user);
   }
-
+  @UseGuards(UserGuard)
   @Put('/:id')
   @UsePipes(ValidationPipe)
   @UseInterceptors(
@@ -246,7 +246,7 @@ export class PictoController {
       );
     }
   }
-
+  @UseGuards(UserGuard)
   @Post('copy')
   async copyPicto(
     @Body() copyPictoDto: copyPictoDto,

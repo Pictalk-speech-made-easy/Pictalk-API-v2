@@ -57,18 +57,18 @@ export class CollectionService {
     } else {
       let viewer: number;
       let editor: number;
-      viewer = collection.viewers.indexOf(user.username);
-      editor = collection.editors.indexOf(user.username);
+      viewer = collection.viewers.indexOf(user?.username);
+      editor = collection.editors.indexOf(user?.username);
       if (
         collection.public === true ||
         viewer != -1 ||
         editor != -1 ||
-        collection.userId === user.id
+        collection.userId === user?.id
       ) {
         return this.verifyAcces(collection, user);
       } else {
         throw new UnauthorizedException(
-          `User ${user.username} does not have access to this collection`,
+          `User ${user?.username} does not have access to this collection`,
         );
       }
     }
@@ -78,25 +78,25 @@ export class CollectionService {
     let viewer: number;
     let editor: number;
     for (let index = 0; index < collection.collections.length; index++) {
-      viewer = collection.collections[index].viewers.indexOf(user.username);
-      editor = collection.collections[index].editors.indexOf(user.username);
+      viewer = collection.collections[index].viewers.indexOf(user?.username);
+      editor = collection.collections[index].editors.indexOf(user?.username);
       if (
         collection.collections[index].public === false &&
         viewer === -1 &&
         editor === -1 &&
-        collection.collections[index].userId != user.id
+        collection.collections[index].userId != user?.id
       ) {
         collection.collections.splice(index, 1);
       }
     }
     for (let index = 0; index < collection.pictos.length; index++) {
-      viewer = collection.pictos[index].viewers.indexOf(user.username);
-      editor = collection.pictos[index].editors.indexOf(user.username);
+      viewer = collection.pictos[index].viewers.indexOf(user?.username);
+      editor = collection.pictos[index].editors.indexOf(user?.username);
       if (
         collection.pictos[index].public === false &&
         viewer === -1 &&
         editor === -1 &&
-        collection.pictos[index].userId != user.id
+        collection.pictos[index].userId != user?.id
       ) {
         collection.pictos.splice(index, 1);
       }

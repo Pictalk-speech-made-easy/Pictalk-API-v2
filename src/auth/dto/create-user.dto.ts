@@ -7,26 +7,13 @@ import {
   IsNotEmpty,
   IsOptional,
   IsNumberString,
+  IsEmpty,
 } from 'class-validator';
-import { usernameRegexp } from 'src/utilities/creation';
 import { languagesRegex } from 'src/utilities/supported.languages';
 
 export class CreateUserDto {
-  @ApiProperty()
-  @IsString()
-  @MinLength(3)
-  @MaxLength(254)
-  @Matches(usernameRegexp, { message: 'Not a valid email address' })
+  @IsEmpty()
   username: string;
-
-  @ApiProperty()
-  @IsString()
-  @MinLength(8)
-  @MaxLength(32)
-  @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
-    message: 'password too weak',
-  })
-  password: string;
 
   @ApiProperty()
   @IsNotEmpty()
