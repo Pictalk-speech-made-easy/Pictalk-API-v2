@@ -41,7 +41,7 @@ export class AuthController {
   ) {}
 
   @Post('auth/signup')
-  @Public(true)
+  @Public(false)
   async signUp(
     @Body(ValidationPipe) createUserDto: CreateUserDto,
   ): Promise<void> {

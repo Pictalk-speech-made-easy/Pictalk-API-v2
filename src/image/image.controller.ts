@@ -20,8 +20,8 @@ import { CacheInterceptor } from '@nestjs/cache-manager';
 const client = createClient(
   '563492ad6f9170000100000141844035a31b4fe8acba00dfd6436b14',
 );
-import { AuthGuard } from 'nest-keycloak-connect';
-
+import { Public } from 'nest-keycloak-connect';
+@Public(false)
 @Controller('image')
 export class ImageController {
   constructor(private httpService: HttpService) {}

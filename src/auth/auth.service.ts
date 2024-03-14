@@ -100,9 +100,11 @@ export class AuthService {
   }
 
   async findWithUsername(username: string): Promise<User> {
+    this.logger.verbose(`Finding user with username: ${username}`);
     const user = await this.userRepository.findOne({
       where: { username: username },
     });
+    this.logger.verbose(`Found user with username: ${username}`);
     return user;
   }
 

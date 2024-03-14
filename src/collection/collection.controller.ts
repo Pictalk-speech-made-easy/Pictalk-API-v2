@@ -53,7 +53,7 @@ export class CollectionController {
   private logger = new Logger('CollectionController');
   constructor(private collectionService: CollectionService) {}
 
-  @Public(true)
+  @Public(false)
   @Get('find/:id')
   @ApiOperation({ summary: 'get a collection that has the provided id' })
   getCollectionById(

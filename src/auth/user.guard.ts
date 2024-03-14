@@ -10,7 +10,16 @@ export class UserGuard implements CanActivate {
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
     const request = context.switchToHttp().getRequest();
-    const user = this.authService.findWithUsername(request.user.username);
+    console.log(request.user);
+    // Keycloak users can have either `preferred_username` or `email`
+    const username = request?.user?.preferred_username || request?.user?.email;
+    if (!username) {
+      return false;
+    }
+    const user = this.authService.findWithUsername(username);
+    if (!user) {
+      return false;
+    }
     request.user = user;
     return true;
   }

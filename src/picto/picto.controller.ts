@@ -55,7 +55,7 @@ export class PictoController {
     private collectionService: CollectionService,
   ) {}
 
-  @Public(true)
+  @Public(false)
   @Get('/:id')
   getPictoById(
     @Param('id', ParseIntPipe) id: number,
