@@ -30,8 +30,18 @@ export class CollectionRepository extends Repository<Collection> {
     let { meaning, speech, pictoIds, collectionIds, color, pictohubId } =
       createCollectionDto;
     const collection = new Collection();
-    collection.meaning = meaning;
-    collection.speech = speech;
+    try {
+      collection.meaning = JSON.parse(meaning);
+    } catch (error) {
+      collection.meaning = meaning;
+    }
+
+    try {
+      collection.speech = JSON.parse(speech);
+    } catch (error) {
+      collection.speech = speech;
+    }
+
     collection.userId = user.id;
     if (pictoIds) {
       pictoIds = parseNumberArray(pictoIds);
@@ -78,10 +88,18 @@ export class CollectionRepository extends Repository<Collection> {
       pictohubId,
     } = modifyCollectionDto;
     if (meaning) {
-      collection.meaning = meaning;
+      try {
+        collection.meaning = JSON.parse(meaning);
+      } catch (error) {
+        collection.meaning = meaning;
+      }
     }
     if (speech) {
-      collection.speech = speech;
+      try {
+        collection.speech = JSON.parse(speech);
+      } catch (error) {
+        collection.speech = speech;
+      }
     }
     if (filename) {
       collection.image = filename;
@@ -157,7 +175,7 @@ export class CollectionRepository extends Repository<Collection> {
     if (user.root === null) {
       const name = user.username.split('@')[0]?.replace(/[^a-zA-Z]/gi, '');
       const root = new Collection();
-      root.meaning = JSON.stringify({
+      root.meaning = {
         en: name + meaningRoot.en,
         fr: meaningRoot.fr + name,
         es: meaningRoot.es + name,
@@ -166,8 +184,8 @@ export class CollectionRepository extends Repository<Collection> {
         ro: meaningRoot.ro + name,
         po: meaningRoot.po + name,
         el: meaningRoot.el + name,
-      });
-      root.speech = JSON.stringify({
+      };
+      root.speech = {
         en: name + meaningRoot.en,
         fr: meaningRoot.fr + name,
         es: meaningRoot.es + name,
@@ -176,7 +194,7 @@ export class CollectionRepository extends Repository<Collection> {
         ro: meaningRoot.ro + name,
         po: meaningRoot.po + name,
         el: meaningRoot.el + name,
-      });
+      };
       root.userId = user.id;
       const avatarPng = generateAvatar(
         name.slice(0, 2),
@@ -207,8 +225,8 @@ export class CollectionRepository extends Repository<Collection> {
   async createShared(user: User): Promise<number> {
     if (user.shared === null) {
       const shared = new Collection();
-      shared.meaning = {};
-      shared.speech = {};
+      shared.meaning = '';
+      shared.speech = '';
       shared.userId = user.id;
       try {
         await shared.save();

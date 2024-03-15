@@ -18,11 +18,11 @@ export class Picto extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ nullable: false })
-  meaning: string;
+  @Column('jsonb', { nullable: true, default: {} })
+  meaning: any;
 
-  @Column({ nullable: false })
-  speech: string;
+  @Column('jsonb', { nullable: true, default: {} })
+  speech: any;
 
   @Column()
   image: string;

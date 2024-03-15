@@ -194,4 +194,13 @@ export class UserRepository extends Repository<User> {
     }
     return user.notifications;
   }
+
+  async deleteUser(user: User): Promise<void>{
+    try {
+      await user.remove();
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+    return;
+  }
 }

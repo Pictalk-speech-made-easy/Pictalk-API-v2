@@ -333,6 +333,38 @@ export class CollectionService {
     }
   }
 
+  async deleteCollection(deleteCollectionDto: deleteCollectionDto, user: User): Promise<void>{
+    const collection = await this.getCollectionById(deleteCollectionDto.collectionId, user);
+    if(deleteCollectionDto.fatherId){
+        deleteCollectionDto.fatherId=Number(deleteCollectionDto.fatherId);
+        const fatherCollection = await this.getCollectionById(deleteCollectionDto.fatherId, user);
+        let fatherCollectionsIds = fatherCollection.collections.map(collection => {return collection.id;})
+        fatherCollectionsIds.splice(fatherCollectionsIds.indexOf(deleteCollectionDto.collectionId),1);
+        const modifyCollectionDto : modifyCollectionDto = {
+            meaning : null,
+            speech : null,
+            pictoIds : null,
+            priority : 10,
+            color : null,
+            collectionIds : fatherCollectionsIds,
+            pictohubId: null
+        }
+        await this.modifyCollection(deleteCollectionDto.fatherId, user, modifyCollectionDto, null);
+    }
+    try{
+        const result = await this.collectionRepository.delete({
+            id: deleteCollectionDto.collectionId,
+            userId: user.id,
+          });
+    } catch(error){
+        if(error.code === "23503"){
+            return;
+        } else {
+            throw new InternalServerErrorException(`couldn't delete collection with id ${deleteCollectionDto.collectionId}`);
+        }
+    }
+  }
+
   async createNotif(
     collection: Collection,
     user: User,
@@ -579,4 +611,19 @@ export class CollectionService {
     }
     return await this.getCollectionById(fatherCollectionId, user);
   }
+
+  async deleteAllCollections(user: User): Promise<void>{
+    const collections = await this.getAllUserCollections(user);
+    console.log(`User ${user.username} has ${collections.length} collections`);
+    try{
+        await Promise.all(collections.map(collection => 
+            this.modifyCollection(collection.id, user, {meaning: null, speech: null, priority: null, color: null, pictohubId: null, collectionIds: [], pictoIds: []}, null)
+        ));
+        await Promise.all(collections.map(collection =>
+            this.deleteCollection({collectionId: collection.id, fatherId: null}, user)
+        ));
+    } catch(error){
+        throw new InternalServerErrorException(`couldn't delete all collections`);
+    }
 }
+

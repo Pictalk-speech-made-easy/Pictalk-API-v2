@@ -14,6 +14,9 @@ import { Notif } from 'src/entities/notification.entity';
 
 @Injectable()
 export class AuthService {
+  findWithId(userId: number): User | PromiseLike<User> {
+    throw new Error('Method not implemented.');
+  }
   private logger = new Logger('AuthService');
   constructor(
     @InjectRepository(UserRepository)
@@ -108,12 +111,21 @@ export class AuthService {
     return user;
   }
 
-  async sendMail(user: User): Promise<void> {
-    return this.userRepository.sendMail(user);
-  }
+    async findWithId(userId: number): Promise<User>{
+        const user = await this.userRepository.findOne({where : {id: userId}});
+        return user;
+    }
 
-  async isSiderToCreate(username): Promise<User> {
-    const user: User = await this.findWithUsername(username);
-    return user.sider ? null : user;
-  }
+    async sendMail(user: User): Promise<void>{
+        return this.userRepository.sendMail(user);
+    }
+
+    async isSiderToCreate(username): Promise<User> {
+        const user:User = await this.findWithUsername(username);
+        return user.sider ? null : user;
+    }
+
+    async deleteUser(user: User): Promise<void>{
+        return this.userRepository.deleteUser(user);
+    }
 }

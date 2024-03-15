@@ -5,11 +5,14 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Controller } from '@nestjs/common/decorators/core/controller.decorator';
+import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from 'src/auth/auth.service';
+import { GetUser } from 'src/auth/get-user.decorator';
+import { UserGuard } from 'src/auth/user.guard';
 import { CollectionService } from 'src/collection/collection.service';
 import { User } from 'src/entities/user.entity';
 import { PictoService } from 'src/picto/picto.service';
-import { AuthenticatedUser, AuthGuard } from 'nest-keycloak-connect';
+
 class DBReport {
   userNb: number;
   pictogramNb: number;
@@ -63,20 +66,21 @@ const report: Report = new Report();
 
 var token: string;
 async function refreshToken(urlBody: any): Promise<void> {
-  const body = { password: urlBody.pwd, username: urlBody.log };
+  const body = new URLSearchParams();
+  body.append('client_id', urlBody.client_id);
+  body.append('client_secret', urlBody.client_secret);
+  body.append('grant_type', 'client_credentials');
   fetch(urlBody.url, {
     method: 'POST',
     headers: {
       Accept: '*/*',
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/x-www-form-urlencoded',
     },
-    body: JSON.stringify(body),
+    body: body,
   })
     .then(async (response) => {
       if (response.status == 200) {
-        const data = await response.json().then((data) => {
-          return data;
-        });
+        const data = await response.json();
         token = data.access_token;
         setTimeout(function () {
           refreshToken(urlBody);
@@ -104,16 +108,19 @@ setInterval(function () {
 @Controller('extras')
 export class ExtrasController {
   private auth_url = process.env.ASSO_AUTH_URL;
-  private report_url = process.env.ASSO_REPORT_URL;
   private donators_url = process.env.ASSO_DONATORS_URL;
-  private pwd = process.env.ASSO_PWD;
-  private log = process.env.ASSO_LOG;
+  private client_secret = process.env.ASSO_CLIENT_SECRET;
+  private client_id = process.env.ASSO_CLIENT_ID;
   constructor(
     private collectionService: CollectionService,
     private authService: AuthService,
     private pictoService: PictoService,
   ) {
-    refreshToken({ url: this.auth_url, pwd: this.pwd, log: this.log });
+    refreshToken({
+      url: this.auth_url,
+      client_id: this.client_id,
+      client_secret: this.client_secret,
+    });
   }
   @Get('/amounts')
   async money(): Promise<Report> {
@@ -137,6 +144,7 @@ export class ExtrasController {
           }
         })
         .catch((error) => {
+          console.log(error);
           neterrors++;
         });
       fetch(this.donators_url + '&pageSize=40' + pastdate, {
@@ -160,8 +168,9 @@ export class ExtrasController {
     return report;
   }
 
+  @UseGuards(UserGuard)
   @Get('/dbsummary')
-  async dbSummary(@AuthenticatedUser() user: User): Promise<DBReport> {
+  async dbSummary(@GetUser() user: User): Promise<DBReport> {
     if (!user.admin) {
       throw new UnauthorizedException(
         `User ${user.username} is not admin, only admins can get feedbacks`,

@@ -1,18 +1,5 @@
 import { multipleShareCollectionDto } from './../collection/dto/collection.share.dto';
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  Delete,
-  forwardRef,
-  Get,
-  Inject,
-  Logger,
-  Post,
-  Put,
-  UseGuards,
-  ValidationPipe,
-} from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, forwardRef, Get, Inject, Logger, NotFoundException, Param, ParseIntPipe, Post, Put, UseGuards, ValidationPipe } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { User } from 'src/entities/user.entity';
 import { Collection } from 'src/entities/collection.entity';
@@ -21,18 +8,19 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { EditUserDto } from './dto/edit-user.dto';
 import { Notif } from 'src/entities/notification.entity';
 import { modifyCollectionDto } from 'src/collection/dto/collection.modify.dto';
+import { PictoService } from 'src/picto/picto.service';
 import { UserGuard } from './user.guard';
 import { GetUser } from './get-user.decorator';
 import { AuthenticatedUser } from 'nest-keycloak-connect';
-
 @Controller('')
 export class AuthController {
-  private logger = new Logger('AuthController');
-  constructor(
-    private authService: AuthService,
-    @Inject(forwardRef(() => CollectionService))
-    private collectionService: CollectionService,
-  ) {}
+    private logger = new Logger('AuthController');
+    constructor(private authService: AuthService,
+        @Inject(forwardRef(() => CollectionService))
+        private collectionService: CollectionService,
+        @Inject(forwardRef(() => PictoService))
+        private pictoService: PictoService)
+        {}
 
   @Post('auth/signup')
   async signUp(
@@ -186,4 +174,46 @@ export class AuthController {
     this.logger.verbose(`User "${user.username}" clearing his notifications`);
     return this.authService.clearNotifications(user);
   }
+
+  @UseGuards(UserGuard)
+    @Delete('/user/:id')
+    async deleteUser(@GetUser() user: User, @Param('id', ParseIntPipe) userId: number): Promise<void>{
+        if (user.admin === false && user.id !== userId) {
+          console.log(`User ${user.username} is not an admin and is trying to delete user ${userId}`)
+          return;
+        }
+        if (user.admin) {
+          user = await this.authService.findWithId(userId);
+          if (!user) {
+            return;
+          }
+          this.logger.verbose(`Admin deleting user "${user.username}"`);
+        } else {
+          this.logger.verbose(`User "${user.username}" deleting his account`);
+        }
+        try {
+          // Delete all user pictograms
+          await this.collectionService.deleteAllCollections(user);
+          await this.pictoService.deleteAllPictos(user);
+        } catch (error) {
+          console.log(`Pictograms of user ${user.username} could not be deleted: ${error}`);
+        }
+        try {
+          await this.collectionService.deleteCollection({collectionId: user.root, fatherId: undefined}, user);
+        } catch (error) {
+          console.log(`Root collection of user ${user.username} could not be deleted: ${error}`);
+        }
+        try {
+          await this.collectionService.deleteCollection({collectionId: user.sider, fatherId: undefined}, user);
+        } catch (error) {
+          console.log(`Sider collection of user ${user.username} could not be deleted: ${error}`);
+        }
+        try {
+          await this.collectionService.deleteCollection({collectionId: user.shared, fatherId: undefined}, user);
+        } catch (error) {
+          console.log(`Shared collection of user ${user.username} could not be deleted: ${error}`);
+        }
+        
+        return this.authService.deleteUser(user);
+    }
 }

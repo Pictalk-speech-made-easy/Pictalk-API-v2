@@ -18,8 +18,16 @@ export class PictoRepository extends Repository<Picto> {
   ): Promise<Picto> {
     let { meaning, speech, collectionIds, color, pictohubId } = createPictoDto;
     const picto = new Picto();
-    picto.meaning = meaning;
-    picto.speech = speech;
+    try {
+      picto.meaning = JSON.parse(meaning);
+    } catch (error) {
+      picto.meaning = meaning;
+    }
+    try {
+      picto.speech = JSON.parse(speech);
+    } catch (error) {
+      picto.speech = speech;
+    }
     picto.image = filename;
     picto.userId = user.id;
     if (color) {
@@ -52,10 +60,18 @@ export class PictoRepository extends Repository<Picto> {
     let { meaning, speech, collectionIds, priority, color, pictohubId } =
       modifyPictoDto;
     if (meaning) {
-      picto.meaning = meaning;
+      try {
+        picto.meaning = JSON.parse(meaning);
+      } catch (error) {
+        picto.meaning = meaning;
+      }
     }
     if (speech) {
-      picto.speech = speech;
+      try {
+        picto.speech = JSON.parse(speech);
+      } catch (error) {
+        picto.speech = speech;
+      }
     }
     if (color) {
       picto.color = color;
@@ -157,8 +173,16 @@ export class PictoRepository extends Repository<Picto> {
     user: User,
   ): Promise<Picto> {
     const copiedPicto = new Picto();
-    copiedPicto.meaning = picto.meaning;
-    copiedPicto.speech = picto.speech;
+    try {
+      copiedPicto.meaning = JSON.parse(picto.meaning);
+    } catch (error) {
+      copiedPicto.meaning = picto.meaning;
+    }
+    try {
+      copiedPicto.speech = JSON.parse(picto.speech);
+    } catch (error) {
+      copiedPicto.speech = picto.speech;
+    }
     copiedPicto.image = picto.image;
     copiedPicto.userId = user.id;
     copiedPicto.color = picto.color;

@@ -5,11 +5,13 @@ import { UserRepository } from './user.repository';
 import { CollectionModule } from 'src/collection/collection.module';
 import * as config from 'config';
 import { TypeOrmExModule } from 'src/utilities/typeorm-ex.module';
+import { PictoModule } from 'src/picto/picto.module';
 const jwtConfig = config.get('jwt');
 @Module({
   imports: [
     TypeOrmExModule.forCustomRepository([UserRepository]),
     forwardRef(() => CollectionModule),
+    forwardRef(() => PictoModule),
   ],
 
   controllers: [AuthController],

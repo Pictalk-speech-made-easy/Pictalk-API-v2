@@ -37,10 +37,8 @@ export class PictoService {
     if (!picto) {
       throw new NotFoundException(`Picto with ID '${id}' not found`);
     } else {
-      let viewer: number;
-      let editor: number;
-      viewer = picto.viewers.indexOf(user.username);
-      editor = picto.editors.indexOf(user.username);
+      const viewer: number = picto.viewers.indexOf(user.username);
+      const editor: number = picto.editors.indexOf(user.username);
       if (
         picto.public === true ||
         viewer != -1 ||
@@ -124,7 +122,7 @@ export class PictoService {
         deletePictoDto.fatherId,
         user,
       );
-      let fatherPictosIds = fatherCollection.pictos.map((picto) => {
+      const fatherPictosIds = fatherCollection.pictos.map((picto) => {
         return picto.id;
       });
       fatherPictosIds.splice(
@@ -167,6 +165,21 @@ export class PictoService {
       }
     }
   }
+  async createNotif(
+    picto: Picto,
+    user: User,
+    type: string,
+    operation: string,
+  ): Promise<Notif> {
+    const notification: Notif = new Notif(
+      type,
+      operation,
+      picto.id.toString(),
+      picto.meaning,
+      user.username,
+    );
+    return notification;
+  }
 
   async modifyPicto(
     id: number,
@@ -202,22 +215,6 @@ export class PictoService {
     }
   }
 
-  async createNotif(
-    picto: Picto,
-    user: User,
-    type: string,
-    operation: string,
-  ): Promise<Notif> {
-    const notification: Notif = new Notif(
-      type,
-      operation,
-      picto.id.toString(),
-      picto.meaning,
-      user.username,
-    );
-    return notification;
-  }
-
   async copyPicto(
     fatherCollectionId: number,
     pictoId: number,
@@ -225,5 +222,38 @@ export class PictoService {
   ): Promise<Picto> {
     const picto = await this.getPictoById(pictoId, user);
     return this.pictoRepository.copyPicto(picto, fatherCollectionId, user);
+  }
+
+  async deleteAllPictos(user: User): Promise<void> {
+    try {
+      const pictos = await this.getAllUserPictos(user);
+      console.log(`User ${user.username} has ${pictos.length} pictos`);
+      await Promise.all(
+        pictos.map(async (picto) =>
+          this.modifyPicto(
+            picto.id,
+            user,
+            {
+              meaning: null,
+              speech: null,
+              color: null,
+              collectionIds: [],
+              priority: null,
+              pictohubId: null,
+            },
+            null,
+          ),
+        ),
+      );
+      await Promise.all(
+        pictos.map(async (picto) =>
+          this.deletePicto({ pictoId: picto.id, fatherId: undefined }, user),
+        ),
+      );
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `couldn't delete all pictos of user ${user.username}`,
+      );
+    }
   }
 }
