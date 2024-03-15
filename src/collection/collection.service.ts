@@ -55,10 +55,8 @@ export class CollectionService {
     if (!collection) {
       throw new NotFoundException(`Collection with ID '${id}' not found`);
     } else {
-      let viewer: number;
-      let editor: number;
-      viewer = collection.viewers.indexOf(user?.username);
-      editor = collection.editors.indexOf(user?.username);
+      const viewer: number = collection.viewers.indexOf(user?.username);
+      const editor: number = collection.editors.indexOf(user?.username);
       if (
         collection.public === true ||
         viewer != -1 ||
@@ -158,7 +156,7 @@ export class CollectionService {
           deleteCollectionDto.fatherId,
           user,
         );
-        let fatherCollectionsIds = fatherCollection.collections.map(
+        const fatherCollectionsIds = fatherCollection.collections.map(
           (collection) => {
             return collection.id;
           },
@@ -330,38 +328,6 @@ export class CollectionService {
     } else {
       // does nothing because no one to share to, unvalid usernames
       throw new ForbiddenException(`sharers is empty or does not exist`);
-    }
-  }
-
-  async deleteCollection(deleteCollectionDto: deleteCollectionDto, user: User): Promise<void>{
-    const collection = await this.getCollectionById(deleteCollectionDto.collectionId, user);
-    if(deleteCollectionDto.fatherId){
-        deleteCollectionDto.fatherId=Number(deleteCollectionDto.fatherId);
-        const fatherCollection = await this.getCollectionById(deleteCollectionDto.fatherId, user);
-        let fatherCollectionsIds = fatherCollection.collections.map(collection => {return collection.id;})
-        fatherCollectionsIds.splice(fatherCollectionsIds.indexOf(deleteCollectionDto.collectionId),1);
-        const modifyCollectionDto : modifyCollectionDto = {
-            meaning : null,
-            speech : null,
-            pictoIds : null,
-            priority : 10,
-            color : null,
-            collectionIds : fatherCollectionsIds,
-            pictohubId: null
-        }
-        await this.modifyCollection(deleteCollectionDto.fatherId, user, modifyCollectionDto, null);
-    }
-    try{
-        const result = await this.collectionRepository.delete({
-            id: deleteCollectionDto.collectionId,
-            userId: user.id,
-          });
-    } catch(error){
-        if(error.code === "23503"){
-            return;
-        } else {
-            throw new InternalServerErrorException(`couldn't delete collection with id ${deleteCollectionDto.collectionId}`);
-        }
     }
   }
 
@@ -612,18 +578,38 @@ export class CollectionService {
     return await this.getCollectionById(fatherCollectionId, user);
   }
 
-  async deleteAllCollections(user: User): Promise<void>{
+  async deleteAllCollections(user: User): Promise<void> {
     const collections = await this.getAllUserCollections(user);
     console.log(`User ${user.username} has ${collections.length} collections`);
-    try{
-        await Promise.all(collections.map(collection => 
-            this.modifyCollection(collection.id, user, {meaning: null, speech: null, priority: null, color: null, pictohubId: null, collectionIds: [], pictoIds: []}, null)
-        ));
-        await Promise.all(collections.map(collection =>
-            this.deleteCollection({collectionId: collection.id, fatherId: null}, user)
-        ));
-    } catch(error){
-        throw new InternalServerErrorException(`couldn't delete all collections`);
+    try {
+      await Promise.all(
+        collections.map((collection) =>
+          this.modifyCollection(
+            collection.id,
+            user,
+            {
+              meaning: null,
+              speech: null,
+              priority: null,
+              color: null,
+              pictohubId: null,
+              collectionIds: [],
+              pictoIds: [],
+            },
+            null,
+          ),
+        ),
+      );
+      await Promise.all(
+        collections.map((collection) =>
+          this.deleteCollection(
+            { collectionId: collection.id, fatherId: null },
+            user,
+          ),
+        ),
+      );
+    } catch (error) {
+      throw new InternalServerErrorException(`couldn't delete all collections`);
     }
+  }
 }
-

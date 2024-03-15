@@ -14,9 +14,6 @@ import { Notif } from 'src/entities/notification.entity';
 
 @Injectable()
 export class AuthService {
-  findWithId(userId: number): User | PromiseLike<User> {
-    throw new Error('Method not implemented.');
-  }
   private logger = new Logger('AuthService');
   constructor(
     @InjectRepository(UserRepository)
