@@ -24,7 +24,7 @@ import { modifyCollectionDto } from 'src/collection/dto/collection.modify.dto';
 import { UserGuard } from './user.guard';
 import { GetUser } from './get-user.decorator';
 import { AuthenticatedUser } from 'nest-keycloak-connect';
-@UseGuards(UserGuard)
+
 @Controller('')
 export class AuthController {
   private logger = new Logger('AuthController');
@@ -100,12 +100,14 @@ export class AuthController {
     return;
   }
 
+  @UseGuards(UserGuard)
   @Get('user/details')
   getUserDetails(@GetUser() user: User): Promise<User> {
     this.logger.verbose(`User "${user.username}" is trying to get Details`);
     return this.authService.getUserDetails(user);
   }
 
+  @UseGuards(UserGuard)
   @Put('user/details')
   async editUser(
     @GetUser() user: User,
@@ -146,14 +148,15 @@ export class AuthController {
     return editedUser;
   }
 
+  @UseGuards(UserGuard)
   @Get('/user/root')
-  
   async getRoot(@GetUser() user: User): Promise<Collection> {
     this.logger.verbose(`User "${user.username}" getting his root`);
     const root = await this.authService.getRoot(user);
     return this.collectionService.getCollectionById(root, user);
   }
 
+  @UseGuards(UserGuard)
   @Get('/user/sider')
   async getSider(@GetUser() user: User): Promise<Collection> {
     this.logger.verbose(`User "${user.username}" getting his root`);
@@ -161,6 +164,7 @@ export class AuthController {
     return this.collectionService.getCollectionById(sider, user);
   }
 
+  @UseGuards(UserGuard)
   @Get('/user/shared')
   async getShared(@GetUser() user: User): Promise<Collection> {
     this.logger.verbose(
@@ -170,11 +174,13 @@ export class AuthController {
     return this.collectionService.getCollectionById(shared, user);
   }
 
+  @UseGuards(UserGuard)
   @Get('/user/notification')
   async getNotifications(@GetUser() user: User): Promise<Notif[]> {
     return this.authService.getNotifications(user);
   }
 
+  @UseGuards(UserGuard)
   @Delete('/user/notification')
   async clearNotifications(@GetUser() user: User): Promise<Notif[]> {
     this.logger.verbose(`User "${user.username}" clearing his notifications`);

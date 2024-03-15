@@ -207,8 +207,8 @@ export class CollectionRepository extends Repository<Collection> {
   async createShared(user: User): Promise<number> {
     if (user.shared === null) {
       const shared = new Collection();
-      shared.meaning = '';
-      shared.speech = '';
+      shared.meaning = {};
+      shared.speech = {};
       shared.userId = user.id;
       try {
         await shared.save();
@@ -232,8 +232,8 @@ export class CollectionRepository extends Repository<Collection> {
   async createSider(user: User): Promise<number> {
     if (user.sider === null) {
       const sider = new Collection();
-      sider.meaning = '';
-      sider.speech = '';
+      sider.meaning = {};
+      sider.speech = {};
       sider.userId = user.id;
       try {
         await sider.save();

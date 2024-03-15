@@ -27,6 +27,11 @@ export class UserRepository extends Repository<User> {
     user.username = username;
     user.language = language;
     user.displayLanguage = displayLanguage;
+    user.password = 'not_used';
+    user.salt = 'salt';
+    user.resetPasswordToken = '';
+    user.resetPasswordExpires = '';
+    user.validationToken = 'verified';
     const voices = validLanguage(languages);
     user.languages = stringifyMap(voices);
     if (directSharers) {
