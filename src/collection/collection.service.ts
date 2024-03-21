@@ -142,63 +142,54 @@ export class CollectionService {
     deleteCollectionDto: deleteCollectionDto,
     user: User,
   ): Promise<void> {
-    if (
-      deleteCollectionDto.collectionId != user.root &&
-      deleteCollectionDto.collectionId != user.shared
-    ) {
-      const collection = await this.getCollectionById(
-        deleteCollectionDto.collectionId,
+    const collection = await this.getCollectionById(
+      deleteCollectionDto.collectionId,
+      user,
+    );
+    if (deleteCollectionDto.fatherId) {
+      deleteCollectionDto.fatherId = Number(deleteCollectionDto.fatherId);
+      const fatherCollection = await this.getCollectionById(
+        deleteCollectionDto.fatherId,
         user,
       );
-      if (deleteCollectionDto.fatherId) {
-        deleteCollectionDto.fatherId = Number(deleteCollectionDto.fatherId);
-        const fatherCollection = await this.getCollectionById(
-          deleteCollectionDto.fatherId,
-          user,
-        );
-        const fatherCollectionsIds = fatherCollection.collections.map(
-          (collection) => {
-            return collection.id;
-          },
-        );
-        fatherCollectionsIds.splice(
-          fatherCollectionsIds.indexOf(deleteCollectionDto.collectionId),
-          1,
-        );
-        const modifyCollectionDto: modifyCollectionDto = {
-          meaning: null,
-          speech: null,
-          pictoIds: null,
-          priority: 10,
-          color: null,
-          collectionIds: fatherCollectionsIds,
-          pictohubId: null,
-        };
-        await this.modifyCollection(
-          deleteCollectionDto.fatherId,
-          user,
-          modifyCollectionDto,
-          null,
-        );
-      }
-      try {
-        const result = await this.collectionRepository.delete({
-          id: deleteCollectionDto.collectionId,
-          userId: user.id,
-        });
-      } catch (error) {
-        if (error.code === '23503') {
-          return;
-        } else {
-          throw new InternalServerErrorException(
-            `couldn't delete collection with id ${deleteCollectionDto.collectionId}`,
-          );
-        }
-      }
-    } else {
-      throw new UnauthorizedException(
-        `Cannot delete "root" or "shared with me" Collections of User ${user.username}`,
+      const fatherCollectionsIds = fatherCollection.collections.map(
+        (collection) => {
+          return collection.id;
+        },
       );
+      fatherCollectionsIds.splice(
+        fatherCollectionsIds.indexOf(deleteCollectionDto.collectionId),
+        1,
+      );
+      const modifyCollectionDto: modifyCollectionDto = {
+        meaning: null,
+        speech: null,
+        pictoIds: null,
+        priority: 10,
+        color: null,
+        collectionIds: fatherCollectionsIds,
+        pictohubId: null,
+      };
+      await this.modifyCollection(
+        deleteCollectionDto.fatherId,
+        user,
+        modifyCollectionDto,
+        null,
+      );
+    }
+    try {
+      const result = await this.collectionRepository.delete({
+        id: deleteCollectionDto.collectionId,
+        userId: user.id,
+      });
+    } catch (error) {
+      if (error.code === '23503') {
+        return;
+      } else {
+        throw new InternalServerErrorException(
+          `couldn't delete collection with id ${deleteCollectionDto.collectionId}`,
+        );
+      }
     }
   }
   async autoShare(
