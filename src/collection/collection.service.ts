@@ -169,11 +169,8 @@ export class CollectionService {
                 for(let sharer of sharers){
                     const sharedWithMe = await this.getCollectionById(sharer.shared, sharer);
                     this.collectionRepository.pushCollection(sharedWithMe, collection);
-                    const directSharer = sharer.directSharers.indexOf(user.username);
-                    if(directSharer!=-1){
-                        const sharerRoot = await this.getCollectionById(sharer.root, sharer);
-                        this.collectionRepository.pushCollection(sharerRoot, collection);
-                    }
+                    const sharerRoot = await this.getCollectionById(sharer.root, sharer);
+                    this.collectionRepository.pushCollection(sharerRoot, collection);
                     if(multipleShareCollectionDto.access==1){
                         if((collection.editors.indexOf(sharer.username)==-1) && (collection.viewers.indexOf(sharer.username)==-1)){
                             const notification = await this.createNotif(collection, user, "collection", "share");
