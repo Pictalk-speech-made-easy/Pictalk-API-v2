@@ -349,4 +349,24 @@ export class CollectionService {
             throw new InternalServerErrorException(`couldn't delete all collections`);
         }
     }
+
+  async getOrphanedCollections(user: User): Promise<Collection[]>{
+    const rootCollectionId = user.root;
+
+  const queryBuilder = this.collectionRepository.createQueryBuilder('collection');
+  queryBuilder.where('collection.userId = :userId', { userId: user.id })
+    .andWhere(qb => {
+      // This subquery checks for collections not linked to the root collection
+      const subQuery = qb.subQuery()
+        .select('link."collectionId_2"') // Corrected column name
+        .from('collection_collections_collection', 'link') // Corrected join table name
+        .where('link."collectionId_1" = :rootCollectionId', { rootCollectionId }) // Corrected column name
+        .orWhere('link."collectionId_2" = :rootCollectionId', { rootCollectionId }) // Corrected column name
+        .getQuery();
+      return 'collection.id NOT IN ' + subQuery;
+    });
+    const orphanedCollections = await queryBuilder.getMany();
+    // Filter 'shared' collection and 'sider' collection
+    return orphanedCollections.filter(collection => collection.id !== user.shared && collection.id !== user.sider);
+  }
 }

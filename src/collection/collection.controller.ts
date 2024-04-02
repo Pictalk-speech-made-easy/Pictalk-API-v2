@@ -233,4 +233,12 @@ export class CollectionController {
     this.logger.verbose(`User "${user.username}" Moving Collection ${moveToCollectionDto.sourceCollectionId} or Picto ${moveToCollectionDto.sourcePictoId} to ${moveToCollectionDto.targetCollectionId}`);
     return this.collectionService.moveToCollection(user, moveToCollectionDto, fatherCollectionId);
   }
+
+  @UseGuards(AuthGuard())
+  @Get('orphaned')
+  @ApiOperation({summary : 'get all the orphaned collections'})
+  async getOrphanedCollections(@GetUser() user: User): Promise<Collection[]> {
+    this.logger.verbose(`User "${user.username}" getting all orphaned Collections`);
+    return this.collectionService.getOrphanedCollections(user);
+  }
 }
