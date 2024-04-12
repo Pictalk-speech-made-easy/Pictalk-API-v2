@@ -6,7 +6,7 @@ import { Collection } from 'src/entities/collection.entity';
 import { Notif } from 'src/entities/notification.entity';
 import { Picto } from 'src/entities/picto.entity';
 import { User } from 'src/entities/user.entity';
-import { createPictoDto  } from 'src/picto/dto/picto.create.dto';
+import { createPictoDto } from 'src/picto/dto/picto.create.dto';
 import { PictoService } from 'src/picto/picto.service';
 import { CollectionRepository } from './collection.repository';
 import { createCollectionDto } from './dto/collection.create.dto';
@@ -16,34 +16,35 @@ import { MoveToCollectionDto } from './dto/collection.move.dto';
 import { publicCollectionDto } from './dto/collection.public.dto';
 import { SearchCollectionDto } from './dto/collection.search.public.dto';
 import { shareCollectionDto, multipleShareCollectionDto } from './dto/collection.share.dto';
+import { EntityManager } from 'typeorm';
 
 @Injectable()
 export class CollectionService {
     constructor(
         @InjectRepository(CollectionRepository)
-        private collectionRepository : CollectionRepository,
+        private collectionRepository: CollectionRepository,
         @Inject(forwardRef(() => AuthService))
-        private authService : AuthService,
+        private authService: AuthService,
         @Inject(forwardRef(() => PictoService))
-        private pictoService : PictoService,
+        private pictoService: PictoService,
 
     ) { }
 
-    async getCollectionCount(): Promise<number>{
+    async getCollectionCount(): Promise<number> {
         return await this.collectionRepository.createQueryBuilder('collection').getCount()
     }
 
-    async getCollectionById(id: number, user : User): Promise<Collection>{
-        const collection = await this.collectionRepository.findOne({relations: ["pictos", "collections"],where : {id}});
-        
-        if(!collection) {
-            throw new NotFoundException(`Collection with ID '${id}' not found`);  
+    async getCollectionById(id: number, user: User): Promise<Collection> {
+        const collection = await this.collectionRepository.findOne({ relations: ["pictos", "collections"], where: { id } });
+
+        if (!collection) {
+            throw new NotFoundException(`Collection with ID '${id}' not found`);
         } else {
-            let viewer : number;
-            let editor : number;
+            let viewer: number;
+            let editor: number;
             viewer = collection.viewers.indexOf(user.username);
             editor = collection.editors.indexOf(user.username);
-            if(collection.public === true || viewer!=-1 || editor!=-1 || collection.userId === user.id){
+            if (collection.public === true || viewer != -1 || editor != -1 || collection.userId === user.id) {
                 return this.verifyAcces(collection, user);
             } else {
                 throw new UnauthorizedException(`User ${user.username} does not have access to this collection`);
@@ -51,91 +52,91 @@ export class CollectionService {
         }
     }
 
-    verifyAcces(collection: Collection, user: User): Collection{
-        let viewer : number;
-        let editor : number;
-        for(let index = 0; index < collection.collections.length; index++){
+    verifyAcces(collection: Collection, user: User): Collection {
+        let viewer: number;
+        let editor: number;
+        for (let index = 0; index < collection.collections.length; index++) {
             viewer = collection.collections[index].viewers.indexOf(user.username);
             editor = collection.collections[index].editors.indexOf(user.username);
-            if(collection.collections[index].public === false && viewer ===-1 && editor ===-1 && collection.collections[index].userId != user.id){
+            if (collection.collections[index].public === false && viewer === -1 && editor === -1 && collection.collections[index].userId != user.id) {
                 collection.collections.splice(index, 1);
-            }   
+            }
         }
-        for(let index = 0; index < collection.pictos.length; index++){
+        for (let index = 0; index < collection.pictos.length; index++) {
             viewer = collection.pictos[index].viewers.indexOf(user.username);
             editor = collection.pictos[index].editors.indexOf(user.username);
-            if(collection.pictos[index].public === false && viewer ===-1 && editor ===-1 && collection.pictos[index].userId != user.id){
+            if (collection.pictos[index].public === false && viewer === -1 && editor === -1 && collection.pictos[index].userId != user.id) {
                 collection.pictos.splice(index, 1);
-            }   
+            }
         }
         return collection;
     }
 
-    async getAllUserCollections(user:User): Promise<Collection[]>{
-        const collection = await this.collectionRepository.find({relations: ["pictos", "collections"],where : {userId: user.id}});
+    async getAllUserCollections(user: User): Promise<Collection[]> {
+        const collection = await this.collectionRepository.find({ relations: ["pictos", "collections"], where: { userId: user.id } });
         return collection;
-    } 
+    }
 
     async createCollection(createCollectionDto: createCollectionDto, user: User, filename: string): Promise<Collection> {
         createCollectionDto.collectionIds = await this.verifyOwnership(createCollectionDto.collectionIds, user);
         return this.collectionRepository.createCollection(createCollectionDto, user, filename);
     }
 
-    async createRoot(user: User): Promise<number>{
+    async createRoot(user: User): Promise<number> {
         return this.collectionRepository.createRoot(user);
     }
 
-    async createSider(user: User): Promise<number>{
+    async createSider(user: User): Promise<number> {
         return this.collectionRepository.createSider(user);
     }
 
-    async createShared (user: User): Promise<number>{
+    async createShared(user: User): Promise<number> {
         return this.collectionRepository.createShared(user);
     }
 
-    async deleteCollection(deleteCollectionDto: deleteCollectionDto, user: User): Promise<void>{
-            const collection = await this.getCollectionById(deleteCollectionDto.collectionId, user);
-            if(deleteCollectionDto.fatherId){
-                deleteCollectionDto.fatherId=Number(deleteCollectionDto.fatherId);
-                const fatherCollection = await this.getCollectionById(deleteCollectionDto.fatherId, user);
-                let fatherCollectionsIds = fatherCollection.collections.map(collection => {return collection.id;})
-                fatherCollectionsIds.splice(fatherCollectionsIds.indexOf(deleteCollectionDto.collectionId),1);
-                const modifyCollectionDto : modifyCollectionDto = {
-                    meaning : null,
-                    speech : null,
-                    pictoIds : null,
-                    priority : 10,
-                    color : null,
-                    collectionIds : fatherCollectionsIds,
-                    pictohubId: null
-                }
-                await this.modifyCollection(deleteCollectionDto.fatherId, user, modifyCollectionDto, null);
+    async deleteCollection(deleteCollectionDto: deleteCollectionDto, user: User): Promise<void> {
+        const collection = await this.getCollectionById(deleteCollectionDto.collectionId, user);
+        if (deleteCollectionDto.fatherId) {
+            deleteCollectionDto.fatherId = Number(deleteCollectionDto.fatherId);
+            const fatherCollection = await this.getCollectionById(deleteCollectionDto.fatherId, user);
+            let fatherCollectionsIds = fatherCollection.collections.map(collection => { return collection.id; })
+            fatherCollectionsIds.splice(fatherCollectionsIds.indexOf(deleteCollectionDto.collectionId), 1);
+            const modifyCollectionDto: modifyCollectionDto = {
+                meaning: null,
+                speech: null,
+                pictoIds: null,
+                priority: 10,
+                color: null,
+                collectionIds: fatherCollectionsIds,
+                pictohubId: null
             }
-            try{
-                const result = await this.collectionRepository.delete({
-                    id: deleteCollectionDto.collectionId,
-                    userId: user.id,
-                  });
-            } catch(error){
-                if(error.code === "23503"){
-                    return;
-                } else {
-                    throw new InternalServerErrorException(`couldn't delete collection with id ${deleteCollectionDto.collectionId}`);
-                }
+            await this.modifyCollection(deleteCollectionDto.fatherId, user, modifyCollectionDto, null);
+        }
+        try {
+            const result = await this.collectionRepository.delete({
+                id: deleteCollectionDto.collectionId,
+                userId: user.id,
+            });
+        } catch (error) {
+            if (error.code === "23503") {
+                return;
+            } else {
+                throw new InternalServerErrorException(`couldn't delete collection with id ${deleteCollectionDto.collectionId}`);
             }
+        }
     }
-    async autoShare(collection : Collection, fatherCollection: Collection): Promise<Collection>{
+    async autoShare(collection: Collection, fatherCollection: Collection): Promise<Collection> {
         return this.collectionRepository.autoShare(collection, fatherCollection);
     }
 
-    async modifyCollection(id: number, user: User, modifyCollectionDto: modifyCollectionDto, filename: string): Promise<Collection>{
-        const collection=await this.getCollectionById(id, user);
+    async modifyCollection(id: number, user: User, modifyCollectionDto: modifyCollectionDto, filename: string): Promise<Collection> {
+        const collection = await this.getCollectionById(id, user);
         const index = collection.editors.indexOf(user.username);
-        if(collection.userId===user.id || index!=-1){
+        if (collection.userId === user.id || index != -1) {
             modifyCollectionDto = await this.verifyOwnership(modifyCollectionDto, user);
-            if(collection.public){
+            if (collection.public) {
                 const admins = await this.authService.admins();
-                admins.map(async(admin) => {
+                admins.map(async (admin) => {
                     const notification = await this.createNotif(collection, admin, "public collection", "modified");
                     this.authService.pushNotification(admin, notification);
                 });
@@ -144,47 +145,47 @@ export class CollectionService {
         } else {
             throw new UnauthorizedException(`User '${user.username}' is not authorized to modify this collection`);
         }
-       
+
     }
 
-    async shareCollectionVerification(id: number, user: User, multipleShareCollectionDto: multipleShareCollectionDto): Promise<Collection>{
+    async shareCollectionVerification(id: number, user: User, multipleShareCollectionDto: multipleShareCollectionDto): Promise<Collection> {
         //filter all the users that don't exist and remove them from the operation
         let sharers = await Promise.all(multipleShareCollectionDto.usernames.map(async username => {
             const sharer = await this.authService.findWithUsername(username);
             const exists = this.authService.verifyExistence(sharer)
-            if(exists && (sharer.username !== user.username)){
+            if (exists && (sharer.username !== user.username)) {
                 return sharer;
             }
         }));
         sharers = sharers.filter(Boolean);
-        multipleShareCollectionDto.usernames = sharers.map(sharer => {return sharer.username});
-        if(sharers.length>0){
-            const collection=await this.getCollectionById(id, user);
-            if(collection){
+        multipleShareCollectionDto.usernames = sharers.map(sharer => { return sharer.username });
+        if (sharers.length > 0) {
+            const collection = await this.getCollectionById(id, user);
+            if (collection) {
                 const editor = collection.editors.indexOf(user.username);
-                if(multipleShareCollectionDto.role==="editor" && !(collection.userId === user.id || editor!=-1)){
+                if (multipleShareCollectionDto.role === "editor" && !(collection.userId === user.id || editor != -1)) {
                     throw new UnauthorizedException(`${user.username} cannot share to ${sharers} as editor being a viewer youself`);
                 }
                 // here we add the shared collection in the 'hared with me' collection of each sharer and send notifications if necessary
-                for(let sharer of sharers){
+                for (let sharer of sharers) {
                     const sharedWithMe = await this.getCollectionById(sharer.shared, sharer);
                     this.collectionRepository.pushCollection(sharedWithMe, collection);
                     const sharerRoot = await this.getCollectionById(sharer.root, sharer);
                     this.collectionRepository.pushCollection(sharerRoot, collection);
-                    if(multipleShareCollectionDto.access==1){
-                        if((collection.editors.indexOf(sharer.username)==-1) && (collection.viewers.indexOf(sharer.username)==-1)){
+                    if (multipleShareCollectionDto.access == 1) {
+                        if ((collection.editors.indexOf(sharer.username) == -1) && (collection.viewers.indexOf(sharer.username) == -1)) {
                             const notification = await this.createNotif(collection, user, "collection", "share");
                             this.authService.pushNotification(sharer, notification);
                         }
                     }
-                    if (multipleShareCollectionDto.access == 0){
-                        if((collection.editors.indexOf(sharer.username)!==-1) || (collection.viewers.indexOf(sharer.username)!==-1)){
+                    if (multipleShareCollectionDto.access == 0) {
+                        if ((collection.editors.indexOf(sharer.username) !== -1) || (collection.viewers.indexOf(sharer.username) !== -1)) {
                             const notification = await this.createNotif(collection, user, "collection", "unshare");
-                            this.authService.pushNotification(sharer, notification);  
+                            this.authService.pushNotification(sharer, notification);
                         }
                     }
                 }
-                return this.shareCollectionById(id, multipleShareCollectionDto, user);  
+                return this.shareCollectionById(id, multipleShareCollectionDto, user);
             } else {
                 throw new NotFoundException(`Collection with ID '${id}' not found`);
             }
@@ -193,116 +194,180 @@ export class CollectionService {
         }
     }
 
-    async createNotif(collection: Collection, user: User, type: string, operation: string): Promise<Notif>{
-        try{
+    async createNotif(collection: Collection, user: User, type: string, operation: string): Promise<Notif> {
+        try {
             const notification: Notif = new Notif(type, operation, collection.id.toString(), collection.meaning, user.username);
             return notification;
-        } catch(error){
+        } catch (error) {
             throw new InternalServerErrorException(`could not create notification ${error}`);
         }
-    } 
+    }
 
-    async shareCollectionById(collectionId : number, multipleShareCollectionDto: multipleShareCollectionDto, user: User): Promise<Collection>{
+    async shareCollectionById(collectionId: number, multipleShareCollectionDto: multipleShareCollectionDto, user: User): Promise<Collection> {
         let collection = await this.getCollectionById(collectionId, user);
-        try{
+        try {
             collection.collections.map(collection => this.shareCollectionById(collection.id, multipleShareCollectionDto, user));
-        } catch(error){}
-        try{
+        } catch (error) { }
+        try {
             collection.pictos.map(picto => this.collectionRepository.sharePictoFromDto(picto, multipleShareCollectionDto));
-        } catch(error){}
-        try{
-            collection=await this.collectionRepository.shareCollectionFromDto(collection, multipleShareCollectionDto);
-        } catch(error){}
+        } catch (error) { }
+        try {
+            collection = await this.collectionRepository.shareCollectionFromDto(collection, multipleShareCollectionDto);
+        } catch (error) { }
         return collection;
     }
 
-    async publishCollectionById(collectionId : number, publicCollectionDto: publicCollectionDto, user: User): Promise<Collection>{
+    async publishCollectionById(collectionId: number, publicCollectionDto: publicCollectionDto, user: User): Promise<Collection> {
         let collection = await this.getCollectionById(collectionId, user);
-        if(collection.userId === user.id){
-            try{
+        if (collection.userId === user.id) {
+            try {
                 collection.collections.map(collection => this.publishCollectionById(collection.id, publicCollectionDto, user));
-            } catch(error){}
-            try{
+            } catch (error) { }
+            try {
                 collection.pictos.map(picto => this.collectionRepository.publishPicto(picto, publicCollectionDto.publish, user));
-            } catch(error){}
-            try{
-                collection=await this.collectionRepository.publishCollection(collection, publicCollectionDto.publish, user);
-            } catch(error){}
+            } catch (error) { }
+            try {
+                collection = await this.collectionRepository.publishCollection(collection, publicCollectionDto.publish, user);
+            } catch (error) { }
         }
         return collection;
     }
 
-    async verifyOwnership(verificationDto : any, user: User){
-        try{
-            for(var i=0; i<verificationDto.collectionIds.length; i++){
-                try{
+    async verifyOwnership(verificationDto: any, user: User) {
+        try {
+            for (var i = 0; i < verificationDto.collectionIds.length; i++) {
+                try {
                     const collection = await this.getCollectionById(verificationDto.collectionIds[i], user);
-                } catch(error) {
-                    i=i-1;
+                } catch (error) {
+                    i = i - 1;
                     verificationDto.collectionIds.splice(i, 1);
                 }
             }
-        } catch(error){}
-        try{
-            for(var i=0; i<verificationDto.pictoIds.length; i++){
-                try{
+        } catch (error) { }
+        try {
+            for (var i = 0; i < verificationDto.pictoIds.length; i++) {
+                try {
                     const picto = await this.pictoService.getPictoById(verificationDto.pictoIds[i], user);
-                } catch(error) {
-                    i=i-1;
+                } catch (error) {
+                    i = i - 1;
                     verificationDto.pictoIds.splice(i, 1);
                 }
             }
-        } catch(error){}
+        } catch (error) { }
         return verificationDto;
     }
 
-    async pushPicto(collection: Collection, picto: Picto):Promise<void>{
+    async pushPicto(collection: Collection, picto: Picto): Promise<void> {
         return this.collectionRepository.pushPicto(collection, picto);
     }
 
-    async getPublicCollection(SearchCollectionDto: SearchCollectionDto): Promise<Collection[]>{
+    async getPublicCollection(SearchCollectionDto: SearchCollectionDto): Promise<Collection[]> {
         return this.collectionRepository.getPublicCollections(SearchCollectionDto);
     }
-    
-    async copyPicto(fatherId: number, picto: Picto, user: User): Promise<number>{
+    async copyCollectionWithTransaction(fatherId: number, collectionId: number, user: User): Promise<Collection> {
+        return await this.collectionRepository.manager.transaction(async manager => {
+            const fatherCollection = await this.getCollectionById(fatherId, user);
+            const copiedId = await this.copyCollectionRecursive(fatherId, collectionId, user, manager);
+            let fatherCollectionsIds = fatherCollection.collections.map(collection => {
+                return collection.id;
+            })
+            fatherCollectionsIds.push(copiedId);
+            const modifyCollectionDto: modifyCollectionDto = {
+                meaning: null,
+                speech: null,
+                pictoIds: null,
+                priority: 10,
+                color: null,
+                collectionIds: fatherCollectionsIds,
+                pictohubId: null
+            }
+            await this.modifyCollection(fatherId, user, modifyCollectionDto, null);
+            return this.getCollectionById(fatherId, user)
+        });
+    }
+    async copyCollectionRecursive(fatherId: number, collectionId: number, user: User, entityManager: EntityManager): Promise<number> {
+        try {
+            const collection = await entityManager.findOne(Collection, {
+                where: { id: collectionId },
+                relations: ['collections', 'pictos'],
+            });
+            if (collection) {
+                const createCollectionDto = {
+                    meaning: collection.meaning,
+                    speech: collection.speech,
+                    color: collection.color,
+                    pictohubId: null,
+                    collectionIds: await Promise.all(collection.collections.map(child => this.copyCollectionRecursive(collection.id, child.id, user, entityManager))),
+                    pictoIds: await Promise.all(collection.pictos.map(picto => this.copyPictotransaction(collection.id, picto, user, entityManager))),
+                    fatherCollectionId: fatherId,
+                    share: 0,
+                };
+                const copiedCollection = await entityManager.save(Collection, createCollectionDto);
+                return copiedCollection.id;
+            }
+        } catch (error) {
+            console.log(error);
+            throw new InternalServerErrorException(`couldn't copy Collection`);
+        }
+    }
+    async copyPictotransaction(fatherId: number, picto: Picto, user: User, entityManager: EntityManager): Promise<number> {
         const editor = picto.editors.indexOf(user.username);
         const viewer = picto.viewers.indexOf(user.username);
-        if(picto.userId===user.id || editor!=-1 || viewer!=-1 || picto.public){
-            const createPictoDto : createPictoDto = {
-                meaning : picto.meaning,
-                speech : picto.speech,
-                color : picto.color,
-                collectionIds : null,
-                fatherCollectionId : fatherId,
-                share : 1,
+        if (picto.userId === user.id || editor !== -1 || viewer !== -1 || picto.public) {
+            const createPictoDto = {
+                meaning: picto.meaning,
+                speech: picto.speech,
+                color: picto.color,
+                collectionIds: null,
+                fatherCollectionId: fatherId,
+                share: 1,
                 pictohubId: null,
-            }  
+            };
+            const copiedPicto = await entityManager.save(Picto, createPictoDto);
+            return copiedPicto.id;
+        } else {
+            return null;
+        }
+    }
+    async copyPicto(fatherId: number, picto: Picto, user: User): Promise<number> {
+        const editor = picto.editors.indexOf(user.username);
+        const viewer = picto.viewers.indexOf(user.username);
+        if (picto.userId === user.id || editor != -1 || viewer != -1 || picto.public) {
+            const createPictoDto: createPictoDto = {
+                meaning: picto.meaning,
+                speech: picto.speech,
+                color: picto.color,
+                collectionIds: null,
+                fatherCollectionId: fatherId,
+                share: 1,
+                pictohubId: null,
+            }
             const copiedPicto = await this.pictoService.createPicto(createPictoDto, user, picto.image);
-            return copiedPicto.id;  
+            return copiedPicto.id;
         } else {
             return null;
         }
     }
 
-    async copyCollection(fatherId: number, collectionId: number, user: User): Promise<number>{
-        try{
+    async copyCollection(fatherId: number, collectionId: number, user: User): Promise<number> {
+        try {
             const collection = await this.getCollectionById(collectionId, user);
-            if(collection){
-                const createCollectionDto : createCollectionDto = {
-                    meaning : collection.meaning,
-                    speech : collection.speech,
-                    color : collection.color,
+            if (collection) {
+                const createCollectionDto: createCollectionDto = {
+                    meaning: collection.meaning,
+                    speech: collection.speech,
+                    color: collection.color,
                     pictohubId: null,
-                    collectionIds : await Promise.all(collection.collections.map(child => {return this.copyCollection(collection.id, child.id, user);})),
-                    pictoIds : await Promise.all(collection.pictos.map(child => {return this.copyPicto(collection.id, child, user);})),
-                    fatherCollectionId : fatherId,
-                    share : 0,
-                }  
+                    collectionIds: await Promise.all(collection.collections.map(child => { return this.copyCollection(collection.id, child.id, user); })),
+                    pictoIds: await Promise.all(collection.pictos.map(child => { return this.copyPicto(collection.id, child, user); })),
+                    fatherCollectionId: fatherId,
+                    share: 0,
+                }
                 const copiedCollection = await this.createCollection(createCollectionDto, user, collection.image);
-                return copiedCollection.id;  
+                return copiedCollection.id;
             }
-        } catch(error){
-            if(error.status == "401" || error.status == "404"){
+        } catch (error) {
+            if (error.status == "401" || error.status == "404") {
                 return null;
             } else {
                 console.log(error);
@@ -354,39 +419,39 @@ export class CollectionService {
         }
         return await this.getCollectionById(fatherCollectionId, user);
     }
-    
-    async deleteAllCollections(user: User): Promise<void>{
+
+    async deleteAllCollections(user: User): Promise<void> {
         const collections = await this.getAllUserCollections(user);
         console.log(`User ${user.username} has ${collections.length} collections`);
-        try{
-            await Promise.all(collections.map(collection => 
-                this.modifyCollection(collection.id, user, {meaning: null, speech: null, priority: null, color: null, pictohubId: null, collectionIds: [], pictoIds: []}, null)
+        try {
+            await Promise.all(collections.map(collection =>
+                this.modifyCollection(collection.id, user, { meaning: null, speech: null, priority: null, color: null, pictohubId: null, collectionIds: [], pictoIds: [] }, null)
             ));
             await Promise.all(collections.map(collection =>
-                this.deleteCollection({collectionId: collection.id, fatherId: null}, user)
+                this.deleteCollection({ collectionId: collection.id, fatherId: null }, user)
             ));
-        } catch(error){
+        } catch (error) {
             throw new InternalServerErrorException(`couldn't delete all collections`);
         }
     }
 
-  async getOrphanedCollections(user: User): Promise<Collection[]>{
-    const rootCollectionId = user.root;
+    async getOrphanedCollections(user: User): Promise<Collection[]> {
+        const rootCollectionId = user.root;
 
-  const queryBuilder = this.collectionRepository.createQueryBuilder('collection');
-  queryBuilder.where('collection.userId = :userId', { userId: user.id })
-    .andWhere(qb => {
-      // This subquery checks for collections not linked to the root collection
-      const subQuery = qb.subQuery()
-        .select('link."collectionId_2"') // Corrected column name
-        .from('collection_collections_collection', 'link') // Corrected join table name
-        .where('link."collectionId_1" = :rootCollectionId', { rootCollectionId }) // Corrected column name
-        .orWhere('link."collectionId_2" = :rootCollectionId', { rootCollectionId }) // Corrected column name
-        .getQuery();
-      return 'collection.id NOT IN ' + subQuery;
-    });
-    const orphanedCollections = await queryBuilder.getMany();
-    // Filter 'shared' collection and 'sider' collection
-    return orphanedCollections.filter(collection => collection.id !== user.shared && collection.id !== user.sider);
-  }
+        const queryBuilder = this.collectionRepository.createQueryBuilder('collection');
+        queryBuilder.where('collection.userId = :userId', { userId: user.id })
+            .andWhere(qb => {
+                // This subquery checks for collections not linked to the root collection
+                const subQuery = qb.subQuery()
+                    .select('link."collectionId_2"') // Corrected column name
+                    .from('collection_collections_collection', 'link') // Corrected join table name
+                    .where('link."collectionId_1" = :rootCollectionId', { rootCollectionId }) // Corrected column name
+                    .orWhere('link."collectionId_2" = :rootCollectionId', { rootCollectionId }) // Corrected column name
+                    .getQuery();
+                return 'collection.id NOT IN ' + subQuery;
+            });
+        const orphanedCollections = await queryBuilder.getMany();
+        // Filter 'shared' collection and 'sider' collection
+        return orphanedCollections.filter(collection => collection.id !== user.shared && collection.id !== user.sider);
+    }
 }
