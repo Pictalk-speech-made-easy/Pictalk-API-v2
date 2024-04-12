@@ -312,25 +312,45 @@ export class CollectionService {
     }
 
     async moveToCollection(user: User, moveToCollectionDto: MoveToCollectionDto, fatherCollectionId: number): Promise<Collection> {
+        // this ugly ass looking code implicitly checks if user has access to said ressources when we run getByID
         const targetCollection = await this.getCollectionById(moveToCollectionDto.targetCollectionId, user);
+        const fatherCollection = await this.getCollectionById(fatherCollectionId, user);
+        const sourceCollection = moveToCollectionDto.sourceCollectionId ? await this.getCollectionById(moveToCollectionDto.sourceCollectionId, user) : null;
+        const sourcePictogram = moveToCollectionDto.sourcePictoId ? await this.pictoService.getPictoById(moveToCollectionDto.sourcePictoId, user) : null
+        console.info(`User ${user.username} has access to all ressources needed`);
+        // now that we made sure user has access to ressource, we run transactions
         if (moveToCollectionDto.sourceCollectionId) {
-            const modifyCollection = new modifyCollectionDto()
-            modifyCollection.collectionIds = targetCollection.collections.map(collection => collection.id);
-            modifyCollection.collectionIds.push(moveToCollectionDto.sourceCollectionId)
-            const deleteCollection = new deleteCollectionDto()
-            deleteCollection.collectionId = Number(moveToCollectionDto.sourceCollectionId);
-            deleteCollection.fatherId = fatherCollectionId;
-            await this.collectionRepository.modifyCollection(targetCollection, modifyCollection, user, null)
-            await this.deleteCollection(deleteCollection, user)
+            console.info(`Moving Collection ${sourceCollection.meaning} to ${targetCollection.meaning}`);
+            await this.collectionRepository.manager.transaction(async manager => {
+                // I want your manager !!
+                // Perform the INSERT operation within the transaction
+                await manager.query(
+                    `INSERT INTO collection_collections_collection ("collectionId_1", "collectionId_2") VALUES ($1, $2)`,
+                    [moveToCollectionDto.targetCollectionId, moveToCollectionDto.sourceCollectionId]
+                );
+                // Perform the DELETE operation within the same transaction
+                await manager.query(
+                    `DELETE FROM collection_collections_collection WHERE "collectionId_1" = $1 AND "collectionId_2" = $2`,
+                    [fatherCollectionId, moveToCollectionDto.sourceCollectionId]
+                );
+            });
+            console.info(`Operation successful`);
         } else if (moveToCollectionDto.sourcePictoId) {
-            const modifyCollection = new modifyCollectionDto();
-            modifyCollection.pictoIds = targetCollection.pictos.map(collection => collection.id);
-            modifyCollection.pictoIds.push(moveToCollectionDto.sourcePictoId);
-            const deletePicto = new deletePictoDto();
-            deletePicto.fatherId = fatherCollectionId;
-            deletePicto.pictoId = Number(moveToCollectionDto.sourcePictoId);
-            await this.collectionRepository.modifyCollection(targetCollection, modifyCollection, user, null)
-            await this.pictoService.deletePicto(deletePicto, user)
+            console.info(`Moving Picto ${sourcePictogram.meaning} to ${targetCollection.meaning}`);
+            await this.collectionRepository.manager.transaction(async manager => {
+                // I want your manager !!
+                // Perform the INSERT operation within the transaction
+                await manager.query(
+                    `INSERT INTO collection_pictos_picto ("collectionId", "pictoId") VALUES ($1, $2)`,
+                    [moveToCollectionDto.targetCollectionId, moveToCollectionDto.sourcePictoId]
+                );
+                // Perform the DELETE operation within the same transaction
+                await manager.query(
+                    `DELETE FROM collection_pictos_picto WHERE "collectionId" = $1 AND "pictoId" = $2`,
+                    [fatherCollectionId, moveToCollectionDto.sourcePictoId]
+                );
+            });
+            console.info(`Operation successful`);
         }
         return await this.getCollectionById(fatherCollectionId, user);
     }
