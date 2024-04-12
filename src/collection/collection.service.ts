@@ -301,6 +301,7 @@ export class CollectionService {
                     pictoIds: await Promise.all(collection.pictos.map(picto => this.copyPictotransaction(collection.id, picto, user, entityManager))),
                     fatherCollectionId: fatherId,
                     share: 0,
+                    userId: user.id,
                 };
                 const copiedCollection = await entityManager.save(Collection, createCollectionDto);
                 return copiedCollection.id;
@@ -322,6 +323,7 @@ export class CollectionService {
                 fatherCollectionId: fatherId,
                 share: 1,
                 pictohubId: null,
+                userId: user.id,
             };
             const copiedPicto = await entityManager.save(Picto, createPictoDto);
             return copiedPicto.id;
