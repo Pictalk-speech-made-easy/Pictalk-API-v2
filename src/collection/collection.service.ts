@@ -302,6 +302,7 @@ export class CollectionService {
                     fatherCollectionId: fatherId,
                     share: 0,
                     userId: user.id,
+                    image : collection.image
                 };
                 const copiedCollection = await entityManager.save(Collection, createCollectionDto);
                 return copiedCollection.id;
@@ -324,6 +325,7 @@ export class CollectionService {
                 share: 1,
                 pictohubId: null,
                 userId: user.id,
+                image: picto.image,
             };
             const copiedPicto = await entityManager.save(Picto, createPictoDto);
             return copiedPicto.id;
