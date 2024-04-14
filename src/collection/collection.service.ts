@@ -34,9 +34,13 @@ export class CollectionService {
         return await this.collectionRepository.createQueryBuilder('collection').getCount()
     }
 
-    async getCollectionById(id: number, user: User): Promise<Collection> {
-        const collection = await this.collectionRepository.findOne({ relations: ["pictos", "collections"], where: { id } });
-
+    async getCollectionById(id: number, user: User, manager?: EntityManager): Promise<Collection> {
+        let collection: Collection;
+        if (!manager) {
+            collection = await this.collectionRepository.findOne({ relations: ["pictos", "collections"], where: { id } });
+        } else {
+            collection = await manager.findOne(Collection, { relations: ["pictos", "collections"], where: { id } });
+        }
         if (!collection) {
             throw new NotFoundException(`Collection with ID '${id}' not found`);
         } else {
@@ -129,8 +133,8 @@ export class CollectionService {
         return this.collectionRepository.autoShare(collection, fatherCollection);
     }
 
-    async modifyCollection(id: number, user: User, modifyCollectionDto: modifyCollectionDto, filename: string): Promise<Collection> {
-        const collection = await this.getCollectionById(id, user);
+    async modifyCollection(id: number, user: User, modifyCollectionDto: modifyCollectionDto, filename: string, manager?: EntityManager): Promise<Collection> {
+        const collection = await this.getCollectionById(id, user, manager);
         const index = collection.editors.indexOf(user.username);
         if (collection.userId === user.id || index != -1) {
             modifyCollectionDto = await this.verifyOwnership(modifyCollectionDto, user);
@@ -141,7 +145,7 @@ export class CollectionService {
                     this.authService.pushNotification(admin, notification);
                 });
             }
-            return this.collectionRepository.modifyCollection(collection, modifyCollectionDto, user, filename);
+            return this.collectionRepository.modifyCollection(collection, modifyCollectionDto, user, filename, manager);
         } else {
             throw new UnauthorizedException(`User '${user.username}' is not authorized to modify this collection`);
         }
@@ -233,11 +237,11 @@ export class CollectionService {
         return collection;
     }
 
-    async verifyOwnership(verificationDto: any, user: User) {
+    async verifyOwnership(verificationDto: any, user: User, manager: EntityManager = null): Promise<any> {
         try {
             for (var i = 0; i < verificationDto.collectionIds.length; i++) {
                 try {
-                    const collection = await this.getCollectionById(verificationDto.collectionIds[i], user);
+                    const collection = await this.getCollectionById(verificationDto.collectionIds[i], user, manager);
                 } catch (error) {
                     i = i - 1;
                     verificationDto.collectionIds.splice(i, 1);
@@ -247,7 +251,7 @@ export class CollectionService {
         try {
             for (var i = 0; i < verificationDto.pictoIds.length; i++) {
                 try {
-                    const picto = await this.pictoService.getPictoById(verificationDto.pictoIds[i], user);
+                    const picto = await this.pictoService.getPictoById(verificationDto.pictoIds[i], user, manager);
                 } catch (error) {
                     i = i - 1;
                     verificationDto.pictoIds.splice(i, 1);
@@ -266,7 +270,7 @@ export class CollectionService {
     }
     async copyCollectionWithTransaction(fatherId: number, collectionId: number, user: User): Promise<Collection> {
         return await this.collectionRepository.manager.transaction(async manager => {
-            const fatherCollection = await this.getCollectionById(fatherId, user);
+            const fatherCollection = await this.getCollectionById(fatherId, user, manager);
             const copiedId = await this.copyCollectionRecursive(fatherId, collectionId, user, manager);
             let fatherCollectionsIds = fatherCollection.collections.map(collection => {
                 return collection.id;
@@ -281,8 +285,8 @@ export class CollectionService {
                 collectionIds: fatherCollectionsIds,
                 pictohubId: null
             }
-            await this.modifyCollection(fatherId, user, modifyCollectionDto, null);
-            return this.getCollectionById(fatherId, user)
+            await this.modifyCollection(fatherId, user, modifyCollectionDto, null, manager);
+            return this.getCollectionById(fatherId, user, manager);
         });
     }
     async copyCollectionRecursive(fatherId: number, collectionId: number, user: User, entityManager: EntityManager): Promise<number> {
@@ -304,7 +308,7 @@ export class CollectionService {
                     userId: user.id,
                     image : collection.image
                 };
-                const copiedCollection = await entityManager.save(Collection, createCollectionDto);
+                const copiedCollection = await this.collectionRepository.createCollection(createCollectionDto, user, collection.image, entityManager);
                 return copiedCollection.id;
             }
         } catch (error) {

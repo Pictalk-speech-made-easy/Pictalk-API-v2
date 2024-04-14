@@ -12,6 +12,7 @@ import { CollectionService } from 'src/collection/collection.service';
 import { deletePictoDto } from './dto/picto.delete.dto';
 import { modifyCollectionDto } from 'src/collection/dto/collection.modify.dto';
 import { Notif } from 'src/entities/notification.entity';
+import { EntityManager } from 'typeorm';
 
 @Injectable()
 export class PictoService {
@@ -24,8 +25,13 @@ export class PictoService {
         private collectionService : CollectionService,
     ) { }
 
-    async getPictoById(id: number, user : User): Promise<Picto>{
-        const picto = await this.pictoRepository.findOne({where : {id}});
+    async getPictoById(id: number, user : User, manager?: EntityManager): Promise<Picto>{
+        let picto: Picto;
+        if (manager){
+            picto = await this.pictoRepository.findOne({where : {id}});
+        } else {
+            picto = await manager.findOne(Picto,{where : {id}, relations: ["collections"]});
+        }
         if(!picto) {
             throw new NotFoundException(`Picto with ID '${id}' not found`);
         } else {

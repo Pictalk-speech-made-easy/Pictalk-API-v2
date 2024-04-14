@@ -10,7 +10,7 @@ import { Picto } from 'src/entities/picto.entity';
 import { User } from 'src/entities/user.entity';
 import { parseNumberArray } from 'src/utilities/tools';
 import { CustomRepository } from 'src/utilities/typeorm-ex.decorator';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { createCollectionDto } from './dto/collection.create.dto';
 import { modifyCollectionDto } from './dto/collection.modify.dto';
 import { SearchCollectionDto } from './dto/collection.search.public.dto';
@@ -26,6 +26,7 @@ export class CollectionRepository extends Repository<Collection> {
     createCollectionDto: createCollectionDto,
     user: User,
     filename: string,
+    manager?: EntityManager,
   ): Promise<Collection> {
     let { meaning, speech, pictoIds, collectionIds, color, pictohubId } =
       createCollectionDto;
@@ -65,7 +66,12 @@ export class CollectionRepository extends Repository<Collection> {
       throw new NotFoundException(`filename not found`);
     }
     try {
+      if (!manager) {
       await collection.save();
+      }
+      else {
+        await manager.save(collection);
+      }
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
@@ -77,6 +83,7 @@ export class CollectionRepository extends Repository<Collection> {
     modifyCollectionDto: modifyCollectionDto,
     user: User,
     filename: string,
+    manager?: EntityManager
   ): Promise<Collection> {
     let {
       meaning,
@@ -124,7 +131,11 @@ export class CollectionRepository extends Repository<Collection> {
       collection.color = color;
     }
     try {
+      if (!manager) {
       await collection.save();
+      } else {
+        await manager.save(collection);
+      }
     } catch (error) {
       throw new InternalServerErrorException(
         `could not save collection properly`,
