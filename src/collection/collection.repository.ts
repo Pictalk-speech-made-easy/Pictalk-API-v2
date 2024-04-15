@@ -70,7 +70,7 @@ export class CollectionRepository extends Repository<Collection> {
       await collection.save();
       }
       else {
-        await manager.save(collection);
+        await manager.save(Collection, collection);
       }
     } catch (error) {
       throw new InternalServerErrorException(error);
@@ -134,9 +134,10 @@ export class CollectionRepository extends Repository<Collection> {
       if (!manager) {
       await collection.save();
       } else {
-        await manager.save(collection);
+        await manager.save(Collection, collection);
       }
     } catch (error) {
+      console.error(error);
       throw new InternalServerErrorException(
         `could not save collection properly`,
       );

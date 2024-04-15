@@ -34,8 +34,8 @@ export class AuthController {
         await this.collectionService.createSider(user);
         if (createUserDto.publicBundleId) {
           const publicBundleCollection: Collection = await this.collectionService.getCollectionById(createUserDto.publicBundleId, user);
-          const pictoIdsFromBundle: number[] = await Promise.all(publicBundleCollection?.pictos.map(async (picto) => await this.collectionService.copyPicto(rootId, picto, user)));
-          const collectionIdsFromBundle: number[] = await Promise.all(publicBundleCollection?.collections.map(async (collection) => await this.collectionService.copyCollection(rootId, collection.id, user)))
+          const pictoIdsFromBundle: number[] = await Promise.all(publicBundleCollection?.pictos.map(async (picto) => this.collectionService.copyPicto(rootId, picto, user)));
+          const collectionIdsFromBundle: number[] = await Promise.all(publicBundleCollection?.collections.map(async (collection) => this.collectionService.copyCollectionWithTransaction(rootId, collection.id, user)));
           const modifyCollectionDto : modifyCollectionDto = {
             meaning : null,
             speech : null,
@@ -52,7 +52,6 @@ export class AuthController {
           const multipleShareCollectionDto: multipleShareCollectionDto = { access: 1, usernames: user.directSharers, role: 'editor'}
           await this.collectionService.shareCollectionVerification(rootId, user, multipleShareCollectionDto);
         }
-        console.log(await this.collectionService.getCollectionById(rootId, user))
         return;
     }
 

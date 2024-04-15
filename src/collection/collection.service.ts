@@ -40,6 +40,7 @@ export class CollectionService {
             collection = await this.collectionRepository.findOne({ relations: ["pictos", "collections"], where: { id } });
         } else {
             collection = await manager.findOne(Collection, { relations: ["pictos", "collections"], where: { id } });
+
         }
         if (!collection) {
             throw new NotFoundException(`Collection with ID '${id}' not found`);
@@ -137,7 +138,7 @@ export class CollectionService {
         const collection = await this.getCollectionById(id, user, manager);
         const index = collection.editors.indexOf(user.username);
         if (collection.userId === user.id || index != -1) {
-            modifyCollectionDto = await this.verifyOwnership(modifyCollectionDto, user);
+            modifyCollectionDto = await this.verifyOwnership(modifyCollectionDto, user, manager);
             if (collection.public) {
                 const admins = await this.authService.admins();
                 admins.map(async (admin) => {
@@ -268,7 +269,7 @@ export class CollectionService {
     async getPublicCollection(SearchCollectionDto: SearchCollectionDto): Promise<Collection[]> {
         return this.collectionRepository.getPublicCollections(SearchCollectionDto);
     }
-    async copyCollectionWithTransaction(fatherId: number, collectionId: number, user: User): Promise<Collection> {
+    async copyCollectionWithTransaction(fatherId: number, collectionId: number, user: User): Promise<number> {
         return await this.collectionRepository.manager.transaction(async manager => {
             const fatherCollection = await this.getCollectionById(fatherId, user, manager);
             const copiedId = await this.copyCollectionRecursive(fatherId, collectionId, user, manager);
@@ -279,21 +280,21 @@ export class CollectionService {
             const modifyCollectionDto: modifyCollectionDto = {
                 meaning: null,
                 speech: null,
-                pictoIds: null,
+                pictoIds: undefined,
                 priority: 10,
                 color: null,
                 collectionIds: fatherCollectionsIds,
                 pictohubId: null
             }
             await this.modifyCollection(fatherId, user, modifyCollectionDto, null, manager);
-            return this.getCollectionById(fatherId, user, manager);
+            return copiedId;
         });
     }
     async copyCollectionRecursive(fatherId: number, collectionId: number, user: User, entityManager: EntityManager): Promise<number> {
         try {
             const collection = await entityManager.findOne(Collection, {
                 where: { id: collectionId },
-                relations: ['collections', 'pictos'],
+                relations: ["pictos", "collections"],
             });
             if (collection) {
                 const createCollectionDto = {
@@ -302,7 +303,7 @@ export class CollectionService {
                     color: collection.color,
                     pictohubId: null,
                     collectionIds: await Promise.all(collection.collections.map(child => this.copyCollectionRecursive(collection.id, child.id, user, entityManager))),
-                    pictoIds: await Promise.all(collection.pictos.map(picto => this.copyPictotransaction(collection.id, picto, user, entityManager))),
+                    pictoIds: await Promise.all(collection.pictos.map(picto => this.copyPicto(collection.id, picto, user, entityManager))),
                     fatherCollectionId: fatherId,
                     share: 0,
                     userId: user.id,
@@ -316,28 +317,7 @@ export class CollectionService {
             throw new InternalServerErrorException(`couldn't copy Collection`);
         }
     }
-    async copyPictotransaction(fatherId: number, picto: Picto, user: User, entityManager: EntityManager): Promise<number> {
-        const editor = picto.editors.indexOf(user.username);
-        const viewer = picto.viewers.indexOf(user.username);
-        if (picto.userId === user.id || editor !== -1 || viewer !== -1 || picto.public) {
-            const createPictoDto = {
-                meaning: picto.meaning,
-                speech: picto.speech,
-                color: picto.color,
-                collectionIds: null,
-                fatherCollectionId: fatherId,
-                share: 1,
-                pictohubId: null,
-                userId: user.id,
-                image: picto.image,
-            };
-            const copiedPicto = await entityManager.save(Picto, createPictoDto);
-            return copiedPicto.id;
-        } else {
-            return null;
-        }
-    }
-    async copyPicto(fatherId: number, picto: Picto, user: User): Promise<number> {
+    async copyPicto(fatherId: number, picto: Picto, user: User, manager?: EntityManager): Promise<number> {
         const editor = picto.editors.indexOf(user.username);
         const viewer = picto.viewers.indexOf(user.username);
         if (picto.userId === user.id || editor != -1 || viewer != -1 || picto.public) {
@@ -350,37 +330,10 @@ export class CollectionService {
                 share: 1,
                 pictohubId: null,
             }
-            const copiedPicto = await this.pictoService.createPicto(createPictoDto, user, picto.image);
+                const copiedPicto = await this.pictoService.createPicto(createPictoDto, user, picto.image, manager);
             return copiedPicto.id;
         } else {
             return null;
-        }
-    }
-
-    async copyCollection(fatherId: number, collectionId: number, user: User): Promise<number> {
-        try {
-            const collection = await this.getCollectionById(collectionId, user);
-            if (collection) {
-                const createCollectionDto: createCollectionDto = {
-                    meaning: collection.meaning,
-                    speech: collection.speech,
-                    color: collection.color,
-                    pictohubId: null,
-                    collectionIds: await Promise.all(collection.collections.map(child => { return this.copyCollection(collection.id, child.id, user); })),
-                    pictoIds: await Promise.all(collection.pictos.map(child => { return this.copyPicto(collection.id, child, user); })),
-                    fatherCollectionId: fatherId,
-                    share: 0,
-                }
-                const copiedCollection = await this.createCollection(createCollectionDto, user, collection.image);
-                return copiedCollection.id;
-            }
-        } catch (error) {
-            if (error.status == "401" || error.status == "404") {
-                return null;
-            } else {
-                console.log(error);
-                throw new InternalServerErrorException(`couldn't copy Collection`);
-            }
         }
     }
 

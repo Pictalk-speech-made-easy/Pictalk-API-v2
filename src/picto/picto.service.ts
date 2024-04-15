@@ -27,7 +27,7 @@ export class PictoService {
 
     async getPictoById(id: number, user : User, manager?: EntityManager): Promise<Picto>{
         let picto: Picto;
-        if (manager){
+        if (!manager){
             picto = await this.pictoRepository.findOne({where : {id}});
         } else {
             picto = await manager.findOne(Picto,{where : {id}, relations: ["collections"]});
@@ -83,8 +83,8 @@ export class PictoService {
         return found;
     } 
 
-    async createPicto(createPictoDto: createPictoDto, user: User, filename: string): Promise<Picto> {
-        return this.pictoRepository.createPicto(createPictoDto, user, filename);
+    async createPicto(createPictoDto: createPictoDto, user: User, filename: string, manager?: EntityManager): Promise<Picto> {
+        return this.pictoRepository.createPicto(createPictoDto, user, filename, manager);
     }
 
     async deletePicto(deletePictoDto: deletePictoDto, user: User): Promise<void> {
