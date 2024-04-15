@@ -79,23 +79,8 @@ export class CollectionController {
   @UseGuards(AuthGuard())
   @Post('copy')
   @ApiOperation({summary : 'copy a collection with its ID'})
-  async copyCollection(@Body() copyCollectionDto: copyCollectionDto, @GetUser() user: User): Promise<Collection>{
-    const fatherCollection = await this.collectionService.getCollectionById(copyCollectionDto.fatherCollectionId, user);
-    const copiedId = await this.collectionService.copyCollection(copyCollectionDto.fatherCollectionId, copyCollectionDto.collectionId, user);
-    let fatherCollectionsIds = fatherCollection.collections.map(collection => {
-      return collection.id;
-    })
-    fatherCollectionsIds.push(copiedId);
-    const modifyCollectionDto : modifyCollectionDto = {
-      meaning : null,
-      speech : null,
-      pictoIds : null,
-      priority : 10,
-      color : null,
-      collectionIds : fatherCollectionsIds,
-      pictohubId: null
-    }
-    await this.collectionService.modifyCollection(copyCollectionDto.fatherCollectionId, user, modifyCollectionDto, null);
+  async copyCollection(@Body() copyCollectionDto: copyCollectionDto, @GetUser() user: User): Promise<Collection>{ 
+    await this.collectionService.copyCollectionWithTransaction(copyCollectionDto.fatherCollectionId, copyCollectionDto.collectionId, user);
     return this.getCollectionById(copyCollectionDto.fatherCollectionId, user);
   }
 

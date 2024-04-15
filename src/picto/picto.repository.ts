@@ -4,7 +4,7 @@ import { Picto } from 'src/entities/picto.entity';
 import { User } from 'src/entities/user.entity';
 import { parseNumberArray } from 'src/utilities/tools';
 import { CustomRepository } from 'src/utilities/typeorm-ex.decorator';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { createPictoDto } from './dto/picto.create.dto';
 import { modifyPictoDto } from './dto/picto.modify.dto';
 import { sharePictoDto } from './dto/picto.share.dto';
@@ -15,6 +15,7 @@ export class PictoRepository extends Repository<Picto> {
     createPictoDto: createPictoDto,
     user: User,
     filename: string,
+    manager?: EntityManager
   ): Promise<Picto> {
     let { meaning, speech, collectionIds, color, pictohubId } = createPictoDto;
     const picto = new Picto();
@@ -43,7 +44,11 @@ export class PictoRepository extends Repository<Picto> {
       );
     }
     try {
-      await picto.save();
+      if (!manager) {
+        await picto.save();
+      } else {
+        await manager.save(Picto, picto);
+      }
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
