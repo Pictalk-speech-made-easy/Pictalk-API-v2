@@ -117,18 +117,6 @@ export class CollectionService {
             }
             await this.modifyCollection(deleteCollectionDto.fatherId, user, modifyCollectionDto, null);
         }
-        try {
-            const result = await this.collectionRepository.delete({
-                id: deleteCollectionDto.collectionId,
-                userId: user.id,
-            });
-        } catch (error) {
-            if (error.code === "23503") {
-                return;
-            } else {
-                throw new InternalServerErrorException(`couldn't delete collection with id ${deleteCollectionDto.collectionId}`);
-            }
-        }
     }
     async autoShare(collection: Collection, fatherCollection: Collection): Promise<Collection> {
         return this.collectionRepository.autoShare(collection, fatherCollection);
@@ -400,17 +388,7 @@ export class CollectionService {
         const rootCollectionId = user.root;
 
         const queryBuilder = this.collectionRepository.createQueryBuilder('collection');
-        queryBuilder.where('collection.userId = :userId', { userId: user.id })
-            .andWhere(qb => {
-                // This subquery checks for collections not linked to the root collection
-                const subQuery = qb.subQuery()
-                    .select('link."collectionId_2"') // Corrected column name
-                    .from('collection_collections_collection', 'link') // Corrected join table name
-                    .where('link."collectionId_1" = :rootCollectionId', { rootCollectionId }) // Corrected column name
-                    .orWhere('link."collectionId_2" = :rootCollectionId', { rootCollectionId }) // Corrected column name
-                    .getQuery();
-                return 'collection.id NOT IN ' + subQuery;
-            });
+        queryBuilder.where(`collection.userId = ${user.id} AND collection.id NOT IN (SELECT link."collectionId_2" FROM "collection_collections_collection" "link" WHERE link."collectionId_1" = ${rootCollectionId})`);
         const orphanedCollections = await queryBuilder.getMany();
         // Filter 'shared' collection and 'sider' collection
         return orphanedCollections.filter(collection => collection.id !== user.shared && collection.id !== user.sider);
