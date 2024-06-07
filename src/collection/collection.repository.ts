@@ -436,7 +436,7 @@ export class CollectionRepository extends Repository<Collection> {
     try {
       query.where('collection.public = :bool', { bool: true });
       if (filterDto.search) {
-        query.andWhere('LOWER(collection.meaning) like LOWER(:search)', {
+        query.andWhere('LOWER(collection.meaning::text) like LOWER(:search)', {
           search: `%${filterDto.search}%`,
         });
         collections = await query.skip(toSkip).take(toTake).getMany();
@@ -445,6 +445,7 @@ export class CollectionRepository extends Repository<Collection> {
       } else {
         collections = await query.getMany();
       }
+      console.log(collections);
       return collections;
     } catch (err) {
       throw new InternalServerErrorException(
