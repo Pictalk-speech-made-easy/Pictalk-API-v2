@@ -13,6 +13,9 @@ import { TranslationController } from './translation/translation.controller';
 import { ConfigModule } from '@nestjs/config';
 import { FeedbackModule } from './feedback/feedback.module';
 import { ExtrasController } from './extras/extras.controller';
+import { SentryModule } from '@ntegral/nestjs-sentry';
+import * as Sentry from '@sentry/node';
+import { Integration } from '@sentry/types';
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -22,7 +25,16 @@ import { ExtrasController } from './extras/extras.controller';
     AuthModule,
     HttpModule,
     CacheModule.register({ttl: 2592000000}), // 1 month
-    FeedbackModule
+    FeedbackModule,
+    SentryModule.forRoot({
+      dsn: 'https://f58ce4edd3eb265c6f1d6cf1b870c93c@o1135783.ingest.us.sentry.io/4507656096710656',
+      environment: process.env.NODE_ENV,
+      logLevels: ['debug'],
+      integrations: [
+        new Sentry.Integrations.Http({ tracing: true })
+      ] as unknown as Integration[],
+
+    }),
   ],
   controllers: [AppController, ImageController, TranslationController, ExtrasController],
   providers: [AppService],

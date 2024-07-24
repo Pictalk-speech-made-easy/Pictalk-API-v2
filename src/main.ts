@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { existsSync, mkdir} from 'fs';
 import { AppModule } from './app.module';
+import * as Sentry from '@sentry/node';
 
 async function bootstrap() {
   if(!existsSync('files')){
@@ -20,6 +21,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
   app.enableCors();
+  app.use(Sentry.Handlers.tracingHandler());
   await app.listen(3001);
 }
 bootstrap();
