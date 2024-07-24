@@ -113,6 +113,9 @@ importers:
       rxjs:
         specifier: ^7.8.1
         version: 7.8.1
+      sha.js:
+        specifier: ^2.4.11
+        version: 2.4.11
       swagger-ui-express:
         specifier: ^5.0.1
         version: 5.0.1(express@4.19.2)
