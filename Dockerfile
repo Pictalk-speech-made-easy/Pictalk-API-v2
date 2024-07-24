@@ -1,12 +1,13 @@
-FROM node:16-bullseye AS builder
+FROM node:18-bullseye AS builder
+RUN npm i -g pnpm
 WORKDIR /app
 COPY ./package.json ./
-RUN npm install
+RUN pnpm install
 COPY . .
-RUN npm run build
+RUN pnpm run build
 
 
-FROM node:16-bullseye
+FROM node:18-bullseye
 WORKDIR /app
 COPY --from=builder /app ./
 EXPOSE 3000
