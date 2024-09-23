@@ -15,14 +15,17 @@ import { Notif } from 'src/entities/notification.entity';
 import { usernameRegexp } from 'src/utilities/creation';
 import { modifyCollectionDto } from 'src/collection/dto/collection.modify.dto';
 import { PictoService } from 'src/picto/picto.service';
+import { HttpService } from '@nestjs/axios';
 @Controller('')
 export class AuthController {
+    private KC_ODOO_URL = process.env.KC_ODOO_URL;
     private logger = new Logger('AuthController');
     constructor(private authService: AuthService,
         @Inject(forwardRef(() => CollectionService))
         private collectionService: CollectionService,
         @Inject(forwardRef(() => PictoService))
-        private pictoService: PictoService)
+        private pictoService: PictoService,
+        private httpService: HttpService)
         {}
 
     @Post('auth/signup')
@@ -52,6 +55,18 @@ export class AuthController {
           const multipleShareCollectionDto: multipleShareCollectionDto = { access: 1, usernames: user.directSharers, role: 'editor'}
           await this.collectionService.shareCollectionVerification(rootId, user, multipleShareCollectionDto);
         }
+        this.httpService.post(`${this.KC_ODOO_URL}/keycloak-hubspot/pictalk-webhook`, {
+          firstName: user.username,
+          lastName: user.username,
+          email: user.username,
+          language: user.displayLanguage,
+          action: "REGISTER",
+          userId: user.id,
+          createdDate: user.createdDate
+        }).subscribe({
+          next: () => this.logger.verbose('Webhook request sent successfully'),
+          error: (error) => this.logger.error('Error sending webhook request', error)
+        });
         return;
     }
 
@@ -89,13 +104,27 @@ export class AuthController {
       const signinResponse: any = await this.authService.signIn(authCredentialsDto);
       
       if (signinResponse.accessToken) {
-        const user: User = await this.authService.isSiderToCreate(authCredentialsDto.username);
-        if (user) {
+        const userToCreateSider: User = await this.authService.isSiderToCreate(authCredentialsDto.username);
+        if (userToCreateSider) {
           this.logger.verbose(
             `User "${authCredentialsDto.username}" is has not a siderbar collection. Creating one.`,
           );
-          await this.collectionService.createSider(user);
+          await this.collectionService.createSider(userToCreateSider);
         }
+        const user = await this.authService.findWithUsername(authCredentialsDto.username);
+        const res = this.httpService.post(`${this.KC_ODOO_URL}/keycloak-hubspot/pictalk-webhook`, {
+          firstName: user.username,
+          lastName: "",
+          email: user.username,
+          language: user.displayLanguage,
+          action: "LOGIN",
+          clientId: user.id,
+          userId: user.id,
+          createdDate: user.createdDate
+        }).subscribe({
+          next: () => this.logger.verbose('Webhook request sent successfully'),
+          error: (error) => this.logger.error('Error sending webhook request', error)
+        });
       }
       return signinResponse;
     }

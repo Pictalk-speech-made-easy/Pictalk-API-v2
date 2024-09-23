@@ -9,11 +9,13 @@ import { CollectionModule } from 'src/collection/collection.module';
 import * as config from 'config';
 import { TypeOrmExModule } from 'src/utilities/typeorm-ex.module';
 import { PictoModule } from 'src/picto/picto.module';
+import { HttpModule } from '@nestjs/axios';
 const jwtConfig = config.get('jwt');
 @Module({
   imports: [
     TypeOrmExModule.forCustomRepository([UserRepository]),
     PassportModule.register({ defaultStrategy: 'jwt'}),
+    HttpModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || jwtConfig.secret,
       signOptions: {
