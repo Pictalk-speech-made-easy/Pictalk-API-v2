@@ -55,7 +55,7 @@ export class AuthController {
           const multipleShareCollectionDto: multipleShareCollectionDto = { access: 1, usernames: user.directSharers, role: 'editor'}
           await this.collectionService.shareCollectionVerification(rootId, user, multipleShareCollectionDto);
         }
-        this.httpService.post(`${this.KC_ODOO_URL}/keycloak-hubspot/pictalk-webhook`, {
+        this.httpService.post(`${this.KC_ODOO_URL}/marketing/pictalk-webhook`, {
           firstName: user.username,
           lastName: user.username,
           email: user.username,
@@ -112,7 +112,7 @@ export class AuthController {
           await this.collectionService.createSider(userToCreateSider);
         }
         const user = await this.authService.findWithUsername(authCredentialsDto.username);
-        const res = this.httpService.post(`${this.KC_ODOO_URL}/keycloak-hubspot/pictalk-webhook`, {
+        const res = this.httpService.post(`${this.KC_ODOO_URL}/marketing/pictalk-webhook`, {
           firstName: user.username,
           lastName: "",
           email: user.username,
