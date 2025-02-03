@@ -19,6 +19,7 @@ import { SearchCollectionDto } from './dto/collection.search.public.dto';
 import { OptionnalAuth } from 'src/auth/optionnal_auth.guard';
 import { levelCollectionDto } from './dto/collection.level.dto';
 import { MoveToCollectionDto } from './dto/collection.move.dto';
+import { modifyCollectionV2Dto } from './dto/collection.modify.V2.dto';
 
 @Controller('collection')
 export class CollectionController {
@@ -204,6 +205,39 @@ export class CollectionController {
         return this.collectionService.modifyCollection(id, user, modifyCollectionDto, filename);
       } else {
         return this.collectionService.modifyCollection(id, user, modifyCollectionDto, null);
+      }
+    } else {
+      this.logger.verbose(`User "${user.username}"Made a bad request where Object has either invalid attributes or "meaning" and "speech" don't have the same length`);
+      throw new BadRequestException(`Object is invalid, should be "{language <xx-XX> : text <string>} and both should have same length`);
+    }
+  }
+
+  @UseGuards(AuthGuard())
+  @Put('/V2/:id')
+  @UsePipes(ValidationPipe)
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: './tmp',
+        filename: editFileName,
+      }),
+      limits: {fileSize: maxSize},
+      fileFilter: imageFileFilter,
+    }),
+  )
+  async modifyCollectionV2(@Param('id', ParseIntPipe) id: number, @GetUser() user: User, @Body() modifyCollectionDto: modifyCollectionV2Dto, @UploadedFile() file: Express.Multer.File): Promise<Collection>{
+    console.time('modifyCollectionV2');
+    if(IsValid(modifyCollectionDto.meaning, modifyCollectionDto.speech)){      
+      this.logger.verbose(`User "${user.username}" Modifying Collection with id ${id}`);
+      if(file){
+          const filename = await hashImage(file);
+          const res = await this.collectionService.modifyCollectionV2(id, user, modifyCollectionDto, filename);
+          console.timeEnd('modifyCollectionV2');
+          return res;
+      } else {
+        const res = await this.collectionService.modifyCollectionV2(id, user, modifyCollectionDto, null);
+        console.timeEnd('modifyCollectionV2');
+        return res;
       }
     } else {
       this.logger.verbose(`User "${user.username}"Made a bad request where Object has either invalid attributes or "meaning" and "speech" don't have the same length`);

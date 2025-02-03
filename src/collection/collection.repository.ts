@@ -16,7 +16,6 @@ import { modifyCollectionDto } from './dto/collection.modify.dto';
 import { SearchCollectionDto } from './dto/collection.search.public.dto';
 import {
   multipleShareCollectionDto,
-  shareCollectionDto,
 } from './dto/collection.share.dto';
 import { generateAvatar, generateRandomColor } from 'src/utilities/creation';
 import { writeFileSync } from 'fs';

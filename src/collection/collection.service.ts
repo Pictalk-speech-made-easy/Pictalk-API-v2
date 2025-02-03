@@ -17,6 +17,7 @@ import { publicCollectionDto } from './dto/collection.public.dto';
 import { SearchCollectionDto } from './dto/collection.search.public.dto';
 import { shareCollectionDto, multipleShareCollectionDto } from './dto/collection.share.dto';
 import { EntityManager } from 'typeorm';
+import { modifyCollectionV2Dto } from './dto/collection.modify.V2.dto';
 
 @Injectable()
 export class CollectionService {
@@ -139,6 +140,57 @@ export class CollectionService {
             throw new UnauthorizedException(`User '${user.username}' is not authorized to modify this collection`);
         }
 
+    }
+
+    async modifyCollectionV2(id: number, user: User, modifyCollectionV2Dto: modifyCollectionV2Dto, filename: string, manager?: EntityManager): Promise<Collection> {
+        const collection = await this.getCollectionById(id, user, manager);
+        const index = collection.editors.indexOf(user.username);
+        if (collection.userId === user.id || index != -1) {
+            modifyCollectionV2Dto = await this.verifyOwnership(modifyCollectionV2Dto, user, manager);
+            if (collection.public) {
+                const admins = await this.authService.admins();
+                admins.map(async (admin) => {
+                    const notification = await this.createNotif(collection, admin, "public collection", "modified");
+                    this.authService.pushNotification(admin, notification);
+                });
+            }
+            const modifyCollectionDto: modifyCollectionDto = {
+                meaning: modifyCollectionV2Dto.meaning,
+                speech: modifyCollectionV2Dto.speech,
+                priority: modifyCollectionV2Dto.priority,
+                color: modifyCollectionV2Dto.color,
+                pictohubId: modifyCollectionV2Dto.pictohubId,
+                collectionIds: collection.collections.map(collection => { return collection.id; }),
+                pictoIds: collection.pictos.map(picto => { return picto.id; })
+            }
+            console.log(modifyCollectionV2Dto);
+            if (modifyCollectionV2Dto.collectionsAdded) {
+                for (const addedId of modifyCollectionV2Dto.collectionsAdded) {
+                  const subCollection = await this.getCollectionById(addedId, user);
+                  modifyCollectionDto.collectionIds.push(subCollection.id);
+                }
+              }
+              if (modifyCollectionV2Dto.collectionsRemoved) {
+                modifyCollectionDto.collectionIds = modifyCollectionDto.collectionIds.filter(
+                  (colId) => !modifyCollectionV2Dto.collectionsRemoved.includes(colId),
+                );
+              }
+            
+              if (modifyCollectionV2Dto.pictosAdded) {
+                for (const addedPictoId of modifyCollectionV2Dto.pictosAdded) {
+                  const picto = await this.pictoService.getPictoById(addedPictoId, user);
+                  modifyCollectionDto.pictoIds.push(picto.id);
+                }
+              }
+              if (modifyCollectionV2Dto.pictosRemoved) {
+                modifyCollectionDto.pictoIds = modifyCollectionDto.pictoIds.filter(
+                  (pictoId) => !modifyCollectionV2Dto.pictosRemoved.includes(pictoId),
+                );
+              }
+            return this.collectionRepository.modifyCollection(collection, modifyCollectionDto, user, filename, manager);
+        } else {
+            throw new UnauthorizedException(`User '${user.username}' is not authorized to modify this collection`);
+        }
     }
 
     async shareCollectionVerification(id: number, user: User, multipleShareCollectionDto: multipleShareCollectionDto): Promise<Collection> {
@@ -269,7 +321,7 @@ export class CollectionService {
                 meaning: null,
                 speech: null,
                 pictoIds: undefined,
-                priority: 10,
+                priority: null,
                 color: null,
                 collectionIds: fatherCollectionsIds,
                 pictohubId: null
