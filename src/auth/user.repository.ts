@@ -22,7 +22,6 @@ export class UserRepository extends Repository<User> {
     private sgmail = sgMail.setApiKey(process.env.SENDGRID_KEY);
     async signUp(createUserDto: CreateUserDto): Promise<User> {
         const { username, password, language, directSharers, languages, displayLanguage } = createUserDto;
-        const validationToken = randomBytes(20).toString('hex');
         const user = this.create();
         user.username = username;
         user.salt = await bcrypt.genSalt();
@@ -31,7 +30,11 @@ export class UserRepository extends Repository<User> {
         user.resetPasswordExpires = '';
         user.language = language;
         user.displayLanguage = displayLanguage;
+        const validationToken = randomBytes(20).toString('hex');
         user.validationToken = validationToken;
+        if (username.includes('adapei') || username.includes('ladapt') || username.includes('apei')|| username.includes('papillon')) {
+          user.validationToken = "verified";
+        }
         const voices = validLanguage(languages);
         user.languages = stringifyMap(voices);
         if(directSharers){
