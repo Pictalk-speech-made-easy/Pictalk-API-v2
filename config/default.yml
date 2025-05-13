@@ -7,4 +7,4 @@ db:
   database: "pictalk"
 
 jwt:
-  expiresIn: 604800
+  expiresIn: 14515200
