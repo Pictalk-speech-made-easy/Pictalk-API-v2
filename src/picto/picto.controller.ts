@@ -9,7 +9,7 @@ import { editFileName, hashImage, imageFileFilter, maxSize } from 'src/utilities
 import { PictoService } from './picto.service';
 import { createPictoDto } from './dto/picto.create.dto';
 import { modifyPictoDto } from './dto/picto.modify.dto';
-import { IsValid } from 'src/utilities/creation';
+import { IsValid } from '../utilities/creation';
 import { CollectionService } from 'src/collection/collection.service';
 import { modifyCollectionDto } from 'src/collection/dto/collection.modify.dto';
 import { ApiOperation } from '@nestjs/swagger';
@@ -94,7 +94,7 @@ export class PictoController {
               meaning : null,
               speech : null,
               collectionIds : null,
-              priority : 10,
+              priority : null,
               color : null,
               pictoIds : fatherPictosIds,
               pictohubId: null

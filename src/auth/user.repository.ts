@@ -9,7 +9,7 @@ import { EditUserDto } from "./dto/edit-user.dto";
 import { ChangePasswordDto } from "./dto/change-password.dto";
 import { getArrayIfNeeded } from "src/utilities/tools";
 import { Notif } from "src/entities/notification.entity";
-import { stringifyMap, validLanguage } from "src/utilities/creation";
+import { stringifyMap, validLanguage } from "../utilities/creation";
 import sgMail = require('@sendgrid/mail');
 import { randomBytes } from "crypto";
 import { Validation } from "./dto/user-validation.dto";
@@ -55,15 +55,17 @@ export class UserRepository extends Repository<User> {
           }
         }
         try{
-          await sgMail.send({
-            from: 'alex@pictalk.org', 
-            to: user.username, 
-            templateId: 'd-33dea01340e5496691a5741588e2d9f7',
-            dynamicTemplateData: {
-              welcome : welcome[`${user.displayLanguage}`] ? welcome[`${user.displayLanguage}`] : welcome.en,
-              token: user.validationToken,
-            },
-          });
+          if (user.validationToken !== "verified") {
+            await sgMail.send({
+              from: 'alex@pictalk.org', 
+              to: user.username, 
+              templateId: 'd-33dea01340e5496691a5741588e2d9f7',
+              dynamicTemplateData: {
+                welcome : welcome[`${user.displayLanguage}`] ? welcome[`${user.displayLanguage}`] : welcome.en,
+                token: user.validationToken,
+              },
+            });
+          }
         } catch(error){
           console.error(error);
           console.error(error.request);

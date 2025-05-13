@@ -5,7 +5,7 @@ import { diskStorage } from 'multer';
 import { GetUser } from 'src/auth/get-user.decorator';
 import { Collection } from 'src/entities/collection.entity';
 import { User } from 'src/entities/user.entity';
-import { IsValid } from 'src/utilities/creation';
+import { IsValid } from '../utilities/creation';
 import { editFileName, hashImage, imageFileFilter, maxSize } from 'src/utilities/tools';
 import { CollectionService } from './collection.service';
 import { createCollectionDto } from './dto/collection.create.dto';
@@ -147,7 +147,7 @@ export class CollectionController {
               meaning : null,
               speech : null,
               pictoIds : null,
-              priority : 10,
+              priority : null,
               color : null,
               collectionIds : fatherCollectionsIds,
               pictohubId: null
