@@ -16,6 +16,7 @@ import { usernameRegexp } from 'src/utilities/creation';
 import { modifyCollectionDto } from 'src/collection/dto/collection.modify.dto';
 import { PictoService } from 'src/picto/picto.service';
 import { HttpService } from '@nestjs/axios';
+import { OptionnalAuth } from './optionnal_auth.guard';
 @Controller('')
 export class AuthController {
     private KC_ODOO_URL = process.env.KC_ODOO_URL;
@@ -70,13 +71,14 @@ export class AuthController {
         return;
     }
 
+    @UseGuards(OptionnalAuth)
     @Get('auth/validation/:validationToken')
-    async validateUser(@Param('validationToken') validationToken: string): Promise<void>{
+    async validateUser(@Param('validationToken') validationToken: string, @GetUser() user: User): Promise<void>{
+      if (user && user.validationToken === "verified") return;
       if(validationToken != "verified"){
         return this.authService.userValidation(validationToken);
-      } else {
-        return
       }
+      return;
     }
 
     @Post('auth/validation/:username')
