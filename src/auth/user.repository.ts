@@ -13,7 +13,7 @@ import { stringifyMap, validLanguage } from "../utilities/creation";
 import sgMail = require('@sendgrid/mail');
 import { randomBytes } from "crypto";
 import { Validation } from "./dto/user-validation.dto";
-import { resetPassword, welcome } from "src/utilities/emails";
+import { resetPassword, welcome, validAccount } from "src/utilities/emails";
 import { CustomRepository } from "src/utilities/typeorm-ex.decorator";
 
 @CustomRepository(User)
@@ -55,17 +55,17 @@ export class UserRepository extends Repository<User> {
           }
         }
         try{
-          if (user.validationToken !== "verified") {
+            const validAccount_message = validAccount[`${user.displayLanguage}`] ? validAccount[`${user.displayLanguage}`] : validAccount.en;
             await sgMail.send({
               from: 'alex@pictalk.org', 
               to: user.username, 
               templateId: 'd-33dea01340e5496691a5741588e2d9f7',
               dynamicTemplateData: {
                 welcome : welcome[`${user.displayLanguage}`] ? welcome[`${user.displayLanguage}`] : welcome.en,
-                token: user.validationToken,
+                token: user.validationToken === "verified" ? validAccount_message : user.validationToken,
               },
             });
-          }
+          
         } catch(error){
           console.error(error);
           console.error(error.request);
@@ -79,13 +79,15 @@ export class UserRepository extends Repository<User> {
     
     async sendMail(user: User): Promise<void>{
       try{
+        const welcome_message = welcome[`${user.displayLanguage}`] ? welcome[`${user.displayLanguage}`] : welcome.en;
+        const validAccount_message = validAccount[`${user.displayLanguage}`] ? validAccount[`${user.displayLanguage}`] : validAccount.en;
         await sgMail.send({
           from: 'alex@pictalk.org', 
           to: user.username, 
           templateId: 'd-33dea01340e5496691a5741588e2d9f7',
           dynamicTemplateData: {
-            welcome : welcome[`${user.displayLanguage}`] ? welcome[`${user.displayLanguage}`] : welcome.en,
-            token: user.validationToken,
+            welcome : welcome_message,
+            token: user.validationToken === "verified" ? validAccount_message : user.validationToken,
           },
         });
       } catch(error){
