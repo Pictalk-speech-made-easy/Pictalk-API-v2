@@ -89,8 +89,6 @@ export class AuthController {
       if (dbUser && dbUser.validationToken === "verified") {
         this.logger.verbose(`User "${dbUser.username}" is already verified`);
         return;
-      } else if (dbUser && dbUser.validationToken !== "verified") {
-        return this.authService.sendMail(user);
       } else {
         throw new NotFoundException(`username ${username} not found`);
       }
