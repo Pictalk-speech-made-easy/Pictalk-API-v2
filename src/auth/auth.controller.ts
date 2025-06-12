@@ -81,10 +81,25 @@ export class AuthController {
       return;
     }
 
+    @UseGuards(OptionnalAuth)
+    @Get('auth/validation-by-username/:username')
+    async validateUserByusername(@Param('username') username: string, @GetUser() user: User): Promise<void>{
+      if (user && user.validationToken === "verified") return;
+      const dbUser = await this.authService.findWithUsername(username);
+      if (dbUser && dbUser.validationToken === "verified") {
+        this.logger.verbose(`User "${dbUser.username}" is already verified`);
+        return;
+      } else if (dbUser && dbUser.validationToken !== "verified") {
+        return this.authService.sendMail(user);
+      } else {
+        throw new NotFoundException(`username ${username} not found`);
+      }
+    }
+
     @Post('auth/validation/:username')
     async sendMail(@Param('username') username: string): Promise<void>{
       if(usernameRegexp.test(username)){
-        const user= await this.authService.findWithUsername(username);
+        const user = await this.authService.findWithUsername(username);
         if(user){
           return this.authService.sendMail(user);
         } else {
