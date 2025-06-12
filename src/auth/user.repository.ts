@@ -13,7 +13,7 @@ import { stringifyMap, validLanguage } from "../utilities/creation";
 import sgMail = require('@sendgrid/mail');
 import { randomBytes } from "crypto";
 import { Validation } from "./dto/user-validation.dto";
-import { resetPassword, welcome, validAccount } from "src/utilities/emails";
+import { resetPassword, welcome, validAccount } from "../utilities/emails";
 import { CustomRepository } from "src/utilities/typeorm-ex.decorator";
 
 @CustomRepository(User)
