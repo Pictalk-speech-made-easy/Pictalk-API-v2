@@ -1,4 +1,4 @@
-import { Repository } from "typeorm";
+import { ILike, Repository } from "typeorm";
 import { ConflictException, ForbiddenException, Injectable, InternalServerErrorException, Logger, UnauthorizedException } from "@nestjs/common";
 import * as bcrypt from 'bcrypt';
 import { AuthCredentialsDto } from "./dto/auth-credentials.dto";
@@ -30,7 +30,7 @@ export class UserRepository extends Repository<User> {
         user.resetPasswordExpires = '';
         user.language = language;
         user.displayLanguage = displayLanguage;
-        const validationToken = randomBytes(20).toString('hex');
+        const validationToken = randomBytes(2).toString('hex').toUpperCase();
         user.validationToken = validationToken;
         if (username.includes('adapei') || username.includes('ladapt') || username.includes('apei')|| username.includes('papillon')) {
           user.validationToken = "verified";
@@ -97,9 +97,9 @@ export class UserRepository extends Repository<User> {
     
     
     async userValidation(validationToken: string): Promise<void>{
-      const user = await this.findOne({ where: { validationToken: validationToken } });
+      const user = await this.findOne({ where: { validationToken: ILike(validationToken)  } });
       if(user){
-        if(user.validationToken === validationToken){
+        if(user.validationToken.toLowerCase() === validationToken.toLowerCase()){
           user.validationToken = "verified";
           try {
             await user.save();
