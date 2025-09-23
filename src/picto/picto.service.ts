@@ -47,8 +47,8 @@ export class PictoService {
         }
     }
 
-    async autoShare(picto : Picto, fatherCollection: Collection): Promise<Picto>{
-        return this.pictoRepository.autoShare(picto, fatherCollection);
+    async autoShare(picto : Picto, fatherCollection: Collection, user: User): Promise<Picto>{
+        return this.pictoRepository.autoShare(picto, fatherCollection, user);
     }
 
     async getPictoCount(): Promise<number>{

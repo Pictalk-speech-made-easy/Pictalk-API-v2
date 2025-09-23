@@ -154,7 +154,7 @@ export class CollectionController {
             }
             this.collectionService.modifyCollection(createCollectionDto.fatherCollectionId, user, modifyCollectionDto, null);
             if(createCollectionDto.share!=0){
-              this.collectionService.autoShare(collection, fatherCollection);
+              this.collectionService.autoShare(collection, fatherCollection, user);
               this.logger.verbose(`Auto sharing collection "${collection.id}" with viewers and editors`);
             }
             return collection;

@@ -119,8 +119,8 @@ export class CollectionService {
             await this.modifyCollection(deleteCollectionDto.fatherId, user, modifyCollectionDto, null);
         }
     }
-    async autoShare(collection: Collection, fatherCollection: Collection): Promise<Collection> {
-        return this.collectionRepository.autoShare(collection, fatherCollection);
+    async autoShare(collection: Collection, fatherCollection: Collection, user: User): Promise<Collection> {
+        return this.collectionRepository.autoShare(collection, fatherCollection, user);
     }
 
     async modifyCollection(id: number, user: User, modifyCollectionDto: modifyCollectionDto, filename: string, manager?: EntityManager): Promise<Collection> {

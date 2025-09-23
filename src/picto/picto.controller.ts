@@ -101,7 +101,7 @@ export class PictoController {
             }
             this.collectionService.modifyCollection(createPictoDto.fatherCollectionId, user, modifyCollectionDto, null);
             if(createPictoDto.share!=0){
-              this.pictoService.autoShare(picto, fatherCollection);
+              this.pictoService.autoShare(picto, fatherCollection, user);
               this.logger.verbose(`Auto sharing picto "${picto.id}" with viewers and editors`);
             }
             return picto;

@@ -161,8 +161,9 @@ export class PictoRepository extends Repository<Picto> {
     }
     return picto;
   }
-  async autoShare(picto: Picto, fatherCollection: Collection): Promise<Picto> {
-    picto.editors = fatherCollection.editors;
+  async autoShare(picto: Picto, fatherCollection: Collection, user: User): Promise<Picto> {
+    if(user.id !== fatherCollection.userId) picto.editors = [...fatherCollection.editors, fatherCollection.user.username];
+    else picto.editors = fatherCollection.editors;
     picto.viewers = fatherCollection.viewers;
     try {
       await picto.save();

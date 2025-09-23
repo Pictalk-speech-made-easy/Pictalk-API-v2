@@ -383,8 +383,10 @@ export class CollectionRepository extends Repository<Collection> {
   async autoShare(
     collection: Collection,
     fatherCollection: Collection,
+    user: User,
   ): Promise<Collection> {
-    collection.editors = fatherCollection.editors;
+    if(user.id !== fatherCollection.userId) collection.editors = [...fatherCollection.editors, fatherCollection.user.username];
+    else collection.editors = fatherCollection.editors;
     collection.viewers = fatherCollection.viewers;
     try {
       await collection.save();
