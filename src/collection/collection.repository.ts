@@ -385,9 +385,10 @@ export class CollectionRepository extends Repository<Collection> {
     fatherCollection: Collection,
     user: User,
   ): Promise<Collection> {
-    if(user.id !== fatherCollection.userId) collection.editors = [...fatherCollection.editors, fatherCollection.user.username];
-    else collection.editors = fatherCollection.editors;
+    collection.editors = fatherCollection.editors;
     collection.viewers = fatherCollection.viewers;
+    if(user.id !== fatherCollection.userId && fatherCollection.user) collection.editors = [...collection.editors, fatherCollection.user.username];
+    else collection.userId = fatherCollection.userId;
     try {
       await collection.save();
     } catch (error) {
