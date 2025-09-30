@@ -31,7 +31,6 @@ export class PictoController {
   @UseGuards(OptionnalAuth)
   @Get('/:id')
   getPictoById(@Param('id', ParseIntPipe) id : number, @GetUser() user: User): Promise<Picto>{
-    this.logger.verbose(`User "${user.username}" getting Picto with id ${id}`);
       return this.pictoService.getPictoById(id, user);
   }
 
@@ -39,7 +38,6 @@ export class PictoController {
   @Get()
   @ApiOperation({summary : 'get all your pictos'})
   getAllUserPictos(@GetUser() user: User): Promise<Picto[]>{
-    this.logger.verbose(`User "${user.username}" getting all Picto`);
     return this.pictoService.getAllUserPictos(user);
   }
 
@@ -54,11 +52,6 @@ export class PictoController {
       }
       for(let username of multipleSharePictoDto.usernames){
         multipleSharePictoDto.access= +multipleSharePictoDto.access;
-        if(multipleSharePictoDto.access){
-          this.logger.verbose(`User "${user.username}" sharing Picto with id ${id} to User ${username} as ${multipleSharePictoDto.role}`);
-        } else {
-          this.logger.verbose(`User "${user.username}" revoking access to Picto with id ${id} for User ${username}`);
-        }
         picto = await this.pictoService.sharePictoById(id, user, new sharePictoDto(multipleSharePictoDto.access, username, multipleSharePictoDto.role));
       }
       return picto;
@@ -79,12 +72,10 @@ export class PictoController {
   )
   async createPicto(@Body() createPictoDto: createPictoDto, @GetUser() user: User, @UploadedFile() file: Express.Multer.File,): Promise<Picto>{
       if(!file){
-          this.logger.verbose(`User "${user.username}" tryed to create Picto without file or filename`);
           throw new NotFoundException(`There is no file or no filename`);
       } else {
         if(IsValid(createPictoDto.meaning, createPictoDto.speech)){
           if(createPictoDto.fatherCollectionId!=user.shared){
-            this.logger.verbose(`User "${user.username}" creating Picto`);
             const filename = await hashImage(file);
             const picto = await this.pictoService.createPicto(createPictoDto, user, filename);
             const fatherCollection = await this.collectionService.getCollectionById(createPictoDto.fatherCollectionId, user);
@@ -102,15 +93,12 @@ export class PictoController {
             this.collectionService.modifyCollection(createPictoDto.fatherCollectionId, user, modifyCollectionDto, null);
             if(createPictoDto.share!=0){
               this.pictoService.autoShare(picto, fatherCollection, user);
-              this.logger.verbose(`Auto sharing picto "${picto.id}" with viewers and editors`);
             }
             return picto;
           } else {
-            this.logger.verbose(`User "${user.username}" tried to create collection into shared collections`);
             throw new ForbiddenException(`You cannot create a collection into your shared collection`);
           }
         } else {
-          this.logger.verbose(`User "${user.username}"Made a bad request where Object has either invalid attributes or "meaning" and "speech" don't have the same length`);
           throw new BadRequestException(`Object is invalid, should be "{language <xx-XX> : text <string>} and both should have same length"`);
         }
       }
@@ -120,7 +108,6 @@ export class PictoController {
   @Delete()
   deletePicto(@Query(ValidationPipe) deletePictoDto: deletePictoDto, @GetUser() user: User): Promise<void> {
     deletePictoDto.pictoId=Number(deletePictoDto.pictoId);
-    this.logger.verbose(`User "${user.username}" deleting Picto with id ${deletePictoDto.pictoId}`);
     return this.pictoService.deletePicto(deletePictoDto, user);
   }
 
@@ -139,7 +126,6 @@ export class PictoController {
   )
   async modifyPicto(@Param('id', ParseIntPipe) id: number, @GetUser() user: User, @Body() modifyPictoDto: modifyPictoDto, @UploadedFile() file: Express.Multer.File): Promise<Picto>{
     if(IsValid(modifyPictoDto.meaning, modifyPictoDto.speech)){
-      this.logger.verbose(`User "${user.username}" Modifying Picto with id ${id}`);
       if(file){
           const filename = await hashImage(file);
           return this.pictoService.modifyPicto(id, user, modifyPictoDto, filename);
@@ -147,14 +133,12 @@ export class PictoController {
           return this.pictoService.modifyPicto(id, user, modifyPictoDto, null);
       }
     } else {
-      this.logger.verbose(`User "${user.username}"Made a bad request where Object has either invalid attributes or "meaning" and "speech" don't have the same length`);
       throw new BadRequestException(`Object is invalid, should be "{language <xx-XX> : text <string>} and both should have same length`);
     }
   }
   @UseGuards(AuthGuard())
   @Post('copy')
   async copyPicto(@Body() copyPictoDto: copyPictoDto, @GetUser() user: User): Promise<Collection>{
-    this.logger.verbose(`User "${user.username}" copying Picto with id ${copyPictoDto.pictoId}`);
     await this.pictoService.copyPicto(copyPictoDto.fatherCollectionId, copyPictoDto.pictoId, user);
     return this.collectionService.getCollectionById(copyPictoDto.fatherCollectionId, user)
   }

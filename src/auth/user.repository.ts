@@ -73,7 +73,6 @@ export class UserRepository extends Repository<User> {
             console.error(error.response.body)
           }
         }
-        this.logger.verbose(`User ${user.username} is being saved, validationToken is ${user.validationToken}!`);
         return user;
       }
     

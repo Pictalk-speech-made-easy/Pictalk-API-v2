@@ -153,7 +153,6 @@ export class PictoService {
     async deleteAllPictos(user: User): Promise<void>{
         try {
         const pictos = await this.getAllUserPictos(user);
-        console.log(`User ${user.username} has ${pictos.length} pictos`);
         await Promise.all(pictos.map(async picto => 
             this.modifyPicto(picto.id, user, {meaning: null, speech: null, color: null, collectionIds: [], priority: null, pictohubId: null}, null)
             

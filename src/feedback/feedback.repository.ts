@@ -39,7 +39,6 @@ export class FeedbackRepository extends Repository<Feedback>{
         const toTake = per_page;
         const query = this.createQueryBuilder('feedback');
         const total_count = await query.getCount();
-        console.log(searchFeedbackDto);
         if (searchFeedbackDto.sortField && searchFeedbackDto.sortOrder) {
             query.orderBy(`feedback.${searchFeedbackDto.sortField}`, searchFeedbackDto.sortOrder)
         }

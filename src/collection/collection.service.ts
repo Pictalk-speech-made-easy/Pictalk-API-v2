@@ -163,7 +163,6 @@ export class CollectionService {
                 collectionIds: collection.collections.map(collection => { return collection.id; }),
                 pictoIds: collection.pictos.map(picto => { return picto.id; })
             }
-            console.log(modifyCollectionV2Dto);
             if (modifyCollectionV2Dto.collectionsAdded) {
                 for (const addedId of modifyCollectionV2Dto.collectionsAdded) {
                   const subCollection = await this.getCollectionById(addedId, user);
@@ -383,10 +382,8 @@ export class CollectionService {
         const fatherCollection = await this.getCollectionById(fatherCollectionId, user);
         const sourceCollection = moveToCollectionDto.sourceCollectionId ? await this.getCollectionById(moveToCollectionDto.sourceCollectionId, user) : null;
         const sourcePictogram = moveToCollectionDto.sourcePictoId ? await this.pictoService.getPictoById(moveToCollectionDto.sourcePictoId, user) : null
-        console.info(`User ${user.username} has access to all ressources needed`);
         // now that we made sure user has access to ressource, we run transactions
         if (moveToCollectionDto.sourceCollectionId) {
-            console.info(`Moving Collection ${sourceCollection.meaning} to ${targetCollection.meaning}`);
             await this.collectionRepository.manager.transaction(async manager => {
                 // I want your manager !!
                 // Perform the INSERT operation within the transaction
@@ -400,9 +397,7 @@ export class CollectionService {
                     [fatherCollectionId, moveToCollectionDto.sourceCollectionId]
                 );
             });
-            console.info(`Operation successful`);
         } else if (moveToCollectionDto.sourcePictoId) {
-            console.info(`Moving Picto ${sourcePictogram.meaning} to ${targetCollection.meaning}`);
             await this.collectionRepository.manager.transaction(async manager => {
                 // I want your manager !!
                 // Perform the INSERT operation within the transaction
@@ -416,14 +411,12 @@ export class CollectionService {
                     [fatherCollectionId, moveToCollectionDto.sourcePictoId]
                 );
             });
-            console.info(`Operation successful`);
         }
         return await this.getCollectionById(fatherCollectionId, user);
     }
 
     async deleteAllCollections(user: User): Promise<void> {
         const collections = await this.getAllUserCollections(user);
-        console.log(`User ${user.username} has ${collections.length} collections`);
         try {
             await Promise.all(collections.map(collection =>
                 this.modifyCollection(collection.id, user, { meaning: null, speech: null, priority: null, color: null, pictohubId: null, collectionIds: [], pictoIds: [] }, null)

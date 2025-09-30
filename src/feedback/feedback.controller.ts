@@ -19,7 +19,6 @@ export class FeedbackController {
   @Post()
   @UsePipes(ValidationPipe)
   async createFeedback(@Body() createFeedbackDto: CreateFeedbackDto): Promise<void>{
-    this.logger.verbose(`Ccreating a feedback with title: ${createFeedbackDto.title}`);
     return this.feedbackService.createFeedback(createFeedbackDto);
   }
   @UseGuards(AuthGuard())
@@ -29,8 +28,6 @@ export class FeedbackController {
     if (!user.admin) {
       throw new UnauthorizedException(`User ${user.username} is not admin, only admins can get feedbacks`);
     }
-    this.logger.verbose(`Searching for feedbacks`);
-    console.log()
     return this.feedbackService.getFeedback(searchFeedbackDto);
   }
 
@@ -41,7 +38,6 @@ export class FeedbackController {
     if (!user.admin) {
       throw new UnauthorizedException(`User ${user.username} is not admin, only admins can edit feedbacks`);
     }
-    this.logger.verbose(`Ccreating a feedback with title: ${editFeedbackDto.title}`);
     return this.feedbackService.editFeedback(id, editFeedbackDto);
   }
 }

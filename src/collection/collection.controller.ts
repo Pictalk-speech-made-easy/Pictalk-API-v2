@@ -29,7 +29,6 @@ export class CollectionController {
   @Get('find/:id')
   @ApiOperation({summary : 'get a collection that has the provided id'})
   getCollectionById(@Param('id', ParseIntPipe) id : number, @GetUser() user: User): Promise<Collection>{
-    this.logger.verbose(`User "${user.username}" getting Collection with id ${id}`);
       return this.collectionService.getCollectionById(id, user);
   }
 
@@ -73,7 +72,6 @@ export class CollectionController {
   @Get()
   @ApiOperation({summary : 'get all your collection'})
   getAllUserCollections(@GetUser() user: User): Promise<Collection[]>{
-    this.logger.verbose(`User "${user.username}" getting all Collection`);
     return this.collectionService.getAllUserCollections(user);
   }
 
@@ -95,11 +93,6 @@ export class CollectionController {
       multipleShareCollectionDto.role='viewer';
     }
     multipleShareCollectionDto.access= +multipleShareCollectionDto.access;
-    if(multipleShareCollectionDto.access){
-      this.logger.verbose(`User "${user.username}" sharing Collection with id ${id} to Users ${multipleShareCollectionDto.usernames} as ${multipleShareCollectionDto.role}`);
-    } else {
-      this.logger.verbose(`User "${user.username}" revoking access to Collection with id ${id} for Users ${multipleShareCollectionDto.usernames}`);
-    }
     collection = await this.collectionService.shareCollectionVerification(id, user, multipleShareCollectionDto);
     return collection;
   }
@@ -130,12 +123,10 @@ export class CollectionController {
   )
   async createCollection(@Body() createCollectionDto: createCollectionDto, @GetUser() user: User, @UploadedFile() file: Express.Multer.File,): Promise<Collection>{
       if(!file){
-        this.logger.verbose(`User "${user.username}" Made a bad request that doesn't contain a file`);
         throw new NotFoundException(`There is no file or no filename`);
       } else {
         if(IsValid(createCollectionDto.meaning, createCollectionDto.speech)){
           if(createCollectionDto.fatherCollectionId!=user.shared){
-            this.logger.verbose(`User "${user.username}" creating Collection`);
             const filename = await hashImage(file);
             const collection = await this.collectionService.createCollection(createCollectionDto, user, filename);
             const fatherCollection = await this.collectionService.getCollectionById(createCollectionDto.fatherCollectionId, user);
@@ -155,15 +146,12 @@ export class CollectionController {
             this.collectionService.modifyCollection(createCollectionDto.fatherCollectionId, user, modifyCollectionDto, null);
             if(createCollectionDto.share!=0){
               this.collectionService.autoShare(collection, fatherCollection, user);
-              this.logger.verbose(`Auto sharing collection "${collection.id}" with viewers and editors`);
             }
             return collection;
           } else {
-            this.logger.verbose(`User "${user.username}" tried to create collection into shared collections`);
             throw new ForbiddenException(`You cannot create a collection into your shared collection`);
           }
         } else {
-          this.logger.verbose(`User "${user.username}"Made a bad request where Object has either invalid attributes or "meaning" and "speech" don't have the same length`);
           throw new BadRequestException(`Object is invalid, should be "{language <xx-XX> : text <string>} and both should have same length`);
         }
       }
@@ -172,7 +160,6 @@ export class CollectionController {
   @UseGuards(AuthGuard())
   @Post('/root')
   createRoot(@GetUser() user: User): Promise<number>{
-    this.logger.verbose(`User "${user.username}" Creating 'Root' Collection if needed`);
     return this.collectionService.createRoot(user);
   }
 
@@ -180,7 +167,6 @@ export class CollectionController {
   @Delete()
   deleteCollection(@Query(ValidationPipe) deleteCollectionDto: deleteCollectionDto, @GetUser() user: User): Promise<void> {
     deleteCollectionDto.collectionId=Number(deleteCollectionDto.collectionId);
-    this.logger.verbose(`User "${user.username}" deleting Collection with id ${deleteCollectionDto.collectionId}`);
     return this.collectionService.deleteCollection(deleteCollectionDto, user);
   }
 
@@ -199,7 +185,6 @@ export class CollectionController {
   )
   async modifyCollection(@Param('id', ParseIntPipe) id: number, @GetUser() user: User, @Body() modifyCollectionDto: modifyCollectionDto, @UploadedFile() file: Express.Multer.File): Promise<Collection>{
     if(IsValid(modifyCollectionDto.meaning, modifyCollectionDto.speech)){      
-      this.logger.verbose(`User "${user.username}" Modifying Collection with id ${id}`);
       if(file){
           const filename = await hashImage(file);
         return this.collectionService.modifyCollection(id, user, modifyCollectionDto, filename);
@@ -207,7 +192,6 @@ export class CollectionController {
         return this.collectionService.modifyCollection(id, user, modifyCollectionDto, null);
       }
     } else {
-      this.logger.verbose(`User "${user.username}"Made a bad request where Object has either invalid attributes or "meaning" and "speech" don't have the same length`);
       throw new BadRequestException(`Object is invalid, should be "{language <xx-XX> : text <string>} and both should have same length`);
     }
   }
@@ -226,21 +210,16 @@ export class CollectionController {
     }),
   )
   async modifyCollectionV2(@Param('id', ParseIntPipe) id: number, @GetUser() user: User, @Body() modifyCollectionDto: modifyCollectionV2Dto, @UploadedFile() file: Express.Multer.File): Promise<Collection>{
-    console.time('modifyCollectionV2');
     if(IsValid(modifyCollectionDto.meaning, modifyCollectionDto.speech)){      
-      this.logger.verbose(`User "${user.username}" Modifying Collection with id ${id}`);
       if(file){
           const filename = await hashImage(file);
           const res = await this.collectionService.modifyCollectionV2(id, user, modifyCollectionDto, filename);
-          console.timeEnd('modifyCollectionV2');
           return res;
       } else {
         const res = await this.collectionService.modifyCollectionV2(id, user, modifyCollectionDto, null);
-        console.timeEnd('modifyCollectionV2');
         return res;
       }
     } else {
-      this.logger.verbose(`User "${user.username}"Made a bad request where Object has either invalid attributes or "meaning" and "speech" don't have the same length`);
       throw new BadRequestException(`Object is invalid, should be "{language <xx-XX> : text <string>} and both should have same length`);
     }
   }
@@ -249,7 +228,6 @@ export class CollectionController {
   @Put('/move/:id')
   @UsePipes(ValidationPipe)
   async moveToCollection(@Param('id', ParseIntPipe) fatherCollectionId: number, @GetUser() user: User, @Body() moveToCollectionDto: MoveToCollectionDto): Promise<Collection>{
-    this.logger.verbose(`User "${user.username}" Moving Collection ${moveToCollectionDto.sourceCollectionId} or Picto ${moveToCollectionDto.sourcePictoId} to ${moveToCollectionDto.targetCollectionId}`);
     return this.collectionService.moveToCollection(user, moveToCollectionDto, fatherCollectionId);
   }
 
@@ -257,7 +235,6 @@ export class CollectionController {
   @Get('orphaned')
   @ApiOperation({summary : 'get all the orphaned collections'})
   async getOrphanedCollections(@GetUser() user: User): Promise<Collection[]> {
-    this.logger.verbose(`User "${user.username}" getting all orphaned Collections`);
     return this.collectionService.getOrphanedCollections(user);
   }
 }

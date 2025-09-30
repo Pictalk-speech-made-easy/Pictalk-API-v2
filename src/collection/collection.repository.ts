@@ -447,7 +447,6 @@ export class CollectionRepository extends Repository<Collection> {
       } else {
         collections = await query.getMany();
       }
-      console.log(collections);
       return collections;
     } catch (err) {
       throw new InternalServerErrorException(

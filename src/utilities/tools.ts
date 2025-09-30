@@ -73,17 +73,13 @@ export async function hashImage(file: Express.Multer.File) {
   } catch (err) {
     console.log(err);
     if(err.code == 'EEXIST'){
-      console.log('File already exists, checking colors')
       const colors1 = (await getImageColors(filename, mime.lookup(extension))).map(color => {return color.hex();}).toString();
       const colors2 = (await getImageColors('../files/'+hashedname, mime.lookup(extname(hashedname)))).map(color => {return color.hex();}).toString();
-      console.log('Colors are : '+colors1+' and '+colors2)
       if(colors1!=colors2){
         const hash1 = sha('sha1').update(colors1).digest('hex');
-        console.log("Colors are different");
         try {
           hashedname = hash1+hashedname;
           await promises.copyFile('./tmp/'+filename, './files/'+hashedname, constants.COPYFILE_EXCL);
-          console.log('Colors are different, new file is : '+hashedname);
         } catch (err) {
           console.log(err);
           if (err?.code != 'EEXIST') {
@@ -101,8 +97,6 @@ export async function hashImage(file: Express.Multer.File) {
       throw new NotFoundException(`Couldn't find file: ${filename}, Error is : ${err}`);
     }
   }
-  
-  console.log('Returned Hashedname is : '+hashedname)
   return hashedname;
 } 
 

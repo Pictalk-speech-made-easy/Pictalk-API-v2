@@ -139,7 +139,6 @@ export class ExtrasController {
             report.fillDonatorsAmount(data, true);
           } else {
             neterrors++;
-            console.log('external server did not serve donators');
           }
         })
         .catch((error) => {
@@ -156,7 +155,6 @@ export class ExtrasController {
             report.fillDonatorsAmount(data, false);
           } else {
             neterrors++;
-            console.log('external server did not serve last months donators');
           }
         })
         .catch((error) => {

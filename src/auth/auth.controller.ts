@@ -31,7 +31,6 @@ export class AuthController {
 
     @Post('auth/signup')
     async signUp(@Body(ValidationPipe) createUserDto: CreateUserDto): Promise<void> {
-        this.logger.verbose(`User signin up`);
         const user = await this.authService.signUp(createUserDto);
         const rootId: number = await this.collectionService.createRoot(user);
         await this.collectionService.createShared(user);
@@ -65,7 +64,6 @@ export class AuthController {
           userId: user.id,
           createdDate: user.createdDate
         }).subscribe({
-          next: () => this.logger.verbose('Webhook request sent successfully'),
           error: (error) => this.logger.error('Error sending webhook request', error)
         });
         return;
@@ -87,7 +85,6 @@ export class AuthController {
       if (user && user.validationToken === "verified") return;
       const dbUser = await this.authService.findWithUsername(username);
       if (dbUser && dbUser.validationToken === "verified") {
-        this.logger.verbose(`User "${dbUser.username}" is already verified`);
         return;
       } else {
         throw new NotFoundException(`username ${username} not found`);
@@ -112,18 +109,11 @@ export class AuthController {
     @Post('auth/signin')
     async signIn(
       @Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto): Promise<{ accessToken: string; expiresIn: string }> {
-      this.logger.verbose(
-        `User "${authCredentialsDto.username}" is trying to Sign In`,
-      );
-      
       const signinResponse: any = await this.authService.signIn(authCredentialsDto);
       
       if (signinResponse.accessToken) {
         const userToCreateSider: User = await this.authService.isSiderToCreate(authCredentialsDto.username);
         if (userToCreateSider) {
-          this.logger.verbose(
-            `User "${authCredentialsDto.username}" is has not a siderbar collection. Creating one.`,
-          );
           await this.collectionService.createSider(userToCreateSider);
         }
         const user = await this.authService.findWithUsername(authCredentialsDto.username);
@@ -137,7 +127,6 @@ export class AuthController {
           userId: user.id,
           createdDate: user.createdDate
         }).subscribe({
-          next: () => this.logger.verbose('Webhook request sent successfully'),
           error: (error) => this.logger.error('Error sending webhook request', error)
         });
       }
@@ -148,9 +137,6 @@ export class AuthController {
     resetPassword(
       @Body(ValidationPipe) resetPasswordDto: ResetPasswordDto,
     ): Promise<void> {
-      this.logger.verbose(
-        `User "${resetPasswordDto.username}" is trying to Reset Password`,
-      );
       return this.authService.resetPassword(resetPasswordDto);
     }
 
@@ -159,16 +145,12 @@ export class AuthController {
       @Body(ValidationPipe) changePasswordDto: ChangePasswordDto,
       @Param('token') token: string,
     ): Promise<void> {
-      this.logger.verbose(
-        `${token} is being used !`,
-      );
       return this.authService.changePassword(changePasswordDto, token);
     }
   
     @Get('user/details')
     @UseGuards(AuthGuard())
     getUserDetails(@GetUser() user: User): Promise<User> {
-      this.logger.verbose(`User "${user.username}" is trying to get Details`);
       return this.authService.getUserDetails(user);
     }
   
@@ -192,7 +174,6 @@ export class AuthController {
           throw new BadRequestException(`settings ${editUserDto.settings} is not valid`);
         }
       }
-      this.logger.verbose(`User "${user.username}" is trying to modify Details`);
       const editedUser = await this.authService.editUser(user, editUserDto);
       if (editedUser.directSharers.length != 0) {
         const multipleShareCollectionDto: multipleShareCollectionDto = { access: 1, usernames: user.directSharers, role: 'editor'}
@@ -204,7 +185,6 @@ export class AuthController {
     @UseGuards(AuthGuard())
     @Get('/user/root')
     async getRoot(@GetUser() user: User): Promise<Collection>{
-        this.logger.verbose(`User "${user.username}" getting his root`);
         const root = await this.authService.getRoot(user);
         return this.collectionService.getCollectionById(root, user);
     }
@@ -212,7 +192,6 @@ export class AuthController {
     @UseGuards(AuthGuard())
     @Get('/user/sider')
     async getSider(@GetUser() user: User): Promise<Collection>{
-        this.logger.verbose(`User "${user.username}" getting his root`);
         const sider = await this.authService.getSider(user);
         return this.collectionService.getCollectionById(sider, user);
     }
@@ -220,7 +199,6 @@ export class AuthController {
     @UseGuards(AuthGuard())
     @Get('/user/shared')
     async getShared(@GetUser() user: User): Promise<Collection>{
-        this.logger.verbose(`User "${user.username}" getting his shared with me Collection`);
         const shared = await this.authService.getShared(user);
         return this.collectionService.getCollectionById(shared, user);
     }
@@ -234,7 +212,6 @@ export class AuthController {
     @UseGuards(AuthGuard())
     @Delete('/user/notification')
     async clearNotifications(@GetUser() user: User): Promise<Notif[]>{
-        this.logger.verbose(`User "${user.username}" clearing his notifications`);
         return this.authService.clearNotifications(user);
     }
 
@@ -242,7 +219,6 @@ export class AuthController {
     @Delete('/user/:id')
     async deleteUser(@GetUser() user: User, @Param('id', ParseIntPipe) userId: number): Promise<void>{
         if (user.admin === false && user.id !== userId) {
-          console.log(`User ${user.username} is not an admin and is trying to delete user ${userId}`)
           return;
         }
         if (user.admin) {
@@ -250,31 +226,25 @@ export class AuthController {
           if (!user) {
             return;
           }
-          this.logger.verbose(`Admin deleting user "${user.username}"`);
         } else {
-          this.logger.verbose(`User "${user.username}" deleting his account`);
         }
         try {
           // Delete all user pictograms
           await this.collectionService.deleteAllCollections(user);
           await this.pictoService.deleteAllPictos(user);
         } catch (error) {
-          console.log(`Pictograms of user ${user.username} could not be deleted: ${error}`);
         }
         try {
           await this.collectionService.deleteCollection({collectionId: user.root, fatherId: undefined}, user);
         } catch (error) {
-          console.log(`Root collection of user ${user.username} could not be deleted: ${error}`);
         }
         try {
           await this.collectionService.deleteCollection({collectionId: user.sider, fatherId: undefined}, user);
         } catch (error) {
-          console.log(`Sider collection of user ${user.username} could not be deleted: ${error}`);
         }
         try {
           await this.collectionService.deleteCollection({collectionId: user.shared, fatherId: undefined}, user);
         } catch (error) {
-          console.log(`Shared collection of user ${user.username} could not be deleted: ${error}`);
         }
         
         return this.authService.deleteUser(user);
