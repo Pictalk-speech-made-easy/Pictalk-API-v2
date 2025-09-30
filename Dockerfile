@@ -5,7 +5,7 @@ COPY ./package.json ./
 RUN pnpm install
 COPY . .
 RUN pnpm run build
-
+RUN pnpm rebuild bcrypt
 
 FROM node:18-bullseye
 WORKDIR /app
