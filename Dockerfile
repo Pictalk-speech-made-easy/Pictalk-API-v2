@@ -2,10 +2,9 @@ FROM node:18-bullseye AS builder
 RUN npm i -g pnpm
 WORKDIR /app
 COPY ./package.json ./
-RUN pnpm install
+RUN pnpm install --dangerously-allow-all-builds
 COPY . .
 RUN pnpm run build
-RUN pnpm rebuild bcrypt
 
 FROM node:18-bullseye
 WORKDIR /app
