@@ -1,5 +1,5 @@
 import { BadRequestException, InternalServerErrorException } from "@nestjs/common";
-import { Languages, Voice, VoiceURI } from "src/entities/voices.entity";
+import { Languages, Voice, VoiceURI } from "../entities/voices.entity";
 import { languagesRegex } from "./supported.languages";
 import { getArrayIfNeeded } from "./tools";
 
