@@ -81,7 +81,6 @@ export async function hashImage(file: Express.Multer.File) {
           hashedname = hash1+hashedname;
           await promises.copyFile('./tmp/'+filename, './files/'+hashedname, constants.COPYFILE_EXCL);
         } catch (err) {
-          console.log(err);
           if (err?.code != 'EEXIST') {
             throw new NotFoundException(`Couldn't copy file: ${filename}, Error is : ${err}`);
           }
