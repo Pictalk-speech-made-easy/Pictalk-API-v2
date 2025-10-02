@@ -11,6 +11,12 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
     database: process.env.DB_NAME || dbConfig.database,
     entities: [__dirname + '/../**/*.entity.{js,ts}'],
     synchronize: process.env.TYPEORM_SYNC || dbConfig.synchronize,
+    extra: {
+        max: 25,                        // Maximum pool size
+        idleTimeoutMillis: 30000,       // Close idle clients after 30s
+        connectionTimeoutMillis: 10000, // Timeout if can't get connection
+        statement_timeout: 60000,       // Kill queries after 60s
+    },
 };
 
 console.log(typeOrmConfig);

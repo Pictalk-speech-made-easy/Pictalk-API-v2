@@ -5,6 +5,7 @@ import {BaseEntity,
   OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
+  Index,
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Collection } from './collection.entity';
@@ -13,6 +14,11 @@ import { Notif } from './notification.entity';
 import { defaultSettings } from 'src/utilities/creation';
 
 @Entity()
+@Index(['username']) // Already unique, but explicit index helps
+@Index(['root'])     // Frequently queried in getOrphanedCollections
+@Index(['shared'])   // Used in sharing operations
+@Index(['sider'])    // Used in filtering
+@Index(['admin'])    // Used in admin checks
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;

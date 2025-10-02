@@ -3,6 +3,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinTable,
   ManyToMany,
   ManyToOne,
@@ -14,6 +15,11 @@ import { Collection } from './collection.entity';
 import { User } from './user.entity';
 
 @Entity()
+@Entity()
+@Index(['userId'])           // Most frequent filter
+@Index(['public'])           // Public picto queries
+@Index(['userId', 'public']) // Composite
+@Index(['pictohubId'])       // If queried
 export class Picto extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
