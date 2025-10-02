@@ -440,12 +440,18 @@ export class CollectionService {
         }
 
         async get_collections(user_id: number): Promise<Collection[]> {
+
+                // TODO : we need to make sure that the user is in the viewer of editor array to make sure they have access to the collection. 
+                // We have an issue where we are not getting the nested shared collections. 
+                // the solution would be to query and get all the collections where our username is in the 'editors' or 'viewers' array
+                // ideally we would add an index on those arrays to make the querying faster. 
+
                 const user_collections = await this.collectionRepository
                         .createQueryBuilder('c')
                         .where('c.userId = :userId', { userId: user_id })
                         .getMany();
                 const user_collection_ids = user_collections.map(c => c.id);
-
+                // the code to replace starts here
                 const shared_collection_ids = await this.collectionRepository.query(`
         SELECT DISTINCT ccc."collectionId_2" as id
         FROM collection_collections_collection ccc
@@ -460,6 +466,7 @@ export class CollectionService {
                                 .whereInIds(shared_ids)
                                 .getMany();
                 }
+                // the code to replace ends here
                 const all_collections = [...user_collections, ...shared_collections];
                 const all_collection_ids = [...user_collection_ids, ...shared_ids];
 
