@@ -71,7 +71,6 @@ export async function hashImage(file: Express.Multer.File) {
       }
     });
   } catch (err) {
-    console.log(err);
     if(err.code == 'EEXIST'){
       const colors1 = (await getImageColors(filename, mime.lookup(extension))).map(color => {return color.hex();}).toString();
       const colors2 = (await getImageColors('../files/'+hashedname, mime.lookup(extname(hashedname)))).map(color => {return color.hex();}).toString();
