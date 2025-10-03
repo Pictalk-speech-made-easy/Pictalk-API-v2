@@ -440,41 +440,42 @@ export class CollectionService {
         }
 
         async get_collections(user_id: number): Promise<Collection[]> {
+                // First, get the user to access their username
+                const user = await this.collectionRepository.manager
+                        .getRepository(User)
+                        .findOne({ where: { id: user_id } });
 
-                // TODO : we need to make sure that the user is in the viewer of editor array to make sure they have access to the collection. 
-                // We have an issue where we are not getting the nested shared collections. 
-                // the solution would be to query and get all the collections where our username is in the 'editors' or 'viewers' array
-                // ideally we would add an index on those arrays to make the querying faster. 
+                if (!user) {
+                        throw new NotFoundException(`User with ID ${user_id} not found`);
+                }
 
                 const user_collections = await this.collectionRepository
                         .createQueryBuilder('c')
                         .where('c.userId = :userId', { userId: user_id })
                         .getMany();
                 const user_collection_ids = user_collections.map(c => c.id);
-                // the code to replace starts here
-                const shared_collection_ids = await this.collectionRepository.query(`
-        SELECT DISTINCT ccc."collectionId_2" as id
-        FROM collection_collections_collection ccc
-        WHERE ccc."collectionId_1" = ANY($1::int[])
-        AND ccc."collectionId_2" != ALL($1::int[])
-        `, [user_collection_ids]);
-                const shared_ids = shared_collection_ids.map(row => row.id);
-                let shared_collections = [];
-                if (shared_ids.length > 0) {
-                        shared_collections = await this.collectionRepository
-                                .createQueryBuilder('c')
-                                .whereInIds(shared_ids)
-                                .getMany();
-                }
-                // the code to replace ends here
+
+                // Get shared collections where user is in editors or viewers array
+                const shared_collections = await this.collectionRepository
+                        .createQueryBuilder('c')
+                        .where('c.userId != :userId', { userId: user_id })
+                        .andWhere(
+                                '(:username = ANY(c.editors) OR :username = ANY(c.viewers))',
+                                { username: user.username }
+                        )
+                        .getMany();
+
+                const shared_ids = shared_collections.map(c => c.id);
+
                 const all_collections = [...user_collections, ...shared_collections];
                 const all_collection_ids = [...user_collection_ids, ...shared_ids];
 
                 const picto_bindings = await this.collectionRepository.query(`
-        SELECT "collectionId", "pictoId"
-        FROM collection_pictos_picto
-        WHERE "collectionId" = ANY($1::int[])
-        `, [all_collection_ids]);
+                        SELECT "collectionId", "pictoId"
+                        FROM collection_pictos_picto
+                        WHERE "collectionId" = ANY($1::int[])
+                `, [all_collection_ids]);
+
                 const picto_ids = [...new Set(picto_bindings.map(b => b.pictoId))];
                 let all_pictos = [];
                 if (picto_ids.length > 0) {
@@ -486,10 +487,10 @@ export class CollectionService {
                 }
 
                 const collection_bindings = await this.collectionRepository.query(`
-        SELECT "collectionId_1" as parent_id, "collectionId_2" as child_id
-        FROM collection_collections_collection
-        WHERE "collectionId_1" = ANY($1::int[])
-        `, [all_collection_ids]);
+                        SELECT "collectionId_1" as parent_id, "collectionId_2" as child_id
+                        FROM collection_collections_collection
+                        WHERE "collectionId_1" = ANY($1::int[])
+                `, [all_collection_ids]);
 
                 // Get all child collection IDs that we need to fetch
                 const child_collection_ids = [...new Set(collection_bindings.map(b => b.child_id))];
@@ -534,7 +535,7 @@ export class CollectionService {
                         const child_ids = child_ids_by_collection.get(collection.id) || [];
                         collection.collections = child_ids
                                 .map(child_id => collection_map.get(child_id))
-                                .filter(c => c !== undefined); // Filter out any missing collections
+                                .filter(c => c !== undefined);
                 });
 
                 return all_collections;
