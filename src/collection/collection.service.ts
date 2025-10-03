@@ -439,34 +439,21 @@ export class CollectionService {
                 return orphanedCollections.filter(collection => collection.id !== user.shared && collection.id !== user.sider);
         }
 
-        async get_collections(user_id: number): Promise<Collection[]> {
-                // First, get the user to access their username
-                const user = await this.collectionRepository.manager
-                        .getRepository(User)
-                        .findOne({ where: { id: user_id } });
-
-                if (!user) {
-                        throw new NotFoundException(`User with ID ${user_id} not found`);
-                }
-
+        async get_collections(user: User): Promise<Collection[]> {
                 const user_collections = await this.collectionRepository
                         .createQueryBuilder('c')
-                        .where('c.userId = :userId', { userId: user_id })
+                        .where('c.userId = :userId', { userId: user.id })
                         .getMany();
                 const user_collection_ids = user_collections.map(c => c.id);
-
-                // Get shared collections where user is in editors or viewers array
                 const shared_collections = await this.collectionRepository
                         .createQueryBuilder('c')
-                        .where('c.userId != :userId', { userId: user_id })
+                        .where('c.userId != :userId', { userId: user.id })
                         .andWhere(
                                 '(:username = ANY(c.editors) OR :username = ANY(c.viewers))',
                                 { username: user.username }
                         )
                         .getMany();
-
                 const shared_ids = shared_collections.map(c => c.id);
-
                 const all_collections = [...user_collections, ...shared_collections];
                 const all_collection_ids = [...user_collection_ids, ...shared_ids];
 
@@ -475,7 +462,6 @@ export class CollectionService {
                         FROM collection_pictos_picto
                         WHERE "collectionId" = ANY($1::int[])
                 `, [all_collection_ids]);
-
                 const picto_ids = [...new Set(picto_bindings.map(b => b.pictoId))];
                 let all_pictos = [];
                 if (picto_ids.length > 0) {
@@ -485,17 +471,12 @@ export class CollectionService {
                                 .whereInIds(picto_ids)
                                 .getMany();
                 }
-
                 const collection_bindings = await this.collectionRepository.query(`
                         SELECT "collectionId_1" as parent_id, "collectionId_2" as child_id
                         FROM collection_collections_collection
                         WHERE "collectionId_1" = ANY($1::int[])
                 `, [all_collection_ids]);
-
-                // Get all child collection IDs that we need to fetch
                 const child_collection_ids = [...new Set(collection_bindings.map(b => b.child_id))];
-
-                // Fetch child collections (one level deep only, no relations)
                 let child_collections = [];
                 if (child_collection_ids.length > 0) {
                         child_collections = await this.collectionRepository
@@ -503,8 +484,6 @@ export class CollectionService {
                                 .whereInIds(child_collection_ids)
                                 .getMany();
                 }
-
-                // Create maps for efficient lookup
                 const picto_map = new Map(all_pictos.map(p => [p.id, p]));
                 const collection_map = new Map(child_collections.map(c => [c.id, c]));
 
@@ -518,7 +497,6 @@ export class CollectionService {
                                 bindings_by_collection.get(b.collectionId).push(picto);
                         }
                 });
-
                 const child_ids_by_collection = new Map();
                 collection_bindings.forEach(b => {
                         if (!child_ids_by_collection.has(b.parent_id)) {
@@ -526,18 +504,13 @@ export class CollectionService {
                         }
                         child_ids_by_collection.get(b.parent_id).push(b.child_id);
                 });
-
-                // Attach relationships to collections
                 all_collections.forEach(collection => {
                         collection.pictos = bindings_by_collection.get(collection.id) || [];
-
-                        // Map child IDs to actual collection objects
                         const child_ids = child_ids_by_collection.get(collection.id) || [];
                         collection.collections = child_ids
                                 .map(child_id => collection_map.get(child_id))
                                 .filter(c => c !== undefined);
                 });
-
                 return all_collections;
         }
 }

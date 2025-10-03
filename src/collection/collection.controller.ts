@@ -240,6 +240,6 @@ export class CollectionController {
         @UseGuards(AuthGuard())
         @Get('all')
         async get_all_collections(@GetUser() user: User): Promise<Collection[]> {
-                return this.collectionService.get_collections(user.id);
+                return this.collectionService.get_collections(user);
         }
 }
