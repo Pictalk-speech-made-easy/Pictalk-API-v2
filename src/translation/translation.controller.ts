@@ -60,14 +60,25 @@ export class TranslationController {
   }
   async deepl(TranslateDto: TranslateDto): Promise<TranslationResponse>{
     try {
-      let request = encodeURI(`https://api-free.deepl.com/v2/translate?auth_key=${this.deeplApiDeepL}&text=${TranslateDto.text}&target_lang=${TranslateDto.targetLang}`);
-        const response = await lastValueFrom(
-          this.httpService.get(
-            request,
-            { headers: { 'Content-Type': 'application/x-www-form-urlencoded', "Accept-Encoding": "*", } },
-          ),
-        );
-        return new TranslationResponse(response.data.translations[0].text);
+      const url = 'https://api-free.deepl.com/v2/translate';
+      const body = {
+        text: [TranslateDto.text],
+        target_lang: TranslateDto.targetLang
+      };
+      
+      const response = await lastValueFrom(
+        this.httpService.post(
+          url,
+          body,
+          { 
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `DeepL-Auth-Key ${this.deeplApiDeepL}`
+            } 
+          },
+        ),
+      );
+      return new TranslationResponse(response.data.translations[0].text);
     } catch(error) {
       console.log(error);
       throw new InternalServerErrorException(
