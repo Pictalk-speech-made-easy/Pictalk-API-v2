@@ -24,7 +24,7 @@ import { Integration } from '@sentry/types';
     CollectionModule,
     AuthModule,
     HttpModule,
-    CacheModule.register({ttl: 2592000000}), // 1 month
+    CacheModule.register({ttl: 2147483647}),
     FeedbackModule,
     SentryModule.forRoot({
       dsn: 'https://f58ce4edd3eb265c6f1d6cf1b870c93c@o1135783.ingest.us.sentry.io/4507656096710656',
