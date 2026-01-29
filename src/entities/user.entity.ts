@@ -80,6 +80,9 @@ export class User extends BaseEntity {
   @UpdateDateColumn()
   updatedDate: Date;
 
+  @Column({ type: 'timestamp', nullable: true })
+  last_connection: Date;
+
   async validatePassword(password: string): Promise<boolean> {
     const hash = await bcrypt.hash(password, this.salt);
     return hash === this.password;
