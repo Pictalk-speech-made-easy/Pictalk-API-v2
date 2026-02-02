@@ -5,6 +5,7 @@ import {BaseEntity,
   OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
+  Index,
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Collection } from './collection.entity';
@@ -17,6 +18,7 @@ export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Index()
   @Column({unique: true})
   username: string;
 
@@ -50,9 +52,11 @@ export class User extends BaseEntity {
   @Column({nullable : true, unique: true})
   shared: number;
 
+  @Index()
   @Column()
   resetPasswordToken: string;
 
+  @Index()
   @Column()
   validationToken: string;
 
@@ -80,6 +84,7 @@ export class User extends BaseEntity {
   @UpdateDateColumn()
   updatedDate: Date;
 
+  @Index()
   @Column({ type: 'timestamp', nullable: true })
   last_connection: Date;
 

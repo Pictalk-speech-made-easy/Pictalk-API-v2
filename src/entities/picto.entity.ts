@@ -15,6 +15,7 @@ import { Collection } from './collection.entity';
 import { User } from './user.entity';
 
 @Entity()
+@Index(['userId', 'public'])
 export class Picto extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
