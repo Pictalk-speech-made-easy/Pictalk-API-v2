@@ -13,7 +13,6 @@ import {
 import { Picto } from './picto.entity';
 import { User } from './user.entity';
 
-@Index(['userId'])
 @Entity()
 export class Collection extends BaseEntity {
   @PrimaryGeneratedColumn()
