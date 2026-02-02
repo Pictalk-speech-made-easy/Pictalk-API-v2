@@ -3,6 +3,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinTable,
   ManyToMany,
   ManyToOne,
@@ -14,6 +15,7 @@ import { Collection } from './collection.entity';
 import { User } from './user.entity';
 
 @Entity()
+@Index(['userId'])
 export class Picto extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
@@ -36,6 +38,7 @@ export class Picto extends BaseEntity {
   @ManyToMany(() => Collection, (collection) => collection.pictos)
   collections: Collection[];
 
+  @Index()
   @Column()
   userId: number;
 
