@@ -49,7 +49,7 @@ export class Collection extends BaseEntity {
   @Column({ nullable: true })
   pictohubId: number;
 
-  @ManyToOne((type) => User, (user) => user.pictos, { eager: false })
+  @ManyToOne((type) => User, (user) => user.collections, { eager: false, onDelete: 'CASCADE' })
   user: User;
 
   @Column('text', { default: [], array: true })
