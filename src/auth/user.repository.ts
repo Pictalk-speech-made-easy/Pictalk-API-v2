@@ -13,7 +13,7 @@ import { stringifyMap, validLanguage } from "../utilities/creation";
 import * as OneSignal from '@onesignal/node-onesignal';
 import { randomBytes } from "crypto";
 import { Validation } from "./dto/user-validation.dto";
-import { resetPassword, welcome, validAccount } from "../utilities/emails";
+import { buildChangedPasswordEmail, buildResetPasswordEmail, buildSignupEmail } from "../utilities/emails";
 import { CustomRepository } from "src/utilities/typeorm-ex.decorator";
 
 @CustomRepository(User)
@@ -56,15 +56,13 @@ export class UserRepository extends Repository<User> {
             throw new InternalServerErrorException(`could not save user`);
           }
         }
-        try{
-            const validAccount_message = validAccount[`${user.displayLanguage}`] ? validAccount[`${user.displayLanguage}`] : validAccount.en;
-            const welcome_message = welcome[`${user.displayLanguage}`] ? welcome[`${user.displayLanguage}`] : welcome.en;
-            const token = user.validationToken === "verified" ? validAccount_message : user.validationToken;
+        try {
+            const email = buildSignupEmail(user.displayLanguage, user.validationToken);
             const notification = new OneSignal.Notification();
             notification.app_id = process.env.ONESIGNAL_APP_ID;
             notification.include_email_tokens = [user.username];
-            notification.email_subject = welcome_message;
-            notification.email_body = `<p>${welcome_message}</p><p>${token}</p>`;
+            notification.email_subject = email.subject;
+            notification.email_body = email.html;
             await this.oneSignalClient.createNotification(notification);
         } catch(error){
           console.error(error);
@@ -74,14 +72,12 @@ export class UserRepository extends Repository<User> {
     
     async sendMail(user: User): Promise<void>{
       try{
-        const welcome_message = welcome[`${user.displayLanguage}`] ? welcome[`${user.displayLanguage}`] : welcome.en;
-        const validAccount_message = validAccount[`${user.displayLanguage}`] ? validAccount[`${user.displayLanguage}`] : validAccount.en;
-        const token = user.validationToken === "verified" ? validAccount_message : user.validationToken;
+        const email = buildSignupEmail(user.displayLanguage, user.validationToken);
         const notification = new OneSignal.Notification();
         notification.app_id = process.env.ONESIGNAL_APP_ID;
         notification.include_email_tokens = [user.username];
-        notification.email_subject = welcome_message;
-        notification.email_body = `<p>${welcome_message}</p><p>${token}</p>`;
+        notification.email_subject = email.subject;
+        notification.email_body = email.html;
         await this.oneSignalClient.createNotification(notification);
       } catch(error){
         throw new InternalServerErrorException(`could not send mail to ${user.username}`)
@@ -158,12 +154,12 @@ export class UserRepository extends Repository<User> {
         }
     
         try {
-          const resetMsg = resetPassword[`${user.displayLanguage}`] ? resetPassword[`${user.displayLanguage}`] : resetPassword.en;
+          const email = buildResetPasswordEmail(user.displayLanguage, resetTokenValue);
           const notification = new OneSignal.Notification();
           notification.app_id = process.env.ONESIGNAL_APP_ID;
           notification.include_email_tokens = [user.username];
-          notification.email_subject = resetMsg;
-          notification.email_body = `<p>${resetMsg}</p><p>${resetTokenValue}</p>`;
+          notification.email_subject = email.subject;
+          notification.email_body = email.html;
           await this.oneSignalClient.createNotification(notification);
         } catch (error) {
           throw new Error(error);
@@ -229,6 +225,18 @@ export class UserRepository extends Repository<User> {
             await user.save();
           } catch (error) {
             throw new InternalServerErrorException(error);
+          }
+          try {
+            const email = buildChangedPasswordEmail(user.displayLanguage);
+            const notification = new OneSignal.Notification();
+            notification.app_id = process.env.ONESIGNAL_APP_ID;
+            notification.include_email_tokens = [user.username];
+            notification.email_subject = email.subject;
+            notification.email_body = email.html;
+            await this.oneSignalClient.createNotification(notification);
+          } catch (error) {
+            // Non-fatal: password was changed, just log the email failure
+            this.logger.verbose(`Could not send changed-password email to ${user.username}: ${error}`);
           }
         }
         return;
