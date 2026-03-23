@@ -10,7 +10,7 @@ import { ChangePasswordDto } from "./dto/change-password.dto";
 import { getArrayIfNeeded } from "src/utilities/tools";
 import { Notif } from "src/entities/notification.entity";
 import { stringifyMap, validLanguage } from "../utilities/creation";
-import sgMail = require('@sendgrid/mail');
+import * as OneSignal from '@onesignal/node-onesignal';
 import { randomBytes } from "crypto";
 import { Validation } from "./dto/user-validation.dto";
 import { resetPassword, welcome, validAccount } from "../utilities/emails";
@@ -19,7 +19,9 @@ import { CustomRepository } from "src/utilities/typeorm-ex.decorator";
 @CustomRepository(User)
 export class UserRepository extends Repository<User> {
     private logger = new Logger('AuthService');
-    private sgmail = sgMail.setApiKey(process.env.SENDGRID_KEY);
+    private oneSignalClient = new OneSignal.DefaultApi(
+        OneSignal.createConfiguration({ restApiKey: process.env.ONESIGNAL_API_KEY })
+    );
     async signUp(createUserDto: CreateUserDto): Promise<User> {
         const { username, password, language, directSharers, languages, displayLanguage } = createUserDto;
         const user = this.create();
@@ -56,22 +58,16 @@ export class UserRepository extends Repository<User> {
         }
         try{
             const validAccount_message = validAccount[`${user.displayLanguage}`] ? validAccount[`${user.displayLanguage}`] : validAccount.en;
-            await sgMail.send({
-              from: 'alex@pictalk.org', 
-              to: user.username, 
-              templateId: 'd-33dea01340e5496691a5741588e2d9f7',
-              dynamicTemplateData: {
-                welcome : welcome[`${user.displayLanguage}`] ? welcome[`${user.displayLanguage}`] : welcome.en,
-                token: user.validationToken === "verified" ? validAccount_message : user.validationToken,
-              },
-            });
-          
+            const welcome_message = welcome[`${user.displayLanguage}`] ? welcome[`${user.displayLanguage}`] : welcome.en;
+            const token = user.validationToken === "verified" ? validAccount_message : user.validationToken;
+            const notification = new OneSignal.Notification();
+            notification.app_id = process.env.ONESIGNAL_APP_ID;
+            notification.include_email_tokens = [user.username];
+            notification.email_subject = welcome_message;
+            notification.email_body = `<p>${welcome_message}</p><p>${token}</p>`;
+            await this.oneSignalClient.createNotification(notification);
         } catch(error){
           console.error(error);
-          console.error(error.request);
-          if (error.response) {
-            console.error(error.response.body)
-          }
         }
         return user;
       }
@@ -80,15 +76,13 @@ export class UserRepository extends Repository<User> {
       try{
         const welcome_message = welcome[`${user.displayLanguage}`] ? welcome[`${user.displayLanguage}`] : welcome.en;
         const validAccount_message = validAccount[`${user.displayLanguage}`] ? validAccount[`${user.displayLanguage}`] : validAccount.en;
-        await sgMail.send({
-          from: 'alex@pictalk.org', 
-          to: user.username, 
-          templateId: 'd-33dea01340e5496691a5741588e2d9f7',
-          dynamicTemplateData: {
-            welcome : welcome_message,
-            token: user.validationToken === "verified" ? validAccount_message : user.validationToken,
-          },
-        });
+        const token = user.validationToken === "verified" ? validAccount_message : user.validationToken;
+        const notification = new OneSignal.Notification();
+        notification.app_id = process.env.ONESIGNAL_APP_ID;
+        notification.include_email_tokens = [user.username];
+        notification.email_subject = welcome_message;
+        notification.email_body = `<p>${welcome_message}</p><p>${token}</p>`;
+        await this.oneSignalClient.createNotification(notification);
       } catch(error){
         throw new InternalServerErrorException(`could not send mail to ${user.username}`)
       }
@@ -164,15 +158,13 @@ export class UserRepository extends Repository<User> {
         }
     
         try {
-          sgMail.send({
-            from: 'alex@pictalk.org',
-            to: user.username,
-            templateId: 'd-d68b41c356ba493eac635229b678744e',
-            dynamicTemplateData: {
-              resetPassword : resetPassword[`${user.displayLanguage}`] ? resetPassword[`${user.displayLanguage}`] : resetPassword.en,
-              token: resetTokenValue,
-            },
-          });
+          const resetMsg = resetPassword[`${user.displayLanguage}`] ? resetPassword[`${user.displayLanguage}`] : resetPassword.en;
+          const notification = new OneSignal.Notification();
+          notification.app_id = process.env.ONESIGNAL_APP_ID;
+          notification.include_email_tokens = [user.username];
+          notification.email_subject = resetMsg;
+          notification.email_body = `<p>${resetMsg}</p><p>${resetTokenValue}</p>`;
+          await this.oneSignalClient.createNotification(notification);
         } catch (error) {
           throw new Error(error);
         }
