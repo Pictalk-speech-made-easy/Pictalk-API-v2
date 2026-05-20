@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, ForbiddenException, Get, Logger, NotFoundException, Param, ParseIntPipe, Post, Put, Query, UnauthorizedException, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, ForbiddenException, Get, Logger, NotFoundException, Param, ParseIntPipe, Post, Put, Query, StreamableFile, UnauthorizedException, UploadedFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -20,11 +20,13 @@ import { OptionnalAuth } from 'src/auth/optionnal_auth.guard';
 import { levelCollectionDto } from './dto/collection.level.dto';
 import { MoveToCollectionDto } from './dto/collection.move.dto';
 import { modifyCollectionV2Dto } from './dto/collection.modify.V2.dto';
+import { AuthService } from 'src/auth/auth.service';
+import { v1_to_obz } from 'src/utilities/open-board';
 
 @Controller('collection')
 export class CollectionController {
         private logger = new Logger('CollectionController');
-        constructor(private collectionService: CollectionService) { }
+        constructor(private collectionService: CollectionService, private authService: AuthService) { }
         @UseGuards(OptionnalAuth)
         @Get('find/:id')
         @ApiOperation({ summary: 'get a collection that has the provided id' })
@@ -241,5 +243,23 @@ export class CollectionController {
         @Get('all')
         async get_all_collections(@GetUser() user: User): Promise<Collection[]> {
                 return this.collectionService.get_collections(user);
+        }
+        @UseGuards(AuthGuard())
+        @Get('export/obz')
+        async export_to_obz(@GetUser() user: User): Promise<StreamableFile> {
+                try {
+                        const collections = await this.collectionService.get_collections(user);
+                        const user_details = await this.authService.getUserDetails(user);
+        
+                        const buffer = await v1_to_obz(collections, user_details);
+        
+                        return new StreamableFile(buffer, {
+                                type: 'application/zip',
+                                disposition: `attachment; filename="${user_details.username}-pictalk.obz"`,
+                        });
+                } catch (error) {
+                        this.logger.error(`Failed to export collections for user ${user.username}: ${error.message}`);
+                        throw new BadRequestException(`Failed to export collections: ${error.message}`);
+                }
         }
 }
