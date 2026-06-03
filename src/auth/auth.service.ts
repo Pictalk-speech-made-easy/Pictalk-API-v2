@@ -139,6 +139,10 @@ export class AuthService {
         return user;
     }
 
+    async findByUsername(username: string): Promise<User> {
+        return this.findWithUsername(username);
+    }
+
     async findWithId(userId: number): Promise<User>{
         const user = await this.userRepository.findOne({where : {id: userId}});
         return user;

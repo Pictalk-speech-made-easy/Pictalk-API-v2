@@ -10,6 +10,8 @@ import * as config from 'config';
 import { TypeOrmExModule } from 'src/utilities/typeorm-ex.module';
 import { PictoModule } from 'src/picto/picto.module';
 import { HttpModule } from '@nestjs/axios';
+import { InternalController } from './internal.controller';
+import { InternalApiKeyGuard } from './internal-api-key.guard';
 const jwtConfig = config.get('jwt');
 @Module({
   imports: [
@@ -26,11 +28,12 @@ const jwtConfig = config.get('jwt');
     forwardRef(() => PictoModule),
   ],
   
-  controllers: [AuthController],
+  controllers: [AuthController, InternalController],
   
   providers: [
     AuthService,
     JwtStrategy,
+    InternalApiKeyGuard,
   ],
   
   exports: [
