@@ -1,14 +1,19 @@
-import { Body, Controller, Get, NotFoundException, Param, Post, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Body, Controller, forwardRef, Get, Inject, NotFoundException, Param, Post, StreamableFile, UnauthorizedException, UseGuards } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { User } from 'src/entities/user.entity';
 import { AuthService } from './auth.service';
 import { InternalApiKeyGuard } from './internal-api-key.guard';
+import { v1_to_obz } from 'src/utilities/open-board';
+import { CollectionService } from 'src/collection/collection.service';
 
 @UseGuards(InternalApiKeyGuard)
 @Controller('internal')
 export class InternalController {
-  constructor(private authService: AuthService) {}
-
+  constructor(private authService: AuthService, 
+    @Inject(forwardRef(() => CollectionService))
+    private collectionService: CollectionService,
+  ) {}
+  
   @Get('users/:username')
   async findByUsername(@Param('username') username: string) {
     const user = await this.authService.findByUsername(username);
@@ -29,6 +34,17 @@ export class InternalController {
     if (hash !== user.password) {
       throw new UnauthorizedException();
     }
+  }
+
+  @Get('export/:username')
+  async export_to_obz(@Param('username') username: string): Promise<StreamableFile> {
+    const user = await this.authService.findByUsername(username);
+    if (!user) throw new NotFoundException();
+    const collections = await this.collectionService.get_collections(user);
+    const user_details = await this.authService.getUserDetails(user);
+    const buffer = await v1_to_obz(collections, user_details);
+
+    return new StreamableFile(buffer, { type: 'application/zip', disposition: `attachment; filename="${user_details.username}-pictalk.obz"`});
   }
 }
 
