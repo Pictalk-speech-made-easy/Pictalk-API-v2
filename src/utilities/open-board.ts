@@ -25,6 +25,7 @@ export type ObzExportOptions = {
   gridColumns?: number;
   gridRows?: number;
   filesBasePath?: string; // defaults to '/files'
+  imageMode?: 'base64' | 'url';
 };
 
 // ─── OBF structural types (subset, kept local to avoid circular imports) ──────
@@ -60,7 +61,9 @@ type OBFManifest = {
 };
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-const PICTALK_CDN = 'https://images.pictalk.org';
+const PICTALK_CDN = 'https://api.pictalk.org/image';
+const ASSETS_API = 'https://assets-api.pictalk.org';
+
 const DEFAULT_FILES_PATH = join(process.cwd(), 'files');
 const CONTENT_TYPES: Record<string, string> = {
   '.jpg': 'image/jpeg',
@@ -107,9 +110,20 @@ function auto_grid(count: number, options: ObzExportOptions): { rows: number; co
 async function resolve_image(
   image: string,
   files_base: string,
+  image_mode: 'base64' | 'url' = 'base64',
 ): Promise<OBFImage | null> {
   const ext = extname(image).toLowerCase();
   const content_type = CONTENT_TYPES[ext] ?? 'image/jpeg';
+
+  if (image_mode === 'url') {
+    const cdn_url = `${PICTALK_CDN}/${image}`;
+    return {
+      id: `img_${image}`,
+      url: `${ASSETS_API}/proxy/image?url=${encodeURIComponent(cdn_url)}`,
+      content_type,
+    };
+  }
+
   const full_path = join(files_base, image);
   try {
     const buffer = await readFile(full_path);
@@ -130,6 +144,7 @@ async function collection_to_obf(
   locale: string,
   options: ObzExportOptions,
   files_base: string,
+  image_mode: 'base64' | 'url',
 ): Promise<OBFBoard> {
   // Pictos first, then sub-collections — both filtered for validity
   const children: V1Entity[] = [
@@ -153,7 +168,7 @@ async function collection_to_obf(
       ...(child.color ? { background_color: child.color } : {}),
     };
     if (child.image) {
-      const obf_image = await resolve_image(child.image, files_base);
+      const obf_image = await resolve_image(child.image, files_base, image_mode);
       if (obf_image) {
         button.image_id = obf_image.id;
         images.push(obf_image);
@@ -194,6 +209,7 @@ export async function v1_to_obz(
 ): Promise<Buffer> {
   const locale = pick_locale(user, options);
   const files_base = options.filesBasePath ?? DEFAULT_FILES_PATH;
+  const image_mode = options.imageMode ?? 'base64';
   // Index the flat array so sub-collections resolve to their fully-populated entry
   const by_id = new Map<number, V1Entity>(flat_collections.map(c => [c.id, c]));
   const root = by_id.get(user.root);
@@ -223,7 +239,7 @@ export async function v1_to_obz(
   const visited = new Set<number>([user.root]);
   while (queue.length > 0) {
     const { entity, filename } = queue.shift()!;
-    const obf = await collection_to_obf(entity, locale, options, files_base);
+    const obf = await collection_to_obf(entity, locale, options, files_base, image_mode);
     zip.file(filename, JSON.stringify(obf, null, 2));
     board_paths[filename] = filename;
     for (const sub of entity.collections ?? []) {

@@ -1,4 +1,4 @@
-import { Body, Controller, forwardRef, Get, Inject, NotFoundException, Param, Post, StreamableFile, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Body, Controller, forwardRef, Get, Inject, NotFoundException, Param, Post, Query, StreamableFile, UnauthorizedException, UseGuards } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { User } from 'src/entities/user.entity';
 import { AuthService } from './auth.service';
@@ -37,12 +37,12 @@ export class InternalController {
   }
 
   @Get('export/:username')
-  async export_to_obz(@Param('username') username: string): Promise<StreamableFile> {
+  async export_to_obz(@Param('username') username: string, @Query('image') imageMode?: 'base64' | 'url'): Promise<StreamableFile> {
     const user = await this.authService.findByUsername(username);
     if (!user) throw new NotFoundException();
     const collections = await this.collectionService.get_collections(user);
     const user_details = await this.authService.getUserDetails(user);
-    const buffer = await v1_to_obz(collections, user_details);
+    const buffer = await v1_to_obz(collections, user_details, { imageMode: imageMode === 'url' ? 'url' : 'base64' });
 
     return new StreamableFile(buffer, { type: 'application/zip', disposition: `attachment; filename="${user_details.username}-pictalk.obz"`});
   }
