@@ -61,7 +61,7 @@ type OBFManifest = {
 };
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-const PICTALK_CDN = 'https://api.pictalk.org/image';
+const PICTALK_CDN = 'https://api.pictalk.org/image/pictalk';
 const ASSETS_API = 'https://assets-api.pictalk.org';
 
 const DEFAULT_FILES_PATH = join(process.cwd(), 'files');
@@ -119,7 +119,7 @@ async function resolve_image(
     const cdn_url = `${PICTALK_CDN}/${image}`;
     return {
       id: `img_${image}`,
-      url: `${ASSETS_API}/proxy/image?url=${encodeURIComponent(cdn_url)}`,
+      url: `${ASSETS_API}/proxy/image?url=${cdn_url}`,
       content_type,
     };
   }
