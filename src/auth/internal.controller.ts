@@ -46,6 +46,12 @@ export class InternalController {
 
     return new StreamableFile(buffer, { type: 'application/zip', disposition: `attachment; filename="${user_details.username}-pictalk.obz"`});
   }
+
+  @Get('export-matches/:username')
+  async export_case_insensitive_matches(@Param('username') username: string): Promise<{ usernames: string[] }> {
+    const users = await this.authService.findAllByUsernameCaseInsensitive(username);
+    return { usernames: users.map(u => u.username) };
+  }
 }
 
 function toDto(user: User) {

@@ -143,6 +143,13 @@ export class AuthService {
         return this.findWithUsername(username);
     }
 
+    async findAllByUsernameCaseInsensitive(username: string): Promise<User[]> {
+        return this.userRepository
+            .createQueryBuilder('user')
+            .where('LOWER(user.username) = LOWER(:username)', { username })
+            .getMany();
+    }
+
     async findWithId(userId: number): Promise<User>{
         const user = await this.userRepository.findOne({where : {id: userId}});
         return user;
