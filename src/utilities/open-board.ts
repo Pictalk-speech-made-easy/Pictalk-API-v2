@@ -53,6 +53,7 @@ type OBFBoard = {
   images: OBFImage[];
   sounds: unknown[];
   grid: { rows: number; columns: number; order: (string | null)[][] };
+  ext_coughdrop_image_url?: string;
 };
 type OBFManifest = {
   format: string;
@@ -240,6 +241,9 @@ export async function v1_to_obz(
   while (queue.length > 0) {
     const { entity, filename } = queue.shift()!;
     const obf = await collection_to_obf(entity, locale, options, files_base, image_mode);
+    if (filename === 'root.obf') {
+      obf.ext_coughdrop_image_url = 'https://buddy.pictalk.org/legacy_logo.png';
+    }
     zip.file(filename, JSON.stringify(obf, null, 2));
     board_paths[filename] = filename;
     for (const sub of entity.collections ?? []) {
