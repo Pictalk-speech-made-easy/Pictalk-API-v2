@@ -37,10 +37,17 @@ export class InternalController {
   }
 
   @Get('export/:username')
-  async export_to_obz(@Param('username') username: string, @Query('image') imageMode?: 'base64' | 'url'): Promise<StreamableFile> {
+  async export_to_obz(
+    @Param('username') username: string,
+    @Query('image') imageMode?: 'base64' | 'url',
+    @Query('include_shared') includeShared?: string,
+  ): Promise<StreamableFile> {
     const user = await this.authService.findByUsername(username);
     if (!user) throw new NotFoundException();
-    const collections = await this.collectionService.get_collections(user);
+    const allCollections = await this.collectionService.get_collections(user);
+    const collections = includeShared === 'false'
+      ? allCollections.filter(c => c.userId === user.id)
+      : allCollections;
     const user_details = await this.authService.getUserDetails(user);
     const buffer = await v1_to_obz(collections, user_details, { imageMode: imageMode === 'url' ? 'url' : 'base64' });
 
@@ -70,5 +77,6 @@ function toDto(user: User) {
     admin: user.admin,
     createdDate: user.createdDate,
     last_connection: user.last_connection,
+    directSharers: user.directSharers ?? [],
   };
 }

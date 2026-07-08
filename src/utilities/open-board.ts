@@ -5,6 +5,7 @@ import { extname, basename, join } from 'path';
 // ─── V1 input types ───────────────────────────────────────────────────────────
 export type V1Entity = {
   id: number;
+  userId?: number;
   meaning: Record<string, string>;
   speech: Record<string, string>;
   image: string | null;
@@ -54,6 +55,7 @@ type OBFBoard = {
   sounds: unknown[];
   grid: { rows: number; columns: number; order: (string | null)[][] };
   ext_coughdrop_image_url?: string;
+  ext_pictalk_legacy_shared?: boolean;
 };
 type OBFManifest = {
   format: string;
@@ -243,6 +245,9 @@ export async function v1_to_obz(
     const obf = await collection_to_obf(entity, locale, options, files_base, image_mode);
     if (filename === 'root.obf') {
       obf.ext_coughdrop_image_url = 'https://buddy.pictalk.org/legacy_logo.png';
+    }
+    if (entity.userId != null && entity.userId !== user.id) {
+      obf.ext_pictalk_legacy_shared = true;
     }
     zip.file(filename, JSON.stringify(obf, null, 2));
     board_paths[filename] = filename;
