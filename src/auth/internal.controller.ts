@@ -59,6 +59,12 @@ export class InternalController {
     const users = await this.authService.findAllByUsernameCaseInsensitive(username);
     return { usernames: users.map(u => u.username) };
   }
+
+  @Get('direct-sharer-of/:username')
+  async direct_sharer_of(@Param('username') username: string): Promise<{ owners: string[] }> {
+    const users = await this.authService.findUsersWithDirectSharer(username);
+    return { owners: users.map(u => u.username) };
+  }
 }
 
 function toDto(user: User) {

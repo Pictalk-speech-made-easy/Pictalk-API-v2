@@ -150,6 +150,13 @@ export class AuthService {
             .getMany();
     }
 
+    async findUsersWithDirectSharer(username: string): Promise<User[]> {
+        return this.userRepository
+            .createQueryBuilder('user')
+            .where(':username = ANY(user.directSharers)', { username })
+            .getMany();
+    }
+
     async findWithId(userId: number): Promise<User>{
         const user = await this.userRepository.findOne({where : {id: userId}});
         return user;
