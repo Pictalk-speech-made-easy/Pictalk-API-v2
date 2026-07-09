@@ -246,6 +246,7 @@ export async function v1_to_obz(
     const { entity, filename } = queue.shift()!;
     const obf = await collection_to_obf(entity, locale, options, files_base, image_mode);
     if (filename === 'root.obf') {
+      obf.name = 'Pictalk AAC';
       obf.ext_coughdrop_image_url = 'https://buddy.pictalk.org/legacy_logo.png';
     }
     if (entity.userId != null && entity.userId !== user.id) {
