@@ -217,7 +217,9 @@ export async function v1_to_obz(
   const by_id = new Map<number, V1Entity>(flat_collections.map(c => [c.id, c]));
   const root = by_id.get(user.root);
   if (!root) throw new Error(`Root collection ${user.root} not found in flat_collections`);
-  const sider = user.sider ? by_id.get(user.sider) : undefined;
+  const rawSider = user.sider ? by_id.get(user.sider) : undefined;
+  const siderHasContent = rawSider && ((rawSider.pictos?.length ?? 0) > 0 || (rawSider.collections?.length ?? 0) > 0);
+  const sider = siderHasContent ? rawSider : undefined;
   const augmented_root: V1Entity = sider
     ? {
       ...root,
