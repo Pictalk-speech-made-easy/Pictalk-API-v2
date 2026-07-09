@@ -45,9 +45,14 @@ export class InternalController {
     const user = await this.authService.findByUsername(username);
     if (!user) throw new NotFoundException();
     const allCollections = await this.collectionService.get_collections(user);
-    const collections = includeShared === 'false'
-      ? allCollections.filter(c => c.userId === user.id)
-      : allCollections;
+    let collections = allCollections;
+    if (includeShared === 'false') {
+      collections = allCollections.filter(c => c.userId === user.id);
+      const ownedIds = new Set(collections.map(c => c.id));
+      collections.forEach(c => {
+        c.collections = (c.collections ?? []).filter(child => ownedIds.has(child.id));
+      });
+    }
     const user_details = await this.authService.getUserDetails(user);
     const buffer = await v1_to_obz(collections, user_details, { imageMode: imageMode === 'url' ? 'url' : 'base64' });
 
