@@ -20,6 +20,9 @@ describe('v1_to_obz ordering', () => {
     const expected = ['11', '2', '12', '10', '9'];
     expect(obf.buttons.map(b => b.id)).toEqual(expected);
     expect(obf.grid.order.flat().filter(Boolean)).toEqual(expected);
+    expect([obf.grid.rows, obf.grid.columns]).toEqual([4, 6]);
+    expect(obf.grid.order).toHaveLength(4);
+    expect(obf.grid.order.every(r => r.length === 6)).toBe(true);
     // pictalk-api only imports image urls, so the default must be the assets-api proxy, not base64
     expect(obf.images).toEqual([{
       id: 'img_abc.png',
@@ -27,5 +30,15 @@ describe('v1_to_obz ordering', () => {
       content_type: 'image/png',
     }]);
     expect(obf.buttons.find(b => b.id === '10').image_id).toBe('img_abc.png');
+  });
+
+  it('grows rows past 4 when a page has more than 24 items, keeping 6 columns', async () => {
+    const root = item(1, 10, '2024-01-01', {
+      pictos: Array.from({ length: 25 }, (_, i) => item(100 + i, 10, '2024-01-01')), collections: [],
+    });
+    const buf = await v1_to_obz([root], { id: 1, username: 'u', displayLanguage: 'en', root: 1 });
+    const obf = JSON.parse(await (await JSZip.loadAsync(buf)).file('root.obf')!.async('string'));
+    expect([obf.grid.rows, obf.grid.columns]).toEqual([5, 6]);
+    expect(obf.grid.order.flat().filter(Boolean)).toHaveLength(25);
   });
 });

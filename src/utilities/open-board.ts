@@ -107,8 +107,9 @@ function by_display_order(a: V1Entity, b: V1Entity): number {
     || new Date(a.createdDate ?? 0).getTime() - new Date(b.createdDate ?? 0).getTime();
 }
 function auto_grid(count: number, options: ObzExportOptions): { rows: number; cols: number } {
-  const cols = options.gridColumns ?? Math.max(1, Math.ceil(Math.sqrt(count)));
-  const rows = options.gridRows ?? Math.max(1, Math.ceil(count / cols));
+  // Every page is 6 columns wide, at least 4 rows tall, growing rows as needed
+  const cols = options.gridColumns ?? 6;
+  const rows = options.gridRows ?? Math.max(4, Math.ceil(count / cols));
   return { rows, cols };
 }
 
