@@ -28,7 +28,7 @@ export type ObzExportOptions = {
   gridColumns?: number;
   gridRows?: number;
   filesBasePath?: string; // defaults to '/files'
-  imageMode?: 'base64' | 'url';
+  imageMode?: 'base64' | 'url'; // defaults to 'url' (assets-api proxy), the only form pictalk-api imports
 };
 
 // ─── OBF structural types (subset, kept local to avoid circular imports) ──────
@@ -120,7 +120,7 @@ function auto_grid(count: number, options: ObzExportOptions): { rows: number; co
 async function resolve_image(
   image: string,
   files_base: string,
-  image_mode: 'base64' | 'url' = 'base64',
+  image_mode: 'base64' | 'url' = 'url',
 ): Promise<OBFImage | null> {
   const ext = extname(image).toLowerCase();
   const content_type = CONTENT_TYPES[ext] ?? 'image/jpeg';
@@ -219,7 +219,7 @@ export async function v1_to_obz(
 ): Promise<Buffer> {
   const locale = pick_locale(user, options);
   const files_base = options.filesBasePath ?? DEFAULT_FILES_PATH;
-  const image_mode = options.imageMode ?? 'base64';
+  const image_mode = options.imageMode ?? 'url';
   // Index the flat array so sub-collections resolve to their fully-populated entry
   const by_id = new Map<number, V1Entity>(flat_collections.map(c => [c.id, c]));
   const root = by_id.get(user.root);

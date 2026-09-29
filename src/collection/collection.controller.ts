@@ -251,7 +251,7 @@ export class CollectionController {
                         const collections = await this.collectionService.get_collections(user);
                         const user_details = await this.authService.getUserDetails(user);
 
-                        const buffer = await v1_to_obz(collections, user_details, { imageMode: imageMode === 'url' ? 'url' : 'base64' });
+                        const buffer = await v1_to_obz(collections, user_details, { imageMode: imageMode === 'base64' ? 'base64' : 'url' });
         
                         return new StreamableFile(buffer, {
                                 type: 'application/zip',
