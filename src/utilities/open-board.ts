@@ -11,6 +11,8 @@ export type V1Entity = {
   image: string | null;
   color: string | null;
   pictohubId: number | null;
+  priority?: number;
+  createdDate?: Date | string;
   pictos?: V1Entity[];
   collections?: V1Entity[];
 };
@@ -99,6 +101,11 @@ function get_speech(entity: V1Entity, locale: string): string {
   const s = parse_locale_map(entity.speech);
   return s[locale] ?? Object.values(s)[0] ?? '';
 }
+// Same order as the Pictalk frontend: priority ascending, then oldest first
+function by_display_order(a: V1Entity, b: V1Entity): number {
+  return (a.priority ?? 10) - (b.priority ?? 10)
+    || new Date(a.createdDate ?? 0).getTime() - new Date(b.createdDate ?? 0).getTime();
+}
 function auto_grid(count: number, options: ObzExportOptions): { rows: number; cols: number } {
   const cols = options.gridColumns ?? Math.max(1, Math.ceil(Math.sqrt(count)));
   const rows = options.gridRows ?? Math.max(1, Math.ceil(count / cols));
@@ -149,11 +156,11 @@ async function collection_to_obf(
   files_base: string,
   image_mode: 'base64' | 'url',
 ): Promise<OBFBoard> {
-  // Pictos first, then sub-collections — both filtered for validity
+  // Pictos and sub-collections mixed, ordered like the frontend — filtered for validity
   const children: V1Entity[] = [
     ...(collection.pictos ?? []),
     ...(collection.collections ?? []),
-  ].filter(is_valid);
+  ].filter(is_valid).sort(by_display_order);
   const sub_collection_ids = new Set((collection.collections ?? []).map(c => c.id));
   const { rows, cols } = auto_grid(children.length, options);
   const order: (string | null)[][] = Array.from({ length: rows }, () => Array<null>(cols).fill(null));
@@ -227,6 +234,7 @@ export async function v1_to_obz(
         ...(root.collections ?? []),
         {
           ...sider,
+          priority: Infinity, // keep the sidebar button last
           // Provide a fallback label if the sider has no meaning
           meaning: sider.meaning && Object.keys(sider.meaning).length > 0
             ? sider.meaning
