@@ -439,13 +439,12 @@ export class CollectionService {
                 return orphanedCollections.filter(collection => collection.id !== user.shared && collection.id !== user.sider);
         }
 
-        async get_collections(user: User): Promise<Collection[]> {
+        async get_collections(user: User, include_linked = false, include_shared = true): Promise<Collection[]> {
                 const user_collections = await this.collectionRepository
                         .createQueryBuilder('c')
                         .where('c.userId = :userId', { userId: user.id })
                         .getMany();
-                const user_collection_ids = user_collections.map(c => c.id);
-                const shared_collections = await this.collectionRepository
+                const shared_collections = !include_shared ? [] : await this.collectionRepository
                         .createQueryBuilder('c')
                         .where('c.userId != :userId', { userId: user.id })
                         .andWhere(
@@ -453,64 +452,80 @@ export class CollectionService {
                                 { username: user.username }
                         )
                         .getMany();
-                const shared_ids = shared_collections.map(c => c.id);
                 const all_collections = [...user_collections, ...shared_collections];
-                const all_collection_ids = [...user_collection_ids, ...shared_ids];
+                const known_ids = new Set(all_collections.map(c => c.id));
+                let pending = all_collections;
+                while (pending.length > 0) {
+                        const pending_ids = pending.map(c => c.id);
+                        const picto_bindings = await this.collectionRepository.query(`
+                                SELECT "collectionId", "pictoId"
+                                FROM collection_pictos_picto
+                                WHERE "collectionId" = ANY($1::int[])
+                        `, [pending_ids]);
+                        const picto_ids = [...new Set(picto_bindings.map(b => b.pictoId))];
+                        let all_pictos = [];
+                        if (picto_ids.length > 0) {
+                                all_pictos = await this.collectionRepository.manager
+                                        .getRepository(Picto)
+                                        .createQueryBuilder('p')
+                                        .whereInIds(picto_ids)
+                                        .getMany();
+                        }
+                        const collection_bindings = await this.collectionRepository.query(`
+                                SELECT "collectionId_1" as parent_id, "collectionId_2" as child_id
+                                FROM collection_collections_collection
+                                WHERE "collectionId_1" = ANY($1::int[])
+                        `, [pending_ids]);
+                        const child_collection_ids = [...new Set(collection_bindings.map(b => b.child_id))];
+                        let child_collections = [];
+                        if (child_collection_ids.length > 0) {
+                                child_collections = await this.collectionRepository
+                                        .createQueryBuilder('c')
+                                        .whereInIds(child_collection_ids)
+                                        .getMany();
+                        }
+                        const picto_map = new Map(all_pictos.map(p => [p.id, p]));
+                        const collection_map = new Map(child_collections.map(c => [c.id, c]));
 
-                const picto_bindings = await this.collectionRepository.query(`
-                        SELECT "collectionId", "pictoId"
-                        FROM collection_pictos_picto
-                        WHERE "collectionId" = ANY($1::int[])
-                `, [all_collection_ids]);
-                const picto_ids = [...new Set(picto_bindings.map(b => b.pictoId))];
-                let all_pictos = [];
-                if (picto_ids.length > 0) {
-                        all_pictos = await this.collectionRepository.manager
-                                .getRepository(Picto)
-                                .createQueryBuilder('p')
-                                .whereInIds(picto_ids)
-                                .getMany();
+                        const bindings_by_collection = new Map();
+                        picto_bindings.forEach(b => {
+                                if (!bindings_by_collection.has(b.collectionId)) {
+                                        bindings_by_collection.set(b.collectionId, []);
+                                }
+                                const picto = picto_map.get(b.pictoId);
+                                if (picto) {
+                                        bindings_by_collection.get(b.collectionId).push(picto);
+                                }
+                        });
+                        const child_ids_by_collection = new Map();
+                        collection_bindings.forEach(b => {
+                                if (!child_ids_by_collection.has(b.parent_id)) {
+                                        child_ids_by_collection.set(b.parent_id, []);
+                                }
+                                child_ids_by_collection.get(b.parent_id).push(b.child_id);
+                        });
+                        pending.forEach(collection => {
+                                collection.pictos = bindings_by_collection.get(collection.id) || [];
+                                const child_ids = child_ids_by_collection.get(collection.id) || [];
+                                collection.collections = child_ids
+                                        .map(child_id => collection_map.get(child_id))
+                                        .filter(c => c !== undefined);
+                        });
+                        // A child the user neither owns nor is shared on (someone else's collection linked into theirs)
+                        // comes back as a bare entity with no pictos: the export follows it so its board isn't empty,
+                        // and copies it into the user's vocabulary. Collections shared with the user are left to sharing.
+                        pending = include_linked
+                                ? child_collections.filter(c => !known_ids.has(c.id) && (include_shared || !this.is_shared_with(c, user)))
+                                : [];
+                        pending.forEach(c => { known_ids.add(c.id); all_collections.push(c); });
                 }
-                const collection_bindings = await this.collectionRepository.query(`
-                        SELECT "collectionId_1" as parent_id, "collectionId_2" as child_id
-                        FROM collection_collections_collection
-                        WHERE "collectionId_1" = ANY($1::int[])
-                `, [all_collection_ids]);
-                const child_collection_ids = [...new Set(collection_bindings.map(b => b.child_id))];
-                let child_collections = [];
-                if (child_collection_ids.length > 0) {
-                        child_collections = await this.collectionRepository
-                                .createQueryBuilder('c')
-                                .whereInIds(child_collection_ids)
-                                .getMany();
+                if (!include_shared) {
+                        all_collections.forEach(c => { c.collections = c.collections.filter(child => known_ids.has(child.id)); });
                 }
-                const picto_map = new Map(all_pictos.map(p => [p.id, p]));
-                const collection_map = new Map(child_collections.map(c => [c.id, c]));
-
-                const bindings_by_collection = new Map();
-                picto_bindings.forEach(b => {
-                        if (!bindings_by_collection.has(b.collectionId)) {
-                                bindings_by_collection.set(b.collectionId, []);
-                        }
-                        const picto = picto_map.get(b.pictoId);
-                        if (picto) {
-                                bindings_by_collection.get(b.collectionId).push(picto);
-                        }
-                });
-                const child_ids_by_collection = new Map();
-                collection_bindings.forEach(b => {
-                        if (!child_ids_by_collection.has(b.parent_id)) {
-                                child_ids_by_collection.set(b.parent_id, []);
-                        }
-                        child_ids_by_collection.get(b.parent_id).push(b.child_id);
-                });
-                all_collections.forEach(collection => {
-                        collection.pictos = bindings_by_collection.get(collection.id) || [];
-                        const child_ids = child_ids_by_collection.get(collection.id) || [];
-                        collection.collections = child_ids
-                                .map(child_id => collection_map.get(child_id))
-                                .filter(c => c !== undefined);
-                });
                 return all_collections;
+        }
+        private is_shared_with(collection: Collection, user: User): boolean {
+                return collection.userId !== user.id
+                        && [...(collection.editors ?? []), ...(collection.viewers ?? [])].includes(user.username);
         }
 }

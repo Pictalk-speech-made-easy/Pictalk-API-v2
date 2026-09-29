@@ -248,7 +248,7 @@ export class CollectionController {
         @Get('export/obz')
         async export_to_obz(@GetUser() user: User, @Query('image') imageMode?: 'base64' | 'url'): Promise<StreamableFile> {
                 try {
-                        const collections = await this.collectionService.get_collections(user);
+                        const collections = await this.collectionService.get_collections(user, true);
                         const user_details = await this.authService.getUserDetails(user);
 
                         const buffer = await v1_to_obz(collections, user_details, { imageMode: imageMode === 'base64' ? 'base64' : 'url' });

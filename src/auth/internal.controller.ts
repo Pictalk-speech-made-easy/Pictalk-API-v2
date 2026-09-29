@@ -44,15 +44,7 @@ export class InternalController {
   ): Promise<StreamableFile> {
     const user = await this.authService.findByUsername(username);
     if (!user) throw new NotFoundException();
-    const allCollections = await this.collectionService.get_collections(user);
-    let collections = allCollections;
-    if (includeShared === 'false') {
-      collections = allCollections.filter(c => c.userId === user.id);
-      const ownedIds = new Set(collections.map(c => c.id));
-      collections.forEach(c => {
-        c.collections = (c.collections ?? []).filter(child => ownedIds.has(child.id));
-      });
-    }
+    const collections = await this.collectionService.get_collections(user, true, includeShared !== 'false');
     const user_details = await this.authService.getUserDetails(user);
     const buffer = await v1_to_obz(collections, user_details, { imageMode: imageMode === 'base64' ? 'base64' : 'url' });
 
