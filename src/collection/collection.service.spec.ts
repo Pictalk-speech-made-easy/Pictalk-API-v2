@@ -27,7 +27,9 @@ const repository = {
     ? picto_links.filter(l => ids.includes(l.collectionId))
     : collection_links.filter(l => ids.includes(l.parent_id)),
 };
-const service = Object.assign(Object.create(CollectionService.prototype), { collectionRepository: repository }) as CollectionService;
+let direct_sharer_owners: { id: number }[] = [];
+const authService = { findUsersWithDirectSharer: async () => direct_sharer_owners };
+const service = Object.assign(Object.create(CollectionService.prototype), { collectionRepository: repository, authService }) as CollectionService;
 const user = { id: 82, username: 'pabloA@pictalk.org' } as any;
 
 describe('get_collections', () => {
@@ -48,10 +50,18 @@ describe('get_collections', () => {
     expect(zip.file('boards/999.obf')).not.toBeNull();
   });
 
-  it('migration (include_shared=false): copies linked collections, leaves shared ones to sharing', async () => {
+  it('migration (include_shared=false): copies collections shared one by one, which pictalk-api does not re-share', async () => {
+    direct_sharer_owners = [];
     const result = await service.get_collections(user, true, false);
-    expect(result.map(c => c.id)).toEqual([547, 284085, 999]);
-    expect(result.find(c => c.id === 547).collections.map(c => c.id)).toEqual([284085]);
+    expect(result.map(c => c.id)).toEqual([547, 700, 284085, 999]);
+    expect(result.find(c => c.id === 547).collections.map(c => c.id)).toEqual([700, 284085]);
     expect(result.find(c => c.id === 284085).pictos).toHaveLength(2);
+  });
+
+  it('migration (include_shared=false): leaves out owners who list the user in directSharers, their vocabulary is shared instead', async () => {
+    direct_sharer_owners = [{ id: 61 }];
+    const result = await service.get_collections(user, true, false);
+    expect(result.map(c => c.id)).toEqual([547]);
+    expect(result[0].collections).toEqual([]);
   });
 });

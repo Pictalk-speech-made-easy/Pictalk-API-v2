@@ -22,6 +22,7 @@ export type V1UserDetails = {
   displayLanguage: string;
   root: number;
   sider?: number;
+  shared?: number;
 };
 export type ObzExportOptions = {
   language?: string;
@@ -225,25 +226,23 @@ export async function v1_to_obz(
   const by_id = new Map<number, V1Entity>(flat_collections.map(c => [c.id, c]));
   const root = by_id.get(user.root);
   if (!root) throw new Error(`Root collection ${user.root} not found in flat_collections`);
-  const rawSider = user.sider ? by_id.get(user.sider) : undefined;
-  const siderHasContent = rawSider && ((rawSider.pictos?.length ?? 0) > 0 || (rawSider.collections?.length ?? 0) > 0);
-  const sider = siderHasContent ? rawSider : undefined;
-  const augmented_root: V1Entity = sider
-    ? {
-      ...root,
-      collections: [
-        ...(root.collections ?? []),
-        {
-          ...sider,
-          priority: Infinity, // keep the sidebar button last
-          // Provide a fallback label if the sider has no meaning
-          meaning: sider.meaning && Object.keys(sider.meaning).length > 0
-            ? sider.meaning
-            : { fr: 'Barre latérale', en: 'Sidebar', de: 'Seitenleiste', nl: 'Zijbalk', es: 'Barra lateral', it: 'Barra laterale' },
-        },
-      ],
-    }
-    : root;
+  // The sidebar and "shared with me" folders hang off the user, not the root: each becomes a root button when it has content
+  const extra_folder = (id: number | undefined, priority: number, fallback: Record<string, string>): V1Entity[] => {
+    const folder = id ? by_id.get(id) : undefined;
+    if (!folder || ((folder.pictos?.length ?? 0) === 0 && (folder.collections?.length ?? 0) === 0)) return [];
+    const meaning = parse_locale_map(folder.meaning);
+    return [{ ...folder, priority, meaning: Object.keys(meaning).length > 0 ? meaning : fallback }];
+  };
+  const augmented_root: V1Entity = {
+    ...root,
+    collections: [
+      ...(root.collections ?? []),
+      ...extra_folder(user.shared, Number.MAX_VALUE,
+        { fr: 'Partagés avec moi', en: 'Shared with me', de: 'Mit mir geteilt', nl: 'Gedeeld met mij', es: 'Compartidos conmigo', it: 'Condivisi con me' }),
+      ...extra_folder(user.sider, Infinity, // the sidebar button stays last
+        { fr: 'Barre latérale', en: 'Sidebar', de: 'Seitenleiste', nl: 'Zijbalk', es: 'Barra lateral', it: 'Barra laterale' }),
+    ],
+  };
   const zip = new JSZip();
   const board_paths: Record<string, string> = {};
   // BFS — each collection becomes one .obf file

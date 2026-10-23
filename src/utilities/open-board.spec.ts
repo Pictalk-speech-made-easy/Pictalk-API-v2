@@ -41,4 +41,27 @@ describe('v1_to_obz ordering', () => {
     expect([obf.grid.rows, obf.grid.columns]).toEqual([5, 6]);
     expect(obf.grid.order.flat().filter(Boolean)).toHaveLength(25);
   });
+
+  it('exports the "shared with me" folder as a root button before the sidebar, labelled when it has no meaning', async () => {
+    const own_child = item(30, 10, '2024-01-01', { pictos: [item(300, 10, '2024-01-01')], collections: [] });
+    const shared = item(3, 10, '2020-01-01', { meaning: {}, pictos: [], collections: [own_child] });
+    const sider = item(9, 10, '2020-01-01', { pictos: [item(90, 10, '2024-01-01')], collections: [] });
+    const root = item(1, 10, '2024-01-01', { pictos: [item(10, 10, '2024-01-01')], collections: [] });
+
+    const buf = await v1_to_obz([root, shared, own_child, sider], { id: 1, username: 'u', displayLanguage: 'it', root: 1, sider: 9, shared: 3 });
+    const zip = await JSZip.loadAsync(buf);
+    const obf = JSON.parse(await zip.file('root.obf')!.async('string'));
+    expect(obf.buttons.map(b => b.id)).toEqual(['10', '3', '9']);
+    expect(obf.buttons.find(b => b.id === '3')).toMatchObject({ label: 'Condivisi con me', load_board: { path: 'boards/3.obf' } });
+    expect(zip.file('boards/30.obf')).not.toBeNull();
+  });
+
+  it('leaves an empty "shared with me" folder out', async () => {
+    const root = item(1, 10, '2024-01-01', { pictos: [item(10, 10, '2024-01-01')], collections: [] });
+    const shared = item(3, 10, '2020-01-01', { meaning: {}, pictos: [], collections: [] });
+    const buf = await v1_to_obz([root, shared], { id: 1, username: 'u', displayLanguage: 'en', root: 1, shared: 3 });
+    const zip = await JSZip.loadAsync(buf);
+    expect(JSON.parse(await zip.file('root.obf')!.async('string')).buttons.map(b => b.id)).toEqual(['10']);
+    expect(zip.file('boards/3.obf')).toBeNull();
+  });
 });

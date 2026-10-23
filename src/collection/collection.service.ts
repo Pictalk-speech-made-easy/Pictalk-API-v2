@@ -452,6 +452,9 @@ export class CollectionService {
                                 { username: user.username }
                         )
                         .getMany();
+                // pictalk-api's migration shares these owners' vocabularies with the user (direct-sharer-of), so a copy would show twice
+                const sharing_owner_ids = include_shared ? new Set<number>()
+                        : new Set((await this.authService.findUsersWithDirectSharer(user.username)).map(u => u.id));
                 const all_collections = [...user_collections, ...shared_collections];
                 const known_ids = new Set(all_collections.map(c => c.id));
                 let pending = all_collections;
@@ -511,11 +514,10 @@ export class CollectionService {
                                         .map(child_id => collection_map.get(child_id))
                                         .filter(c => c !== undefined);
                         });
-                        // A child the user neither owns nor is shared on (someone else's collection linked into theirs)
-                        // comes back as a bare entity with no pictos: the export follows it so its board isn't empty,
-                        // and copies it into the user's vocabulary. Collections shared with the user are left to sharing.
+                        // Someone else's collection linked into the user's tree comes back as a bare entity with no pictos:
+                        // the export follows it so its board isn't empty, and copies it into the user's vocabulary.
                         pending = include_linked
-                                ? child_collections.filter(c => !known_ids.has(c.id) && (include_shared || !this.is_shared_with(c, user)))
+                                ? child_collections.filter(c => !known_ids.has(c.id) && !sharing_owner_ids.has(c.userId))
                                 : [];
                         pending.forEach(c => { known_ids.add(c.id); all_collections.push(c); });
                 }
@@ -523,9 +525,5 @@ export class CollectionService {
                         all_collections.forEach(c => { c.collections = c.collections.filter(child => known_ids.has(child.id)); });
                 }
                 return all_collections;
-        }
-        private is_shared_with(collection: Collection, user: User): boolean {
-                return collection.userId !== user.id
-                        && [...(collection.editors ?? []), ...(collection.viewers ?? [])].includes(user.username);
         }
 }
