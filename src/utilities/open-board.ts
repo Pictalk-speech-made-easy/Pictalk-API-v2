@@ -59,6 +59,8 @@ type OBFBoard = {
   grid: { rows: number; columns: number; order: (string | null)[][] };
   ext_coughdrop_image_url?: string;
   ext_pictalk_legacy_shared?: boolean;
+  // Pictalk Buddy reads it as the board shown beside every page. An ext_ property, so other readers ignore it.
+  ext_buddy_sidebar_page?: string;
 };
 type OBFManifest = {
   format: string;
@@ -226,7 +228,7 @@ export async function v1_to_obz(
   const by_id = new Map<number, V1Entity>(flat_collections.map(c => [c.id, c]));
   const root = by_id.get(user.root);
   if (!root) throw new Error(`Root collection ${user.root} not found in flat_collections`);
-  // The sidebar and "shared with me" folders hang off the user, not the root: each becomes a root button when it has content
+  // The sidebar and "shared with me" folders hang off the user, not the root, and are exported only when they have content
   const extra_folder = (id: number | undefined, priority: number, fallback: Record<string, string>): V1Entity[] => {
     const folder = id ? by_id.get(id) : undefined;
     if (!folder || ((folder.pictos?.length ?? 0) === 0 && (folder.collections?.length ?? 0) === 0)) return [];
@@ -239,23 +241,31 @@ export async function v1_to_obz(
       ...(root.collections ?? []),
       ...extra_folder(user.shared, Number.MAX_VALUE,
         { fr: 'Partagés avec moi', en: 'Shared with me', de: 'Mit mir geteilt', nl: 'Gedeeld met mij', es: 'Compartidos conmigo', it: 'Condivisi con me' }),
-      ...extra_folder(user.sider, Infinity, // the sidebar button stays last
-        { fr: 'Barre latérale', en: 'Sidebar', de: 'Seitenleiste', nl: 'Zijbalk', es: 'Barra lateral', it: 'Barra laterale' }),
     ],
   };
+  // The sidebar is its own board, opened by no button and named on the root board.
+  const [sider] = extra_folder(user.sider, Infinity,
+    { fr: 'Barre latérale', en: 'Sidebar', de: 'Seitenleiste', nl: 'Zijbalk', es: 'Barra lateral', it: 'Barra laterale' });
+  const sider_path = sider ? `boards/${sider.id}.obf` : undefined;
   const zip = new JSZip();
   const board_paths: Record<string, string> = {};
   // BFS — each collection becomes one .obf file
-  const queue: { entity: V1Entity; filename: string }[] = [
-    { entity: augmented_root, filename: 'root.obf' },
+  const queue: { entity: V1Entity; filename: string; options: ObzExportOptions }[] = [
+    { entity: augmented_root, filename: 'root.obf', options },
   ];
   const visited = new Set<number>([user.root]);
+  if (sider && sider_path) {
+    // One column, as v1 showed it.
+    queue.push({ entity: sider, filename: sider_path, options: { ...options, gridColumns: 1, gridRows: undefined } });
+    visited.add(sider.id);
+  }
   while (queue.length > 0) {
-    const { entity, filename } = queue.shift()!;
-    const obf = await collection_to_obf(entity, locale, options, files_base, image_mode);
+    const { entity, filename, options: board_options } = queue.shift()!;
+    const obf = await collection_to_obf(entity, locale, board_options, files_base, image_mode);
     if (filename === 'root.obf') {
       obf.name = 'Pictalk AAC';
       obf.ext_coughdrop_image_url = 'https://buddy.pictalk.org/legacy_logo.png';
+      if (sider_path) obf.ext_buddy_sidebar_page = sider_path;
     }
     if (entity.userId != null && entity.userId !== user.id) {
       obf.ext_pictalk_legacy_shared = true;
@@ -267,7 +277,7 @@ export async function v1_to_obz(
       visited.add(sub.id);
       // Prefer the fully-populated flat entry over the shallow nested snapshot
       const full = by_id.get(sub.id) ?? sub;
-      queue.push({ entity: full, filename: `boards/${sub.id}.obf` });
+      queue.push({ entity: full, filename: `boards/${sub.id}.obf`, options });
     }
   }
   const manifest: OBFManifest = {
