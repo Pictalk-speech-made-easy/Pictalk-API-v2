@@ -6,7 +6,7 @@ const item = (id: number, priority: number, createdDate: string, extra: Partial<
 });
 
 describe('v1_to_obz ordering', () => {
-  it('orders buttons by priority then creation date, pictos and collections mixed, sider last', async () => {
+  it('orders buttons by priority then creation date, pictos and collections mixed', async () => {
     const sub = item(2, 5, '2024-01-03', { pictos: [], collections: [] });
     const sider = item(9, 1, '2020-01-01', { pictos: [item(90, 10, '2024-01-01')], collections: [] });
     const root = item(1, 10, '2024-01-01', {
@@ -17,7 +17,7 @@ describe('v1_to_obz ordering', () => {
     const buf = await v1_to_obz([root, sub, sider], { id: 1, username: 'u', displayLanguage: 'en', root: 1, sider: 9 });
     const obf = JSON.parse(await (await JSZip.loadAsync(buf)).file('root.obf')!.async('string'));
 
-    const expected = ['11', '2', '12', '10', '9'];
+    const expected = ['11', '2', '12', '10'];
     expect(obf.buttons.map(b => b.id)).toEqual(expected);
     expect(obf.grid.order.flat().filter(Boolean)).toEqual(expected);
     expect([obf.grid.rows, obf.grid.columns]).toEqual([4, 6]);
@@ -42,7 +42,7 @@ describe('v1_to_obz ordering', () => {
     expect(obf.grid.order.flat().filter(Boolean)).toHaveLength(25);
   });
 
-  it('exports the "shared with me" folder as a root button before the sidebar, labelled when it has no meaning', async () => {
+  it('exports the "shared with me" folder as a root button, labelled when it has no meaning', async () => {
     const own_child = item(30, 10, '2024-01-01', { pictos: [item(300, 10, '2024-01-01')], collections: [] });
     const shared = item(3, 10, '2020-01-01', { meaning: {}, pictos: [], collections: [own_child] });
     const sider = item(9, 10, '2020-01-01', { pictos: [item(90, 10, '2024-01-01')], collections: [] });
@@ -51,7 +51,7 @@ describe('v1_to_obz ordering', () => {
     const buf = await v1_to_obz([root, shared, own_child, sider], { id: 1, username: 'u', displayLanguage: 'it', root: 1, sider: 9, shared: 3 });
     const zip = await JSZip.loadAsync(buf);
     const obf = JSON.parse(await zip.file('root.obf')!.async('string'));
-    expect(obf.buttons.map(b => b.id)).toEqual(['10', '3', '9']);
+    expect(obf.buttons.map(b => b.id)).toEqual(['10', '3']);
     expect(obf.buttons.find(b => b.id === '3')).toMatchObject({ label: 'Condivisi con me', load_board: { path: 'boards/3.obf' } });
     expect(zip.file('boards/30.obf')).not.toBeNull();
   });
@@ -63,5 +63,38 @@ describe('v1_to_obz ordering', () => {
     const zip = await JSZip.loadAsync(buf);
     expect(JSON.parse(await zip.file('root.obf')!.async('string')).buttons.map(b => b.id)).toEqual(['10']);
     expect(zip.file('boards/3.obf')).toBeNull();
+  });
+});
+
+describe('v1_to_obz sidebar', () => {
+  const food = item(3, 10, '2024-01-01', { meaning: { fr: 'manger' }, pictos: [item(30, 10, '2024-01-01')], collections: [] });
+  const root = item(1, 10, '2024-01-01', { pictos: [item(10, 10, '2024-01-01')], collections: [food] });
+  const user = { id: 1, username: 'u', displayLanguage: 'fr', root: 1, sider: 9 };
+
+  it('exports a sidebar with content as its own one-column board, named on the root and opened by no button', async () => {
+    const sider = item(9, 10, '2020-01-01', { meaning: {}, pictos: [item(90, 1, '2024-01-01'), item(91, 2, '2024-01-01')], collections: [food] });
+    const zip = await JSZip.loadAsync(await v1_to_obz([root, food, sider], user));
+    const read = async (path: string) => JSON.parse(await zip.file(path)!.async('string'));
+    const root_obf = await read('root.obf');
+    const manifest = await read('manifest.json');
+
+    expect(root_obf.ext_buddy_sidebar_page).toBe('boards/9.obf');
+    expect(root_obf.buttons.map(b => b.id)).toEqual(['10', '3']);
+    expect(manifest.paths.boards['boards/9.obf']).toBe('boards/9.obf');
+    const side = await read('boards/9.obf');
+    expect(side.name).toBe('Barre latérale');
+    expect(side.grid.columns).toBe(1);
+    expect(side.grid.order.flat().filter(Boolean)).toEqual(['90', '91', '3']);
+    // Its folders open the same boards as the root's.
+    expect(side.buttons.find(b => b.id === '3').load_board).toEqual({ path: 'boards/3.obf' });
+  });
+
+  it('exports nothing for an empty sidebar', async () => {
+    const sider = item(9, 10, '2020-01-01', { meaning: {}, pictos: [], collections: [] });
+    const zip = await JSZip.loadAsync(await v1_to_obz([root, food, sider], user));
+    const root_obf = JSON.parse(await zip.file('root.obf')!.async('string'));
+
+    expect(root_obf.ext_buddy_sidebar_page).toBeUndefined();
+    expect(zip.file('boards/9.obf')).toBeNull();
   });
 });
